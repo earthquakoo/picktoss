@@ -1,0 +1,69 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/picktoss?serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${PICKTOSS_DB_USER}
+    password: ${PICKTOSS_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: create
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      use-new-id-generator-mappings: false
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+
+#spring:
+#  datasource:
+#    url: jdbc:h2:tcp://localhost/~/picktoss
+#    username: sa
+#    password:
+#    driver-class-name: org.h2.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#    properties:
+#      hibernate:
+#        # show_sql: true
+#        format_sql: true
+
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6
+
+jwt:
+  secret: ${PICKTOSS_JWT_SECRET_KEY}
+  access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+  refresh_token_expiration_ms: ${PICKTOSS_JWT_REFRESH_TOKEN_EXPIRE_MINUTES}
+
+mailgun:
+  api_key: ${PICKTOSS_MAILGUN_API_KEY}
+  domain: ${PICKTOSS_MAILGUN_DOMAIN}
+
+oauth:
+  google:
+    client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
+    client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
+    redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${PICKTOSS_S3_BUCKET_NAME}
+    credentials:
+      access_key: ${PICKTOSS_AWS_ACCESS_KEY}
+      secret_key: ${PICKTOSS_AWS_SECRET_KEY}
+    region:
+      static: us-east-1
+      auto: false
+    stack:
+      auto: false
+    sqs:
+      queue:
+        name: ${PICKTOSS_AWS_SQS_QUEUE_NAME}
+        url: ${PICKTOSS_AWS_SQS_QUEUE_URL}
