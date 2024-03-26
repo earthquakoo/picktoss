@@ -29,6 +29,7 @@ public class SqsProvider {
             jsonNode.put("subscription_plan", subscriptionPlan.name());
             String messageBody = mapper.writeValueAsString(jsonNode);
 
+
             SendMessageRequest sendMessageRequest = new SendMessageRequest()
                     .withQueueUrl(url)
                     .withMessageBody(messageBody);

@@ -1,12 +1,9 @@
 package com.picktoss.picktossserver.domain.document.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.category.service.CategoryService;
-import com.picktoss.picktossserver.domain.document.controller.response.CreateDocumentResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -14,13 +11,10 @@ import com.picktoss.picktossserver.domain.document.entity.DocumentUpload;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.document.repository.DocumentUploadRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.question.entity.Question;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
-import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
 import com.picktoss.picktossserver.global.enums.DocumentFormat;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
-import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -66,9 +59,10 @@ public class DocumentService {
         return document.getId();
     }
 
+    public GetSingleDocumentResponse.DocumentDto findSingleDocument(Long memberId, Long categoryId, Long documentId) {
+        Document document = documentRepository.findByDocumentIdAndCategoryIdAndMemberId(documentId, categoryId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-    public List<GetSingleDocumentResponse.DocumentDto> findSingleDocument(Long documentId, Category category) {
-        Document document = findDocumentByCategoryAndDocumentId(category, documentId);
         List<Question> questions = document.getQuestions();
         List<GetSingleDocumentResponse.QuestionDto> questionDtos = new ArrayList<>();
 
@@ -85,29 +79,26 @@ public class DocumentService {
         }
 
         GetSingleDocumentResponse.CategoryDto categoryDto = GetSingleDocumentResponse.CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
+                .id(document.getCategory().getId())
+                .name(document.getCategory().getName())
                 .build();
 
-        List<GetSingleDocumentResponse.DocumentDto> documentDtos = new ArrayList<>();
         GetSingleDocumentResponse.DocumentDto documentDto = GetSingleDocumentResponse.DocumentDto.builder()
-                .documentId(document.getId())
+                .id(document.getId())
                 .documentName(document.getName())
                 .summary(document.getSummary())
                 .status(document.getStatus())
                 .format(document.getFormat())
-                .categoryDto(categoryDto)
-                .questionDtos(questionDtos)
+                .category(categoryDto)
+                .questions(questionDtos)
                 .content(content)
                 .build();
 
-        documentDtos.add(documentDto);
-
-        return documentDtos;
+        return documentDto;
     }
 
-    public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long categoryId) {
-        List<Document> documents = documentRepository.findAllByCategoryId(categoryId);
+    public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {
+        List<Document> documents = documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
         List<GetAllDocumentsResponse.DocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
             DocumentStatus status = DocumentStatus.UNPROCESSED;
@@ -118,7 +109,7 @@ public class DocumentService {
             }
 
             GetAllDocumentsResponse.DocumentDto documentDto = GetAllDocumentsResponse.DocumentDto.builder()
-                    .documentId(document.getId())
+                    .id(document.getId())
                     .documentName(document.getName())
                     .status(status)
                     .summary(document.getSummary())
@@ -129,23 +120,18 @@ public class DocumentService {
         return documentDtos;
     }
 
-    public Document findDocumentByCategoryAndDocumentId(Category category, Long documentId) {
-        return documentRepository.findByCategoryAndId(category, documentId)
-                .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
-    }
-
     //현재 시점에 업로드된 문서 개수
-    public int findNumCurrentUploadDocument(String memberId) {
-        List<Document> uploadedDocuments = documentUploadRepository.findAllByMemberId(memberId);
-        return uploadedDocuments.size();
+    public int findNumCurrentUploadDocument(Long memberId) {
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        return documents.size();
     }
 
     //현재 구독 사이클에 업로드한 문서 개수
-    public int findNumUploadedDocumentsForCurrentSubscription(String memberId, Subscription subscription) {
-        List<Document> uploadedDocuments = documentUploadRepository.findAllByMemberId(memberId);
+    public int findNumUploadedDocumentsForCurrentSubscription(Long memberId, Subscription subscription) {
+        List<DocumentUpload> uploadedDocuments = documentUploadRepository.findAllByMemberId(memberId);
 
-        List<Document> currentSubscriptionDocumentUploads = new ArrayList<>();
-        for (Document doc : uploadedDocuments) {
+        List<DocumentUpload> currentSubscriptionDocumentUploads = new ArrayList<>();
+        for (DocumentUpload doc : uploadedDocuments) {
             if ((doc.getCreatedAt().isAfter(subscription.getPurchasedDate()) ||
                     doc.getCreatedAt().isEqual(subscription.getPurchasedDate())) &&
                     doc.getCreatedAt().isBefore(subscription.getExpireDate())) {
@@ -155,12 +141,11 @@ public class DocumentService {
         return currentSubscriptionDocumentUploads.size();
     }
 
-    public List<Document> findAllByCategoryId(Long categoryId) {
-        return documentRepository.findAllByCategoryId(categoryId);
+    public List<Document> findAllByCategoryIdAndMemberId(Long categoryId, Long memberId) {
+        return documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
     }
 
-    public List<Document> findAllByMemberId(String memberId) {
-        return documentUploadRepository.findAllByMemberId(memberId);
+    public List<Document> findAllByMemberId(Long memberId) {
+        return documentRepository.findAllByMemberId(memberId);
     }
-
 }

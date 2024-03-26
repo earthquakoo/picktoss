@@ -38,18 +38,9 @@ public class SecurityConfig {
                                 "/",
                                 "/api/v1/oauth/url",
                                 "/api/v1/callback",
-                                "/api/v1/health-check",
                                 "swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/v1/auth/verification-code",
-                                "/api/v1/auth/verification-code/check",
-                                "/api/v1/auth/email/registered", // TODO: 이메일 가입 여부를 open?
-                                "/api/v1/auth/password-reset/code",
-                                "/api/v1/auth/password-reset/verify-code",
-                                "/api/v1/auth/reset-password",
-                                "/api/v1/sign-up",
-                                "/api/v1/login",
-                                "/api/v1/sign-in"
+                                "/api/v1/health-check"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

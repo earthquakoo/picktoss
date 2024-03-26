@@ -27,17 +27,19 @@ public class MemberFacade {
 
     @Transactional
     public JwtTokenDto createMember(MemberInfoDto memberInfoDto) {
-        Optional<Member> optionalMember = memberService.findByGoogleId(memberInfoDto.getSub());
+        Optional<Member> optionalMember = memberService.findMemberByGoogleClientId(memberInfoDto.getSub());
 
         if (optionalMember.isEmpty()) {
             Member member = memberInfoDto.toEntity();
             memberService.createMember(member);
             subscriptionService.createSubscription(member);
+            return jwtTokenProvider.generateToken(member.getId());
         }
-        return jwtTokenProvider.generateToken(memberInfoDto.getSub());
+        Long memberId = optionalMember.get().getId();
+        return jwtTokenProvider.generateToken(memberId);
     }
 
-    public GetMemberInfoResponse findMemberInfo(String memberId) {
+    public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
         int currentSubscriptionUploadedDocumentNum = documentService.findNumUploadedDocumentsForCurrentSubscription(memberId, subscription);

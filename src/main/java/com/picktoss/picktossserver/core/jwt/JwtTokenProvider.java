@@ -31,11 +31,11 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public JwtTokenDto generateToken(String memberId) {
+    public JwtTokenDto generateToken(Long memberId) {
         Date accessTokenExpiration = getTokenExpiration(accessTokenExpirationTimeMs);
 
         String accessToken = Jwts.builder()
-                .setSubject(memberId)
+                .setSubject(memberId.toString())
                 .setExpiration(accessTokenExpiration)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -58,7 +58,7 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token);
 
-            return new JwtUserInfo(parsedToken.getBody().getSubject());
+            return new JwtUserInfo(Long.parseLong(parsedToken.getBody().getSubject()));
         } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
             throw new CustomException(INVALID_JWT_TOKEN);
         } catch (ExpiredJwtException e) {

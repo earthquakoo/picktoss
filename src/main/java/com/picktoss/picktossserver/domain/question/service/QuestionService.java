@@ -32,7 +32,6 @@ public class QuestionService {
 
     private final QuestionSetRepository questionSetRepository;
 
-
     public List<GetAllCategoryQuestionsResponse.DocumentDto> findAllCategoryQuestions(List<Document> documents) {
         List<GetAllCategoryQuestionsResponse.DocumentDto> documentDtos = new ArrayList<>();
         List<GetAllCategoryQuestionsResponse.QuestionDto> questionDtos = new ArrayList<>();
@@ -41,7 +40,7 @@ public class QuestionService {
             List<Question> questions = document.getQuestions();
             for (Question question : questions) {
                 GetAllCategoryQuestionsResponse.QuestionDto questionDto = GetAllCategoryQuestionsResponse.QuestionDto.builder()
-                        .questionId(question.getId())
+                        .id(question.getId())
                         .question(question.getQuestion())
                         .answer(question.getAnswer())
                         .build();
@@ -50,12 +49,12 @@ public class QuestionService {
             }
 
             GetAllCategoryQuestionsResponse.DocumentDto documentDto = GetAllCategoryQuestionsResponse.DocumentDto.builder()
-                    .documentId(document.getId())
+                    .id(document.getId())
                     .documentName(document.getName())
                     .status(document.getStatus())
                     .summary(document.getSummary())
                     .createAt(document.getCreatedAt())
-                    .questionDto(questionDtos)
+                    .questions(questionDtos)
                     .build();
 
             documentDtos.add(documentDto);
@@ -90,8 +89,8 @@ public class QuestionService {
                     .id(question.getId())
                     .question(question.getQuestion())
                     .answer(question.getAnswer())
-                    .documentDto(documentDto)
-                    .categoryDto(categoryDto)
+                    .document(documentDto)
+                    .category(categoryDto)
                     .build();
 
             questionDtos.add(questionDto);
@@ -100,7 +99,7 @@ public class QuestionService {
 
     }
 
-    public GetQuestionSetTodayResponse findQuestionSetToday(String memberId, List<Document> documents) {
+    public GetQuestionSetTodayResponse findQuestionSetToday(Long memberId, List<Document> documents) {
         if (documents.isEmpty()) {
             return GetQuestionSetTodayResponse.builder()
                     .message("Document not create yet.")

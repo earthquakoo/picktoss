@@ -13,23 +13,23 @@ import java.util.List;
 @AllArgsConstructor
 public class GetAllCategoryQuestionsResponse {
 
-    private List<DocumentDto> questions;
+    private List<DocumentDto> documents;
 
     @Getter
     @Builder
     public static class DocumentDto {
-        private Long documentId;
+        private Long id;
         private String documentName;
         private DocumentStatus status;
         private String summary;
         private LocalDateTime createAt;
-        private List<QuestionDto> questionDto;
+        private List<QuestionDto> questions;
     }
 
     @Getter
     @Builder
     public static class QuestionDto {
-        private Long questionId;
+        private Long id;
         private String question;
         private String answer;
     }

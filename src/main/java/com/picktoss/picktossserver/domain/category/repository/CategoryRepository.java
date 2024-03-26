@@ -12,12 +12,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    @Query("select c from Category c where c.member.id = :memberId")
-    List<Category> findAllByMemberId(@Param("memberId") String memberId);
+    @Query("SELECT c FROM Category c WHERE c.member.id = :memberId")
+    List<Category> findAllByMemberId(@Param("memberId") Long memberId);
 
-    Optional<Category> findByName(String name);
+    @Query("SELECT c FROM Category c WHERE c.id = :categoryId AND c.member.id = :memberId")
+    Optional<Category> findByCategoryIdAndMemberId(
+            @Param("categoryId") Long categoryId,
+            @Param("memberId") Long memberId
+    );
 
-    Optional<Category> findByMember(Member member);
+    @Query("SELECT c FROM Category c WHERE c.member.id = :memberId")
+    Optional<Category> findByMemberId(Long memberId);
 
-    Optional<Category> findByMemberAndId(Member member, Long categoryId);
+    @Query("SELECT c FROM Category c WHERE c.name = :name AND c.member.id = :memberId")
+    Optional<Category> findByNameAndMemberId(
+            @Param("name") String name,
+            @Param("memberId") Long memberId
+    );
 }

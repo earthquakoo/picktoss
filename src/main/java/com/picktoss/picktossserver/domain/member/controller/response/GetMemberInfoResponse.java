@@ -25,7 +25,7 @@ public class GetMemberInfoResponse {
     @Getter
     @Builder
     public static class SubscriptionDto {
-        private SubscriptionPlanType planType;
+        private SubscriptionPlanType plan;
         private LocalDateTime purchasedDate;
         private LocalDateTime expireDate;
     }

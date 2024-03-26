@@ -25,7 +25,6 @@ import static com.picktoss.picktossserver.domain.document.constant.DocumentConst
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final MemberService memberService;
 
     @Transactional
     public void createSubscription(Member member) {
@@ -39,7 +38,7 @@ public class SubscriptionService {
     }
 
 
-    public Subscription findCurrentSubscription(String memberId, Member member) {
+    public Subscription findCurrentSubscription(Long memberId, Member member) {
         List<Subscription> subscriptions = subscriptionRepository.findAllByMemberId(memberId);
 
         Subscription latestSubscription = subscriptions.stream()

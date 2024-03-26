@@ -8,11 +8,9 @@ import com.picktoss.picktossserver.domain.question.controller.response.GetQuesti
 import com.picktoss.picktossserver.domain.question.facade.QuestionFacade;
 import com.picktoss.picktossserver.domain.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,24 +23,27 @@ public class QuestionController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/categories/{category_id}/documents/questions")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllCategoryQuestionsResponse> getAllCategoryQuestions(@PathVariable("category_id") Long categoryId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        String memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllCategoryQuestionsResponse.DocumentDto> allCategoryQuestions = questionFacade.findAllCategoryQuestions(categoryId);
+        List<GetAllCategoryQuestionsResponse.DocumentDto> allCategoryQuestions = questionFacade.findAllCategoryQuestions(categoryId, memberId);
         return ResponseEntity.ok().body(new GetAllCategoryQuestionsResponse(allCategoryQuestions));
     }
 
     @GetMapping("/question-sets/today")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuestionSetTodayResponse> getQuestionSetToday() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        String memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo.getMemberId();
 
         GetQuestionSetTodayResponse responseBody = questionFacade.findQuestionSetToday(memberId);
         return ResponseEntity.ok().body(responseBody);
     }
 
     @GetMapping("/question-sets/{question_set_id}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuestionSetResponse> getQuestionSet(@PathVariable("question_set_id") String questionSetId) {
         List<GetQuestionSetResponse.QuestionDto> questionSet = questionFacade.findQuestionSet(questionSetId);
         return ResponseEntity.ok().body(new GetQuestionSetResponse(questionSet));

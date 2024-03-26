@@ -31,7 +31,7 @@ public class DocumentFacade {
     private final SubscriptionService subscriptionService;
 
     @Transactional
-    public Long saveDocument(String documentName, String s3Key, String memberId, Long categoryId) {
+    public Long saveDocument(String documentName, String s3Key, Long memberId, Long categoryId) {
         int numCurrentUploadDocument = findNumCurrentUploadDocument(memberId);
         int numUploadedDocumentsForCurrentSubscription = findNumUploadedDocumentsForCurrentSubscription(memberId);
 
@@ -40,33 +40,25 @@ public class DocumentFacade {
                 subscriptionService.checkDocumentUploadLimit(subscription, numCurrentUploadDocument, numUploadedDocumentsForCurrentSubscription);
 
 
-        Category category = categoryService.findCategoryByMemberAndCategoryId(member, categoryId);
+        Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
         return documentService.saveDocument(documentName, s3Key, subscription, category, member);
     }
 
-    public List<GetSingleDocumentResponse.DocumentDto> findSingleDocument(String memberId, Long documentId) {
-        Member member = memberService.findMemberById(memberId);
-        Category category = categoryService.findCategoryByMember(member);
-        return documentService.findSingleDocument(documentId, category);
+    public GetSingleDocumentResponse.DocumentDto findSingleDocument(Long memberId, Long categoryId, Long documentId) {
+        return documentService.findSingleDocument(memberId, categoryId, documentId);
     }
 
-    public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long categoryId) {
-        return documentService.findAllDocuments(categoryId);
+    public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {
+        return documentService.findAllDocuments(memberId, categoryId);
     }
 
-    public Document findDocumentByCategoryAndDocumentId(Category category, Long documentId) {
-        return documentService.findDocumentByCategoryAndDocumentId(category, documentId);
-    }
-
-    public int findNumCurrentUploadDocument(String memberId) {
+    public int findNumCurrentUploadDocument(Long memberId) {
         return documentService.findNumCurrentUploadDocument(memberId);
     }
 
-    public int findNumUploadedDocumentsForCurrentSubscription(String memberId) {
+    public int findNumUploadedDocumentsForCurrentSubscription(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
         return documentService.findNumUploadedDocumentsForCurrentSubscription(memberId, subscription);
     }
-
-
 }

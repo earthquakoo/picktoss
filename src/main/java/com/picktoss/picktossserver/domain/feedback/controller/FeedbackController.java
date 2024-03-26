@@ -7,10 +7,8 @@ import com.picktoss.picktossserver.domain.feedback.facade.FeedbackFacade;
 import com.picktoss.picktossserver.domain.feedback.service.FeedbackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,9 +19,10 @@ public class FeedbackController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/feedback")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createFeedback(@Valid @RequestBody CreateFeedbackRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        String memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo.getMemberId();
 
         feedbackFacade.createFeedback(request.getContent(), memberId);
     }

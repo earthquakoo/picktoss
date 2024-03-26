@@ -7,5 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CreateCategoryResponse {
 
-    private Long categoryId;
+    private Long id;
 }

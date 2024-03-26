@@ -22,6 +22,7 @@ public class AuthController {
 
     @SneakyThrows
     @GetMapping("/oauth/url")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> oauthUrlApi(HttpServletResponse response) {
         String redirectUri = authService.getRedirectUri();
         response.sendRedirect(redirectUri);
@@ -29,6 +30,7 @@ public class AuthController {
     }
 
     @GetMapping("/callback")
+    @ResponseStatus(HttpStatus.OK)
     public void googleLogin(@RequestParam("code") String code) {
         String idToken = authService.getOauthAccessToken(code);
         System.out.println("idToken = " + idToken);

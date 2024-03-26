@@ -22,31 +22,31 @@ public class CategoryFacade {
     private final MemberService memberService;
 
 
-    public List<GetAllCategoriesResponse.CategoryDto> findAllCategories(String memberId) {
+    public List<GetAllCategoriesResponse.CategoryDto> findAllCategories(Long memberId) {
         return categoryService.findAllCategories(memberId);
     }
 
     @Transactional
-    public Long createCategory(String memberId, String name) {
+    public Long createCategory(Long memberId, String name) {
         Member member = memberService.findMemberById(memberId);
-        return categoryService.createCategory(member, name);
+        return categoryService.createCategory(name, memberId, member);
     }
 
     @Transactional
-    public void deleteCategory(Long categoryId) {
-        categoryService.deleteCategory(categoryId);
+    public void deleteCategory(Long memberId, Long categoryId) {
+        categoryService.deleteCategory(memberId, categoryId);
     }
 
     @Transactional
-    public void updateCategory(Long categoryId, String categoryName) {
-        categoryService.updateCategory(categoryId, categoryName);
+    public void updateCategory(Long memberId, Long categoryId, String categoryName) {
+        categoryService.updateCategory(memberId, categoryId, categoryName);
     }
 
-    public Category findCategoryByMemberAndCategoryId(Member member, Long categoryId) {
-        return categoryService.findCategoryByMemberAndCategoryId(member, categoryId);
+    public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
+        return categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
     }
 
-    public Category findCategoryByMember(Member member) {
-        return categoryService.findCategoryByMember(member);
+    public Category findByMemberId(Long memberId) {
+        return categoryService.findByMemberId(memberId);
     }
 }

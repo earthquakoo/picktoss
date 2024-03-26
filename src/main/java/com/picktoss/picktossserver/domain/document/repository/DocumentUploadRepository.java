@@ -11,5 +11,5 @@ import java.util.List;
 public interface DocumentUploadRepository extends JpaRepository<DocumentUpload, Long> {
 
     @Query("SELECT du FROM DocumentUpload du WHERE du.member.id = :memberId")
-    List<Document> findAllByMemberId(@Param("memberId") String memberId);
+    List<DocumentUpload> findAllByMemberId(@Param("memberId") Long memberId);
 }

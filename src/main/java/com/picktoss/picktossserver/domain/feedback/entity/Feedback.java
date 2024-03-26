@@ -6,6 +6,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Table(name = "feedback")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

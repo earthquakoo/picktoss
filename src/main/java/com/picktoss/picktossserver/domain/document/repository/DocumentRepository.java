@@ -12,9 +12,18 @@ import java.util.Optional;
 
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
-    @Query("SELECT d FROM Document d WHERE d.category.id = :categoryId")
-    List<Document> findAllByCategoryId(@Param("categoryId") Long categoryId);
+    @Query("SELECT d FROM Document d JOIN d.category c WHERE c.id = :categoryId AND c.member.id = :memberId ORDER BY d.createdAt DESC")
+    List<Document> findAllByCategoryIdAndMemberId(@Param("categoryId") Long categoryId, @Param("memberId") Long memberId);
 
-    Optional<Document> findByCategoryAndId(Category category, Long DocumentId);
+    @Query("SELECT d FROM Document d JOIN d.category c WHERE d.id = :documentId AND d.category.id = :categoryId AND c.member.id = :memberId")
+    Optional<Document> findByDocumentIdAndCategoryIdAndMemberId(
+            @Param("documentId") Long documentId,
+            @Param("categoryId") Long categoryId,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT d FROM Document d LEFT JOIN d.category c WHERE c.member.id = :memberId ORDER BY d.createdAt DESC")
+    List<Document> findAllByMemberId(@Param("memberId") Long memberId);
+
 
 }

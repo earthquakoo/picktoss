@@ -10,5 +10,5 @@ import java.util.List;
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
     @Query("SELECT s FROM Subscription s WHERE s.member.id = :memberId")
-    List<Subscription> findAllByMemberId(@Param("memberId") String memberId);
+    List<Subscription> findAllByMemberId(@Param("memberId") Long memberId);
 }

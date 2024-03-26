@@ -1,11 +1,15 @@
 package com.picktoss.picktossserver.core.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorResponse;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,19 +36,31 @@ public class JwtFilter extends OncePerRequestFilter {
         // Extract token
         String token = authorizationHeader.split(" ")[1];
 
-        /** [2] Validate Token & Extract user information **/
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.validateAndExtractUserInfo(token);
+        try {
+            /** [2] Validate Token & Extract user information **/
+            JwtUserInfo jwtUserInfo = jwtTokenProvider.validateAndExtractUserInfo(token);
 
-        /** [3] Set Security Context **/
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                jwtUserInfo,
-                null,
-                List.of(new SimpleGrantedAuthority("user"))
-        );
+            /** [3] Set Security Context **/
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    jwtUserInfo,
+                    null,
+                    List.of(new SimpleGrantedAuthority("user"))
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-
-        filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
+        } catch (CustomException e) {
+            // Handle custom exception
+            ErrorResponse errorResponse = new ErrorResponse(
+                    e.getErrorInfo().getStatusCode(),
+                    e.getErrorInfo().getErrorCode(),
+                    e.getMessage()
+            );
+            response.setStatus(errorResponse.getStatusCode());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(response.getWriter(), errorResponse);
+        }
     }
 }

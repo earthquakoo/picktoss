@@ -12,6 +12,7 @@ import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,33 +27,36 @@ public class DocumentController {
     private final JwtTokenProvider jwtTokenProvider;
     private final DocumentFacade documentFacade;
 
-    private final DocumentService documentService;
-
     @PostMapping("/documents")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateDocumentResponse> createDocument(CreateDocumentRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        String memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo.getMemberId();
 
         String s3Key = s3Provider.uploadFile(request.getUploadFile());
         Long documentId = documentFacade.saveDocument(request.getDocumentName(), s3Key, memberId, request.getCategoryId());
-        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new CreateDocumentResponse(documentId));
     }
 
     @GetMapping("/categories/{category_id}/documents")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(@PathVariable(name = "category_id") Long categoryId) {
-//        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-//        Long memberId = jwtUserInfo.getMemberId();
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.DocumentDto> allDocuments = documentFacade.findAllDocuments(categoryId);
+        List<GetAllDocumentsResponse.DocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
-    @GetMapping("/documents/{document_id}")
-    public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(@PathVariable(name = "document_id") Long documentId) {
+    @GetMapping("/categories/{category_id}/documents/{document_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
+            @PathVariable(name = "category_id") Long categoryId,
+            @PathVariable(name = "document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        String memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetSingleDocumentResponse.DocumentDto> documents = documentFacade.findSingleDocument(memberId, documentId);
+        GetSingleDocumentResponse.DocumentDto documents = documentFacade.findSingleDocument(memberId, categoryId, documentId);
         return ResponseEntity.ok().body(new GetSingleDocumentResponse(documents));
     }
 }

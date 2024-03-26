@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/picktoss
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        # show_sql: true
+        format_sql: true
+
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6
+
+jwt:
+  secret: ${PICKTOSS_JWT_SECRET_KEY}
+  access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+  refresh_token_expiration_ms: ${PICKTOSS_JWT_REFRESH_TOKEN_EXPIRE_MINUTES}
+
+oauth:
+  google:
+    client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
+    client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
+    redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${PICKTOSS_S3_BUCKET_NAME}
+    credentials:
+      access_key: ${PICKTOSS_AWS_ACCESS_KEY}
+      secret_key: ${PICKTOSS_AWS_SECRET_KEY}
+    region:
+      static: us-east-1
+      auto: false
+    stack:
+      auto: false
+    sqs:
+      queue:
+        name: ${PICKTOSS_AWS_SQS_QUEUE_NAME}
+        url: ${PICKTOSS_AWS_SQS_QUEUE_URL}

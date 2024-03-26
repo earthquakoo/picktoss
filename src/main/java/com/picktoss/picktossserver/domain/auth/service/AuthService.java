@@ -68,9 +68,7 @@ public class AuthService {
     public MemberInfoDto transJsonToMemberInfoDto(String json) {
         try {
             ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            MemberInfoDto memberInfoDto = mapper.readValue(json, MemberInfoDto.class);
-
-            return memberInfoDto;
+            return mapper.readValue(json, MemberInfoDto.class);
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {

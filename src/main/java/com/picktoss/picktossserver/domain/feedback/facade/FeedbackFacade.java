@@ -16,7 +16,7 @@ public class FeedbackFacade {
     private final MemberService memberService;
 
     @Transactional
-    public void createFeedback(String content, String memberId) {
+    public void createFeedback(String content, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         feedbackService.createFeedback(content, member);
     }

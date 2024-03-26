@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,14 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class DocumentUpload {
+public class DocumentUpload extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
-    @CreatedDate
-    private LocalDateTime uploadDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)

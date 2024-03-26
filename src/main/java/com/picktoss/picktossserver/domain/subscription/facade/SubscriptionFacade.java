@@ -21,7 +21,7 @@ public class SubscriptionFacade {
         subscriptionService.createSubscription(member);
     }
 
-    public Subscription findCurrentSubscription(String memberId) {
+    public Subscription findCurrentSubscription(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         return subscriptionService.findCurrentSubscription(memberId, member);
     }

@@ -21,8 +21,8 @@ public class QuestionFacade {
     private final QuestionService questionService;
     private final DocumentService documentService;
 
-    public List<GetAllCategoryQuestionsResponse.DocumentDto> findAllCategoryQuestions(Long categoryId) {
-        List<Document> documents = documentService.findAllByCategoryId(categoryId);
+    public List<GetAllCategoryQuestionsResponse.DocumentDto> findAllCategoryQuestions(Long categoryId, Long memberId) {
+        List<Document> documents = documentService.findAllByCategoryIdAndMemberId(categoryId, memberId);
         return questionService.findAllCategoryQuestions(documents);
     }
 
@@ -30,7 +30,7 @@ public class QuestionFacade {
         return questionService.findQuestionSet(questionSetId);
     }
 
-    public GetQuestionSetTodayResponse findQuestionSetToday(String memberId) {
+    public GetQuestionSetTodayResponse findQuestionSetToday(Long memberId) {
         List<Document> documents = documentService.findAllByMemberId(memberId);
         return questionService.findQuestionSetToday(memberId, documents);
     }

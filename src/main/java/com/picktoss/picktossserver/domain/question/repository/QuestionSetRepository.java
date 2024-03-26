@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface QuestionSetRepository extends JpaRepository<QuestionSet, String> {
-
     @Query("SELECT qs FROM QuestionSet qs WHERE qs.member.id = :memberId")
-    List<QuestionSet> findAllByMemberId(@Param("memberId") String memberId);
+    List<QuestionSet> findAllByMemberId(@Param("memberId") Long memberId);
 }

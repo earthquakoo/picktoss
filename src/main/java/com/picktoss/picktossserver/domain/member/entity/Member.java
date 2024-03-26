@@ -17,14 +17,18 @@ import java.util.List;
 
 @Entity
 @Getter
+@Table(name = "member")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class Member extends AuditBase {
 
-    @Id
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private String id;
+    private Long id;
+
+    @Column(name = "google_client_id", nullable = false)
+    private String googleClientId;
 
     @Column(name = "name", nullable = false)
     private String name;

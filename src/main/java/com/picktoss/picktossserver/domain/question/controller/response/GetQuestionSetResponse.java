@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class GetQuestionSetResponse {
-    private List<QuestionDto> questionDtoList;
+    private List<QuestionDto> questions;
 
     @Getter
     @Builder
@@ -17,8 +17,8 @@ public class GetQuestionSetResponse {
         private Long id;
         private String question;
         private String answer;
-        private DocumentDto documentDto;
-        private CategoryDto categoryDto;
+        private DocumentDto document;
+        private CategoryDto category;
     }
 
     @Getter

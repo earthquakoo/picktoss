@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
@@ -25,7 +26,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
 
-    public List<GetAllCategoriesResponse.CategoryDto> findAllCategories(String memberId) {
+    public List<GetAllCategoriesResponse.CategoryDto> findAllCategories(Long memberId) {
         List<Category> categories = categoryRepository.findAllByMemberId(memberId);
         List<GetAllCategoriesResponse.CategoryDto> categoryDtos = new ArrayList<>();
         for (Category category : categories) {
@@ -41,8 +42,8 @@ public class CategoryService {
     }
 
     @Transactional
-    public Long createCategory(Member member, String name) {
-        Optional<Category> optionalCategory = categoryRepository.findByName(name);
+    public Long createCategory(String name, Long memberId, Member member) {
+        Optional<Category> optionalCategory = categoryRepository.findByNameAndMemberId(name, memberId);
         if (optionalCategory.isPresent()) {
             throw new CustomException(DUPLICATE_CATEGORY);
         }
@@ -57,7 +58,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteCategory(Long categoryId) {
+    public void deleteCategory(Long memberId, Long categoryId) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
@@ -65,12 +66,15 @@ public class CategoryService {
         }
 
         Category category = optionalCategory.get();
+        if (!Objects.equals(category.getMember().getId(), memberId)) {
+            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
 
         categoryRepository.delete(category);
     }
 
     @Transactional
-    public void updateCategory(Long categoryId, String categoryName) {
+    public void updateCategory(Long memberId, Long categoryId, String categoryName) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
@@ -78,17 +82,19 @@ public class CategoryService {
         }
 
         Category category = optionalCategory.get();
+        if (!Objects.equals(category.getMember().getId(), memberId)) {
+            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
         category.updateCategoryName(categoryName);
     }
 
-    public Category findCategoryByMemberAndCategoryId(Member member, Long categoryId) {
-        return categoryRepository.findByMemberAndId(member, categoryId)
+    public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
+        return categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
     }
 
-
-    public Category findCategoryByMember(Member member) {
-        return categoryRepository.findByMember(member)
+    public Category findByMemberId(Long memberId) {
+        return categoryRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new CustomException((CATEGORY_NOT_FOUND)));
     }
 }

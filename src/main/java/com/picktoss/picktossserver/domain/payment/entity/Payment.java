@@ -7,6 +7,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Table(name = "payment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

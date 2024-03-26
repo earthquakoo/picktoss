@@ -7,5 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CreateDocumentResponse {
 
-    private Long documentId;
+    private Long id;
 }

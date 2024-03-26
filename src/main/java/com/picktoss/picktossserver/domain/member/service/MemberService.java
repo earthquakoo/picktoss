@@ -32,13 +32,13 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public String createMember(Member member) {
+    public Long createMember(Member member) {
         memberRepository.save(member);
         return member.getId();
     }
 
     public GetMemberInfoResponse findMemberInfo(
-            String memberId,
+            Long memberId,
             Subscription subscription,
             int currentSubscriptionUploadedDocumentNum,
             int currentUploadedDocumentNum) {
@@ -60,7 +60,7 @@ public class MemberService {
                 .build();
 
         GetMemberInfoResponse.SubscriptionDto subscriptionDto = GetMemberInfoResponse.SubscriptionDto.builder()
-                .planType(subscription.getSubscriptionPlanType())
+                .plan(subscription.getSubscriptionPlanType())
                 .purchasedDate(subscription.getPurchasedDate())
                 .expireDate(subscription.getExpireDate())
                 .build();
@@ -73,13 +73,12 @@ public class MemberService {
                 .build();
     }
 
-    public Member findMemberById(String memberId) {
-        return memberRepository.findMemberById(memberId)
+    public Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
     }
 
-    //변경필요
-    public Optional<Member> findByGoogleId(String memberId) {
-        return memberRepository.findMemberById(memberId);
+    public Optional<Member> findMemberByGoogleClientId(String googleClientId) {
+        return memberRepository.findByGoogleClientId(googleClientId);
     }
 }

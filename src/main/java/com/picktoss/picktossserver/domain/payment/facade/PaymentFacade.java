@@ -15,7 +15,8 @@ public class PaymentFacade {
     private final PaymentService paymentService;
     private final MemberService memberService;
 
-    public void createPayment(String name, String memberId) {
+    @Transactional
+    public void createPayment(String name, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         paymentService.createPayment(name, member);
     }

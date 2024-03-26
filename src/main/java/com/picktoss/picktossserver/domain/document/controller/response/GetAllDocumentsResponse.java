@@ -17,7 +17,7 @@ public class GetAllDocumentsResponse {
     @Getter
     @Builder
     public static class DocumentDto {
-        private Long documentId;
+        private Long id;
         private String documentName;
         private DocumentStatus status;
         private String summary;

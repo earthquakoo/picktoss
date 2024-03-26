@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class JwtUserInfo {
-    private final String memberId;
+    private final Long memberId;
 }
