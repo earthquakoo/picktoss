@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -22,11 +24,10 @@ public class AuthController {
 
     @SneakyThrows
     @GetMapping("/oauth/url")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> oauthUrlApi(HttpServletResponse response) {
-        String redirectUri = authService.getRedirectUri();
-        response.sendRedirect(redirectUri);
-        return ResponseEntity.ok().build();
+    public HashMap<String, String> oauthUrlApi(HttpServletResponse response) {
+        HashMap<String, String> redirectUri = authService.getRedirectUri();
+//        response.sendRedirect(redirectUri);
+        return redirectUri;
     }
 
     @GetMapping("/callback")

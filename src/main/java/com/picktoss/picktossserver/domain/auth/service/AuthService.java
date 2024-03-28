@@ -33,14 +33,17 @@ public class AuthService {
     private String redirectUri;
 
 
-    public String getRedirectUri() {
-        return "https://accounts.google.com/o/oauth2/auth?" +
-                "client_id=" + oauthClientId + "&" +
-                "response_type=code&" +
-                "redirect_uri=" + redirectUri + "&" +
-                "scope=openid%20email%20profile";
-//        return String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
-//                oauthClientId, redirectUri);
+    public HashMap<String, String> getRedirectUri() {
+        String oauthUrl = String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
+                oauthClientId, redirectUri);
+        HashMap<String, String> urlMapping = new HashMap<>();
+        urlMapping.put("oauth_url", oauthUrl);
+        return urlMapping;
+//        return "https://accounts.google.com/o/oauth2/auth?" +
+//                "client_id=" + oauthClientId + "&" +
+//                "response_type=code&" +
+//                "redirect_uri=" + redirectUri + "&" +
+//                "scope=openid%20email%20profile";
     }
 
     public String getOauthAccessToken(String accessCode) {
