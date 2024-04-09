@@ -39,12 +39,15 @@ public class AuthService {
         HashMap<String, String> urlMapping = new HashMap<>();
         urlMapping.put("oauth_url", oauthUrl);
         return urlMapping;
+    }
+
+//    public String getRedirectUri() {
 //        return "https://accounts.google.com/o/oauth2/auth?" +
 //                "client_id=" + oauthClientId + "&" +
 //                "response_type=code&" +
 //                "redirect_uri=" + redirectUri + "&" +
 //                "scope=openid%20email%20profile";
-    }
+//    }
 
     public String getOauthAccessToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();

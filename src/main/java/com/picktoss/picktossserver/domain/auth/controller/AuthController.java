@@ -25,10 +25,16 @@ public class AuthController {
     @SneakyThrows
     @GetMapping("/oauth/url")
     public HashMap<String, String> oauthUrlApi(HttpServletResponse response) {
-        HashMap<String, String> redirectUri = authService.getRedirectUri();
-//        response.sendRedirect(redirectUri);
-        return redirectUri;
+        return authService.getRedirectUri();
     }
+
+//    @SneakyThrows
+//    @GetMapping("/oauth/url")
+//    public String oauthUrlApi(HttpServletResponse response) {
+//        String redirectUri = authService.getRedirectUri();
+//        response.sendRedirect(redirectUri);
+//        return redirectUri;
+//    }
 
     @GetMapping("/callback")
     @ResponseStatus(HttpStatus.OK)
