@@ -11,6 +11,8 @@ import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.HashMap;
 
@@ -38,14 +40,18 @@ public class AuthController {
 
     @GetMapping("/callback")
     @ResponseStatus(HttpStatus.OK)
-    public void googleLogin(@RequestParam("code") String code) {
+    public RedirectView googleLogin(@RequestParam("code") String code, RedirectAttributes redirectAttributes) {
         String idToken = authService.getOauthAccessToken(code);
         System.out.println("idToken = " + idToken);
 
         String decodeJson = authService.decodeIdToken(idToken);
         MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
         JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
+
+        redirectAttributes.addAttribute("access-token", jwtTokenDto.getAccessToken());
+
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
+        return new RedirectView("http://localhost:5173" + "/oauth");
     }
 
     @GetMapping("/health-check")
