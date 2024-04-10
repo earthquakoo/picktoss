@@ -8,9 +8,10 @@ import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
@@ -53,13 +54,15 @@ public class AuthService {
         RestTemplate restTemplate = new RestTemplate();
         HashMap<String, String> params = new HashMap<>();
 
+        String googleTokenRequestUrl = "https://oauth2.googleapis.com/token";
+
         params.put("code", accessCode);
         params.put("client_id", oauthClientId);
         params.put("client_secret", oauthClientSecret);
         params.put("redirect_uri", redirectUri);
         params.put("grant_type", "authorization_code");
 
-        ResponseEntity<OauthResponseDto> responseEntity = restTemplate.postForEntity(tokenUrl, params, OauthResponseDto.class);
+        ResponseEntity<OauthResponseDto> responseEntity = restTemplate.postForEntity(googleTokenRequestUrl, params, OauthResponseDto.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
             return responseEntity.getBody().getIdToken().split("\\.")[1];

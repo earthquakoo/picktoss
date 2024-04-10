@@ -38,19 +38,21 @@ public class AuthController {
 //        return redirectUri;
 //    }
 
+    @SneakyThrows
     @GetMapping("/callback")
-    @ResponseStatus(HttpStatus.OK)
-    public RedirectView googleLogin(@RequestParam("code") String code, RedirectAttributes redirectAttributes) {
+    public RedirectView googleLogin(
+            @RequestParam("code") String code,
+            RedirectAttributes redirectAttributes
+    ) {
         String idToken = authService.getOauthAccessToken(code);
         System.out.println("idToken = " + idToken);
 
         String decodeJson = authService.decodeIdToken(idToken);
         MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
         JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
+        System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
 
         redirectAttributes.addAttribute("access-token", jwtTokenDto.getAccessToken());
-
-        System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
         return new RedirectView("http://localhost:5173" + "/oauth");
     }
 
