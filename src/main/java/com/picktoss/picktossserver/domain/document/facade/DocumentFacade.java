@@ -44,8 +44,8 @@ public class DocumentFacade {
         return documentService.saveDocument(documentName, s3Key, subscription, category, member);
     }
 
-    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long categoryId, Long documentId) {
-        return documentService.findSingleDocument(memberId, categoryId, documentId);
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
+        return documentService.findSingleDocument(memberId, documentId);
     }
 
     public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {

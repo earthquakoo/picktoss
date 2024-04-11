@@ -63,8 +63,8 @@ public class DocumentService {
         return document.getId();
     }
 
-    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long categoryId, Long documentId) {
-        Document document = documentRepository.findByDocumentIdAndCategoryIdAndMemberId(documentId, categoryId, memberId)
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         List<Question> questions = document.getQuestions();

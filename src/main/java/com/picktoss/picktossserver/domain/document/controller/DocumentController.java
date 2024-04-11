@@ -47,15 +47,14 @@ public class DocumentController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Get document success!",
                             content = @Content(schema = @Schema(implementation = GetSingleDocumentResponse.class)))})
-    @GetMapping("/categories/{category_id}/documents/{document_id}")
+    @GetMapping("/documents/{document_id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
-            @PathVariable(name = "category_id") Long categoryId,
             @PathVariable(name = "document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleDocumentResponse documents = documentFacade.findSingleDocument(memberId, categoryId, documentId);
+        GetSingleDocumentResponse documents = documentFacade.findSingleDocument(memberId, documentId);
         return ResponseEntity.ok().body(documents);
     }
 
