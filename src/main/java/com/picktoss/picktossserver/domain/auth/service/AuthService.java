@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -21,9 +22,6 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final String tokenUrl = "https://oauth2.googleapis.com/token";
-    private final String oauthUrl = "https://accounts.google.com/o/oauth2/auth";
-
     @Value("${oauth.google.client_id}")
     private String oauthClientId;
 
@@ -33,6 +31,9 @@ public class AuthService {
     @Value("${oauth.google.redirect_uri}")
     private String redirectUri;
 
+    @Getter
+    @Value("${oauth.google.oauth_callback_response_url}")
+    private String oauthCallbackResponseUrl;
 
     public HashMap<String, String> getRedirectUri() {
         String oauthUrl = String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",

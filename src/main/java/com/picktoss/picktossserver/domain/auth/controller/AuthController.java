@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,8 +55,10 @@ public class AuthController {
         JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
 
+        String oauthCallbackResponseUrl = authService.getOauthCallbackResponseUrl();
+
         redirectAttributes.addAttribute("access-token", jwtTokenDto.getAccessToken());
-        return new RedirectView("http://localhost:5173" + "/oauth");
+        return new RedirectView(oauthCallbackResponseUrl);
     }
 
     @Operation(summary = "Health check")
