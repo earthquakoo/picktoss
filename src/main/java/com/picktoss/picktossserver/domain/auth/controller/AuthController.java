@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -24,6 +25,7 @@ public class AuthController {
     private final MemberFacade memberFacade;
     private final AuthService authService;
 
+    @Operation(summary = "Oauth url api")
     @SneakyThrows
     @GetMapping("/oauth/url")
     public HashMap<String, String> oauthUrlApi(HttpServletResponse response) {
@@ -38,7 +40,7 @@ public class AuthController {
 //        return redirectUri;
 //    }
 
-    @SneakyThrows
+    @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
     public RedirectView googleLogin(
             @RequestParam("code") String code,
@@ -56,6 +58,7 @@ public class AuthController {
         return new RedirectView("http://localhost:5173" + "/oauth");
     }
 
+    @Operation(summary = "Health check")
     @GetMapping("/health-check")
     @ResponseStatus(HttpStatus.OK)
     public String healthCheck() {

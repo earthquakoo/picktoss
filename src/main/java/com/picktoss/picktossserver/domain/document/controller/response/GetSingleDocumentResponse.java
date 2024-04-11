@@ -13,20 +13,14 @@ import java.util.List;
 @AllArgsConstructor
 public class GetSingleDocumentResponse {
 
-    private DocumentDto documents;
-
-    @Getter
-    @Builder
-    public static class DocumentDto {
-        private Long id;
-        private String documentName;
-        private DocumentStatus status;
-        private DocumentFormat format;
-        private CategoryDto category;
-        private List<QuestionDto> questions;
-        private String summary;
-        private String content;
-    }
+    private Long id;
+    private String documentName;
+    private DocumentStatus status;
+    private DocumentFormat format;
+    private CategoryDto category;
+    private List<QuestionDto> questions;
+    private String summary;
+    private String content;
 
     @Getter
     @Builder
