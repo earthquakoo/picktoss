@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.question.controller.response.GetQuesti
 import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
 import com.picktoss.picktossserver.domain.question.facade.QuestionFacade;
 import com.picktoss.picktossserver.domain.question.service.QuestionService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ public class QuestionController {
     private final QuestionFacade questionFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(summary = "Get all category questions by document")
     @GetMapping("/categories/{category_id}/documents/questions")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllCategoryQuestionsResponse> getAllCategoryQuestions(@PathVariable("category_id") Long categoryId) {
@@ -32,6 +34,7 @@ public class QuestionController {
         return ResponseEntity.ok().body(new GetAllCategoryQuestionsResponse(allCategoryQuestions));
     }
 
+    @Operation(summary = "Get question set today")
     @GetMapping("/question-sets/today")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuestionSetTodayResponse> getQuestionSetToday() {
@@ -42,6 +45,7 @@ public class QuestionController {
         return ResponseEntity.ok().body(responseBody);
     }
 
+    @Operation(summary = "Get question set")
     @GetMapping("/question-sets/{question_set_id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuestionSetResponse> getQuestionSet(@PathVariable("question_set_id") String questionSetId) {

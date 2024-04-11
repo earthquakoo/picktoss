@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -21,6 +22,7 @@ public class MemberController {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberFacade memberFacade;
 
+    @Operation(summary = "Get member info")
     @GetMapping("/members/info")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetMemberInfoResponse> getMemberInfo() {

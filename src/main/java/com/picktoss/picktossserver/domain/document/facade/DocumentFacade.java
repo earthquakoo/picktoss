@@ -44,12 +44,17 @@ public class DocumentFacade {
         return documentService.saveDocument(documentName, s3Key, subscription, category, member);
     }
 
-    public GetSingleDocumentResponse.DocumentDto findSingleDocument(Long memberId, Long categoryId, Long documentId) {
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long categoryId, Long documentId) {
         return documentService.findSingleDocument(memberId, categoryId, documentId);
     }
 
     public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {
         return documentService.findAllDocuments(memberId, categoryId);
+    }
+
+    @Transactional
+    public void deleteDocument(Long memberId, Long documentId) {
+        documentService.deleteDocument(memberId, documentId);
     }
 
     public int findNumCurrentUploadDocument(Long memberId) {

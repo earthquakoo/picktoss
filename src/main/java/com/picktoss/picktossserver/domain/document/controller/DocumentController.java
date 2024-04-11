@@ -10,6 +10,10 @@ import com.picktoss.picktossserver.domain.document.controller.response.CreateDoc
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
 import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +31,7 @@ public class DocumentController {
     private final JwtTokenProvider jwtTokenProvider;
     private final DocumentFacade documentFacade;
 
+    @Operation(summary = "Create document")
     @PostMapping("/documents")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateDocumentResponse> createDocument(CreateDocumentRequest request) {
@@ -38,6 +43,26 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new CreateDocumentResponse(documentId));
     }
 
+    @Operation(summary = "Get document by id",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Get document success!",
+                            content = @Content(schema = @Schema(implementation = GetSingleDocumentResponse.class)))})
+    @GetMapping("/categories/{category_id}/documents/{document_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
+            @PathVariable(name = "category_id") Long categoryId,
+            @PathVariable(name = "document_id") Long documentId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetSingleDocumentResponse documents = documentFacade.findSingleDocument(memberId, categoryId, documentId);
+        return ResponseEntity.ok().body(documents);
+    }
+
+    @Operation(summary = "Get all documents by category id",
+            responses = {
+            @ApiResponse(responseCode = "200", description = "Get all document success!",
+                    content = @Content(schema = @Schema(implementation = GetAllDocumentsResponse.class)))})
     @GetMapping("/categories/{category_id}/documents")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(@PathVariable(name = "category_id") Long categoryId) {
@@ -48,15 +73,13 @@ public class DocumentController {
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
-    @GetMapping("/categories/{category_id}/documents/{document_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
-            @PathVariable(name = "category_id") Long categoryId,
-            @PathVariable(name = "document_id") Long documentId) {
+    @Operation(summary = "Delete document by id")
+    @DeleteMapping("/documents/{document_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteDocument(@PathVariable(name = "document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleDocumentResponse.DocumentDto documents = documentFacade.findSingleDocument(memberId, categoryId, documentId);
-        return ResponseEntity.ok().body(new GetSingleDocumentResponse(documents));
+        documentFacade.deleteDocument(memberId, documentId);
     }
 }

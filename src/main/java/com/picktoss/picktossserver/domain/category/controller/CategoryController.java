@@ -8,6 +8,7 @@ import com.picktoss.picktossserver.domain.category.controller.response.CreateCat
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.facade.CategoryFacade;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class CategoryController {
     private final CategoryFacade categoryFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(summary = "Get all categories")
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllCategoriesResponse> getCategories() {
@@ -34,6 +36,7 @@ public class CategoryController {
         return ResponseEntity.ok().body(new GetAllCategoriesResponse(allCategories));
     }
 
+    @Operation(summary = "Create category")
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateCategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
@@ -44,6 +47,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new CreateCategoryResponse(categoryId));
     }
 
+    @Operation(summary = "Delete category")
     @DeleteMapping("/categories/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategoryById(@PathVariable(name = "id") Long categoryId) {
@@ -52,6 +56,7 @@ public class CategoryController {
         categoryFacade.deleteCategory(memberId, categoryId);
     }
 
+    @Operation(summary = "Update category")
     @PatchMapping("/categories/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCategoryById(@PathVariable(name = "id") Long categoryId, @Valid @RequestBody UpdateCategoryNameRequest request) {

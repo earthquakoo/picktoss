@@ -18,7 +18,7 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("Picktoss Server Local")
+                .title("Picktoss Server")
                 .description("Picktoss Server API Documentation")
                 .version("1.0.0");
     }

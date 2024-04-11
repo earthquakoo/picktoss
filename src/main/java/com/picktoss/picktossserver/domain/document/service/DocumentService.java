@@ -15,14 +15,18 @@ import com.picktoss.picktossserver.domain.question.entity.Question;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.DocumentFormat;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.UNAUTHORIZED_OPERATION_EXCEPTION;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +63,7 @@ public class DocumentService {
         return document.getId();
     }
 
-    public GetSingleDocumentResponse.DocumentDto findSingleDocument(Long memberId, Long categoryId, Long documentId) {
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long categoryId, Long documentId) {
         Document document = documentRepository.findByDocumentIdAndCategoryIdAndMemberId(documentId, categoryId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
@@ -83,7 +87,7 @@ public class DocumentService {
                 .name(document.getCategory().getName())
                 .build();
 
-        GetSingleDocumentResponse.DocumentDto documentDto = GetSingleDocumentResponse.DocumentDto.builder()
+        return GetSingleDocumentResponse.builder()
                 .id(document.getId())
                 .documentName(document.getName())
                 .summary(document.getSummary())
@@ -93,8 +97,6 @@ public class DocumentService {
                 .questions(questionDtos)
                 .content(content)
                 .build();
-
-        return documentDto;
     }
 
     public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {
@@ -118,6 +120,21 @@ public class DocumentService {
             documentDtos.add(documentDto);
         }
         return documentDtos;
+    }
+
+    @Transactional
+    public void deleteDocument(Long memberId, Long documentId) {
+        Optional<Document> optionalDocument = documentRepository.findById(documentId);
+        if (optionalDocument.isEmpty()) {
+            return ;
+        }
+
+        Document document = optionalDocument.get();
+        if (!Objects.equals(document.getCategory().getMember().getId(), memberId)) {
+            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
+
+        documentRepository.delete(document);
     }
 
     //현재 시점에 업로드된 문서 개수
