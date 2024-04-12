@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,6 +22,7 @@ public class GetSingleDocumentResponse {
     private List<QuestionDto> questions;
     private String summary;
     private String content;
+    private LocalDateTime createdAt;
 
     @Getter
     @Builder

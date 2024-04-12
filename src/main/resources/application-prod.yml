@@ -50,6 +50,9 @@ oauth:
     redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
     oauth_callback_response_url: ${PICKTOSS_OAUTH_CALLBACK_RESPONSE_REDIRECT_URL}
 
+cors:
+  cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
+
 cloud:
   aws:
     s3:

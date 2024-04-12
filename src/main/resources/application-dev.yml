@@ -43,6 +43,9 @@ jwt:
   access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
   refresh_token_expiration_ms: ${PICKTOSS_JWT_REFRESH_TOKEN_EXPIRE_MINUTES}
 
+cors:
+  cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
+
 oauth:
   google:
     client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
