@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +39,6 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentUploadRepository documentUploadRepository;
-
 
     @Transactional
     public Long saveDocument(String documentName, String s3Key, Subscription subscription, Category category, Member member) {
@@ -96,6 +96,7 @@ public class DocumentService {
                 .category(categoryDto)
                 .questions(questionDtos)
                 .content(content)
+                .createdAt(document.getCreatedAt())
                 .build();
     }
 
@@ -115,6 +116,7 @@ public class DocumentService {
                     .documentName(document.getName())
                     .status(status)
                     .summary(document.getSummary())
+                    .createdAt(document.getCreatedAt())
                     .build();
 
             documentDtos.add(documentDto);
