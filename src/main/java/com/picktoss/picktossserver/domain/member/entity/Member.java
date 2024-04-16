@@ -51,7 +51,6 @@ public class Member extends AuditBase {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscription> subscriptions = new ArrayList<>();
 
-    // 나중에 document_upload 테이블 만들면 삭제 고려
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DocumentUpload> documentUploads = new ArrayList<>();
 }

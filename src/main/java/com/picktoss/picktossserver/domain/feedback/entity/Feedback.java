@@ -16,7 +16,7 @@ public class Feedback {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "content", length = 1500)
+    @Column(name = "content", length = 1500, nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

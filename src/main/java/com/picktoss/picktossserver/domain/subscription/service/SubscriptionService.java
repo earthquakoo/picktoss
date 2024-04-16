@@ -37,7 +37,7 @@ public class SubscriptionService {
         subscriptionRepository.save(subscription);
     }
 
-
+    @Transactional
     public Subscription findCurrentSubscription(Long memberId, Member member) {
         List<Subscription> subscriptions = subscriptionRepository.findAllByMemberId(memberId);
 
