@@ -17,7 +17,7 @@ import java.util.List;
 public class QuestionSet extends AuditBase {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", length = 300)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)

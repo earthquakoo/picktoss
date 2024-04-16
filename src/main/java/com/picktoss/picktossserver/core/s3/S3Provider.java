@@ -57,7 +57,7 @@ public class S3Provider {
     }
 
     private String generateS3key(String fileName) {
-        return UUID.randomUUID().toString() + "." + fileName;
+        return UUID.randomUUID().toString();
     }
 
     private String decodeContentToString(byte[] contentBytes) {

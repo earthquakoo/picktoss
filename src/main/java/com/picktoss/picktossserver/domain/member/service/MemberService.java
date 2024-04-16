@@ -53,7 +53,6 @@ public class MemberService {
                 .proPlanMaxPossessDocumentNum(PRO_PLAN_CURRENT_MAX_DOCUMENT_NUM)
                 .proPlanSubscriptionMaxUploadDocumentNum(PRO_PLAN_MONTHLY_MAX_DOCUMENT_NUM)
                 .build();
-
         GetMemberInfoResponse.QuizDto quizDto = GetMemberInfoResponse.QuizDto.builder()
                 .freePlanQuizQuestionNum(FREE_PLAN_QUIZ_QUESTION_NUM)
                 .proPlanQuizQuestionNum(PRO_PLAN_QUIZ_QUESTION_NUM)

@@ -21,6 +21,7 @@ public class SubscriptionFacade {
         subscriptionService.createSubscription(member);
     }
 
+    @Transactional
     public Subscription findCurrentSubscription(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         return subscriptionService.findCurrentSubscription(memberId, member);

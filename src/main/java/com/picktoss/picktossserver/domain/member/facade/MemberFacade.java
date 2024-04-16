@@ -39,6 +39,7 @@ public class MemberFacade {
         return jwtTokenProvider.generateToken(memberId);
     }
 
+    @Transactional
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
