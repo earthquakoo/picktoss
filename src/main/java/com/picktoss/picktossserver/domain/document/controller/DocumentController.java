@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,14 +34,17 @@ public class DocumentController {
 
     @Operation(summary = "Create document")
     @PostMapping("/documents")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CreateDocumentResponse> createDocument(CreateDocumentRequest request) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<CreateDocumentResponse> createDocument(
+            CreateDocumentRequest request
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
+        Long categoryId = Long.valueOf(request.getCategoryId());
 
-        String s3Key = s3Provider.uploadFile(request.getUploadFile());
-        Long documentId = documentFacade.saveDocument(request.getDocumentName(), s3Key, memberId, request.getCategoryId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new CreateDocumentResponse(documentId));
+        String s3Key = s3Provider.uploadFile(request.getFile());
+        Long documentId = documentFacade.saveDocument(request.getUserDocumentName(), s3Key, memberId, categoryId);
+        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
     @Operation(summary = "Get document by id",
