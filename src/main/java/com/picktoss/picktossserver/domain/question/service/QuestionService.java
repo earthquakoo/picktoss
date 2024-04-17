@@ -53,7 +53,7 @@ public class QuestionService {
                     .documentName(document.getName())
                     .status(document.getStatus())
                     .summary(document.getSummary())
-                    .createAt(document.getCreatedAt())
+                    .createdAt(document.getCreatedAt())
                     .questions(questionDtos)
                     .build();
 
