@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.document.controller.request;
 
+import com.picktoss.picktossserver.global.enums.DocumentFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,9 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class CreateDocumentRequest {
 
-    private MultipartFile uploadFile;
-    private String documentName;
-    private Long categoryId;
-//    private String documentFormat;
-//    private Long memberId;
+    private MultipartFile file;
+    private String userDocumentName;
+    private String categoryId;
+    private DocumentFormat documentFormat;
 }

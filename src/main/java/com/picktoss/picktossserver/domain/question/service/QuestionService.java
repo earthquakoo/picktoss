@@ -34,10 +34,10 @@ public class QuestionService {
 
     public List<GetAllCategoryQuestionsResponse.DocumentDto> findAllCategoryQuestions(List<Document> documents) {
         List<GetAllCategoryQuestionsResponse.DocumentDto> documentDtos = new ArrayList<>();
-        List<GetAllCategoryQuestionsResponse.QuestionDto> questionDtos = new ArrayList<>();
 
         for (Document document : documents) {
             List<Question> questions = document.getQuestions();
+            List<GetAllCategoryQuestionsResponse.QuestionDto> questionDtos = new ArrayList<>();
             for (Question question : questions) {
                 GetAllCategoryQuestionsResponse.QuestionDto questionDto = GetAllCategoryQuestionsResponse.QuestionDto.builder()
                         .id(question.getId())

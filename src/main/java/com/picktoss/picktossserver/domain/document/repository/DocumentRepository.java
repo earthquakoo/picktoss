@@ -13,7 +13,10 @@ import java.util.Optional;
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d JOIN d.category c WHERE c.id = :categoryId AND c.member.id = :memberId ORDER BY d.createdAt DESC")
-    List<Document> findAllByCategoryIdAndMemberId(@Param("categoryId") Long categoryId, @Param("memberId") Long memberId);
+    List<Document> findAllByCategoryIdAndMemberId(
+            @Param("categoryId") Long categoryId,
+            @Param("memberId") Long memberId
+    );
 
     @Query("SELECT d FROM Document d JOIN d.category c WHERE d.id = :documentId AND c.member.id = :memberId")
     Optional<Document> findByDocumentIdAndMemberId(

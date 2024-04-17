@@ -37,7 +37,7 @@ public class DocumentFacade {
 
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-                subscriptionService.checkDocumentUploadLimit(subscription, numCurrentUploadDocument, numUploadedDocumentsForCurrentSubscription);
+        subscriptionService.checkDocumentUploadLimit(subscription, numCurrentUploadDocument, numUploadedDocumentsForCurrentSubscription);
 
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
