@@ -22,7 +22,7 @@ public class GetAllCategoryQuestionsResponse {
         private String documentName;
         private DocumentStatus status;
         private String summary;
-        private LocalDateTime createAt;
+        private LocalDateTime createdAt;
         private List<QuestionDto> questions;
     }
 
