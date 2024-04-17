@@ -51,7 +51,6 @@ public class DocumentService {
                 .build();
 
         DocumentUpload documentUpload = DocumentUpload.builder()
-                .document(document)
                 .member(member)
                 .build();
 

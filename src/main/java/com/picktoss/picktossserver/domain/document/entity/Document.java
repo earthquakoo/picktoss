@@ -46,10 +46,6 @@ public class Document extends AuditBase {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToOne(mappedBy ="document", fetch = FetchType.LAZY)
-    private DocumentUpload documentUpload;
-
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
-
 }
