@@ -24,8 +24,4 @@ public class DocumentUpload extends AuditBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "document_id", nullable = false)
-    private Document document;
 }
