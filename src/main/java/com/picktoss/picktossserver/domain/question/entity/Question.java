@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.question.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
+import com.picktoss.picktossserver.global.enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.w3c.dom.stylesheets.LinkStyle;
@@ -29,6 +30,12 @@ public class Question extends AuditBase {
 
     @Column(name = "delivered_count", nullable = false)
     private int deliveredCount;
+
+    @Column(name = "bookmark", nullable = false)
+    private boolean bookmark;
+
+    @Column(name = "type", nullable = false)
+    private QuestionType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)

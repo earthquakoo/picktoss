@@ -80,4 +80,9 @@ public class MemberService {
     public Optional<Member> findMemberByGoogleClientId(String googleClientId) {
         return memberRepository.findByGoogleClientId(googleClientId);
     }
+
+    @Transactional
+    public void deleteMember() {
+
+    }
 }

@@ -131,4 +131,19 @@ public class QuestionService {
                 .questionSetId(todayQuestionSet.getId())
                 .build();
     }
+
+    @Transactional
+    public void createBookmark() {
+
+    }
+
+    public void findBookmark() {
+
+    }
+
+    @Transactional
+    public void deleteBookmark() {
+
+    }
+
 }

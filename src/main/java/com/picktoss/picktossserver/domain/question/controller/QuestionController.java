@@ -52,4 +52,22 @@ public class QuestionController {
         List<GetQuestionSetResponse.QuestionDto> questionSet = questionFacade.findQuestionSet(questionSetId);
         return ResponseEntity.ok().body(new GetQuestionSetResponse(questionSet));
     }
+
+    @PostMapping("/bookmark/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void createBookmark(@PathVariable("id") Long bookmarkId) {
+
+    }
+
+    @GetMapping("/bookmark")
+    @ResponseStatus(HttpStatus.OK)
+    public void getBookmark() {
+
+    }
+
+    @DeleteMapping("/bookmark/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBookmark(@PathVariable("id") Long bookmarkId) {
+
+    }
 }

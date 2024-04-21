@@ -1,12 +1,16 @@
 package com.picktoss.picktossserver.domain.auth.controller;
 
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +29,7 @@ public class AuthController {
 
     private final MemberFacade memberFacade;
     private final AuthService authService;
+    private final AuthFacade authFacade;
 
     @Operation(summary = "Oauth url api")
     @GetMapping("/oauth/url")
@@ -66,4 +71,15 @@ public class AuthController {
         return "I'm doing fine";
     }
 
+    @PostMapping("/auth/verification")
+    @ResponseStatus(HttpStatus.OK)
+    public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+        authFacade.sendVerificationCode(request.getEmail());
+    }
+
+    @PostMapping("/auth/verification/check")
+    @ResponseStatus(HttpStatus.OK)
+    public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
+        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode());
+    }
 }
