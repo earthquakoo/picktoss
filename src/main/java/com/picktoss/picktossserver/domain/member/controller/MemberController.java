@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.member.controller.response.GetMemberIn
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "5. Member")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")

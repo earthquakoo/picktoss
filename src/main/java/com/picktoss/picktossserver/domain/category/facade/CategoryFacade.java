@@ -1,12 +1,12 @@
 package com.picktoss.picktossserver.domain.category.facade;
 
-import com.picktoss.picktossserver.domain.category.controller.response.CreateCategoryResponse;
+import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.category.repository.CategoryRepository;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
+import com.picktoss.picktossserver.global.enums.CategoryTag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +22,14 @@ public class CategoryFacade {
     private final MemberService memberService;
 
 
-    public List<GetAllCategoriesResponse.CategoryDto> findAllCategories(Long memberId) {
+    public List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> findAllCategories(Long memberId) {
         return categoryService.findAllCategories(memberId);
     }
 
     @Transactional
-    public Long createCategory(Long memberId, String name) {
+    public Long createCategory(Long memberId, String name, CategoryTag tag) {
         Member member = memberService.findMemberById(memberId);
-        return categoryService.createCategory(name, memberId, member);
+        return categoryService.createCategory(name, tag, memberId, member);
     }
 
     @Transactional
@@ -38,15 +38,22 @@ public class CategoryFacade {
     }
 
     @Transactional
-    public void updateCategory(Long memberId, Long categoryId, String categoryName) {
-        categoryService.updateCategory(memberId, categoryId, categoryName);
+    public void updateCategoryName(Long memberId, Long categoryId, String categoryName) {
+        categoryService.updateCategoryName(memberId, categoryId, categoryName);
+    }
+
+    @Transactional
+    public void updateCategoryTag(Long memberId, Long categoryId, CategoryTag tag) {
+        categoryService.updateCategoryTag(memberId, categoryId, tag);
+    }
+
+    @Transactional
+    public void updateCategoriesOrder(List<UpdateCategoriesOrderRequest.UpdateCategoryDto> categoryDtos, Long memberId) {
+        categoryService.updateCategoriesOrder(categoryDtos, memberId);
     }
 
     public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
         return categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
     }
 
-    public Category findByMemberId(Long memberId) {
-        return categoryService.findByMemberId(memberId);
-    }
 }

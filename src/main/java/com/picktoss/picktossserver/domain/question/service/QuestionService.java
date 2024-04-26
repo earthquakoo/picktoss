@@ -4,14 +4,10 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
-import com.picktoss.picktossserver.domain.question.controller.response.GetAllCategoryQuestionsResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
+import com.picktoss.picktossserver.domain.question.controller.response.*;
 import com.picktoss.picktossserver.domain.question.entity.Question;
 import com.picktoss.picktossserver.domain.question.entity.QuestionQuestionSet;
 import com.picktoss.picktossserver.domain.question.entity.QuestionSet;
-import com.picktoss.picktossserver.domain.question.repository.QuestionRepository;
 import com.picktoss.picktossserver.domain.question.repository.QuestionSetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_SET_NOT_FOUND_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +50,6 @@ public class QuestionService {
                     .id(document.getId())
                     .documentName(document.getName())
                     .status(document.getStatus())
-                    .summary(document.getSummary())
                     .createdAt(document.getCreatedAt())
                     .questions(questionDtos)
                     .build();
@@ -65,7 +62,7 @@ public class QuestionService {
     public List<GetQuestionSetResponse.QuestionDto> findQuestionSet(String questionSetId) {
         Optional<QuestionSet> questionSet = questionSetRepository.findById(questionSetId);
         if (questionSet.isEmpty()) {
-            throw new CustomException(ErrorInfo.QUESTION_SET_NOT_FOUND_ERROR);
+            throw new CustomException(QUIZ_SET_NOT_FOUND_ERROR);
         }
         List<QuestionQuestionSet> questionQuestionSets = questionSet.get().getQuestionQuestionSets();
         List<GetQuestionSetResponse.QuestionDto> questionDtos = new ArrayList<>();
@@ -131,19 +128,4 @@ public class QuestionService {
                 .questionSetId(todayQuestionSet.getId())
                 .build();
     }
-
-    @Transactional
-    public void createBookmark() {
-
-    }
-
-    public void findBookmark() {
-
-    }
-
-    @Transactional
-    public void deleteBookmark() {
-
-    }
-
 }

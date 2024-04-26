@@ -3,9 +3,7 @@ package com.picktoss.picktossserver.domain.question.facade;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
-import com.picktoss.picktossserver.domain.question.controller.response.GetAllCategoryQuestionsResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
+import com.picktoss.picktossserver.domain.question.controller.response.*;
 import com.picktoss.picktossserver.domain.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

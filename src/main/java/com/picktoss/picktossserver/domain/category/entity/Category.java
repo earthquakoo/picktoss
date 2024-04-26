@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.category.entity;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
+import com.picktoss.picktossserver.global.enums.CategoryTag;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,12 +25,31 @@ public class Category extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "tag", nullable = false)
+    private CategoryTag tag;
+
+    @Column(name = "orders")
+    private int order;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Document> documents = new ArrayList<>();
+
+    // Constructor methods
+    public static Category createCategory(Member member, String name, CategoryTag tag, int order) {
+        Category category = Category.builder()
+                .name(name)
+                .member(member)
+                .tag(tag)
+                .order(order)
+                .build();
+
+        category.setMember(member);
+        return category;
+    }
 
     // 연관관계 메서드
     public void setMember(Member member) {
@@ -40,5 +60,13 @@ public class Category extends AuditBase {
     // Business Logics
     public void updateCategoryName(String name) {
         this.name = name;
+    }
+
+    public void updateCategoryTag(CategoryTag tag) {
+        this.tag = tag;
+    }
+
+    public void updateCategoryOrder(int order) {
+        this.order = order;
     }
 }

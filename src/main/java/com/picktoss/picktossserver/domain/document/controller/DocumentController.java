@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
+import com.picktoss.picktossserver.domain.document.controller.request.UpdateDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.request.CreateDocumentRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.CreateDocumentResponse;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "3. Document")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -72,7 +75,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.DocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId);
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
@@ -84,5 +87,15 @@ public class DocumentController {
         Long memberId = jwtUserInfo.getMemberId();
 
         documentFacade.deleteDocument(memberId, documentId);
+    }
+
+    @Operation(summary = "Update document order")
+    @PatchMapping("/documents/reorder")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateDocumentsOrder(@Valid @RequestBody UpdateDocumentsOrderRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentFacade.updateDocumentOrder(request.getDocuments(), memberId);
     }
 }

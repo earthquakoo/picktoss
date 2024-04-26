@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.HashMap;
 
+@Tag(name = "1. Auth")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -38,6 +40,7 @@ public class AuthController {
     }
 
 //    @GetMapping("/oauth/url")
+//    @SneakyThrows
 //    public String oauthUrlApi(HttpServletResponse response) {
 //        String redirectUri = authService.getRedirectUri();
 //        response.sendRedirect(redirectUri);

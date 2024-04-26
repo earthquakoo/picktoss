@@ -1,12 +1,13 @@
 package com.picktoss.picktossserver.domain.category.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.category.controller.response.CreateCategoryResponse;
+import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.repository.CategoryRepository;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.member.service.MemberService;
+import com.picktoss.picktossserver.global.enums.CategoryTag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,34 +26,51 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-
-    public List<GetAllCategoriesResponse.CategoryDto> findAllCategories(Long memberId) {
+    public List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> findAllCategories(Long memberId) {
         List<Category> categories = categoryRepository.findAllByMemberId(memberId);
-        List<GetAllCategoriesResponse.CategoryDto> categoryDtos = new ArrayList<>();
+        List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> categoryDtos = new ArrayList<>();
         for (Category category : categories) {
-            GetAllCategoriesResponse.CategoryDto categoryDto = GetAllCategoriesResponse.CategoryDto.builder()
+            List<Document> documents = category.getDocuments();
+
+            List<GetAllCategoriesResponse.GetAllCategoriesDocumentDto> documentDtos = new ArrayList<>();
+            for (Document document : documents) {
+                GetAllCategoriesResponse.GetAllCategoriesDocumentDto documentDto = GetAllCategoriesResponse.GetAllCategoriesDocumentDto.builder()
+                        .id(document.getId())
+                        .name(document.getName())
+                        .order(document.getOrder())
+                        .build();
+
+                documentDtos.add(documentDto);
+            }
+
+            GetAllCategoriesResponse.GetAllCategoriesCategoryDto categoryDto = GetAllCategoriesResponse.GetAllCategoriesCategoryDto.builder()
                     .id(category.getId())
                     .name(category.getName())
+                    .tag(category.getTag())
+                    .order(category.getOrder())
+                    .documents(documentDtos)
                     .build();
 
             categoryDtos.add(categoryDto);
         }
         return categoryDtos;
-
     }
 
     @Transactional
-    public Long createCategory(String name, Long memberId, Member member) {
+    public Long createCategory(String name, CategoryTag tag, Long memberId, Member member) {
         Optional<Category> optionalCategory = categoryRepository.findByNameAndMemberId(name, memberId);
         if (optionalCategory.isPresent()) {
             throw new CustomException(DUPLICATE_CATEGORY);
         }
 
-        Category category = Category.builder()
-                .name(name)
-                .member(member)
-                .build();
+        Integer lastOrder = categoryRepository.findLastOrderByMemberId(memberId);
+        if (lastOrder == null) {
+            lastOrder = 0;
+        }
 
+        int order = lastOrder;
+
+        Category category = Category.createCategory(member, name, tag, order + 1);
         categoryRepository.save(category);
         return category.getId();
     }
@@ -74,7 +92,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void updateCategory(Long memberId, Long categoryId, String categoryName) {
+    public void updateCategoryName(Long memberId, Long categoryId, String categoryName) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
@@ -88,13 +106,38 @@ public class CategoryService {
         category.updateCategoryName(categoryName);
     }
 
+    @Transactional
+    public void updateCategoryTag(Long memberId, Long categoryId, CategoryTag tag) {
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+
+        if (optionalCategory.isEmpty()) {
+            return ;
+        }
+
+        Category category = optionalCategory.get();
+        if (!Objects.equals(category.getMember().getId(), memberId)) {
+            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
+        category.updateCategoryTag(tag);
+    }
+
+    @Transactional
+    public void updateCategoriesOrder(List<UpdateCategoriesOrderRequest.UpdateCategoryDto> categoryDtos, Long memberId) {
+        for (UpdateCategoriesOrderRequest.UpdateCategoryDto categoryDto : categoryDtos) {
+            Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryDto.getId(), memberId);
+
+            if (optionalCategory.isEmpty()) {
+                return ;
+            }
+
+            Category category = optionalCategory.get();
+
+            category.updateCategoryOrder(categoryDto.getOrder());
+        }
+    }
+
     public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
         return categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
-    }
-
-    public Category findByMemberId(Long memberId) {
-        return categoryRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new CustomException((CATEGORY_NOT_FOUND)));
     }
 }

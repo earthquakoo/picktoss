@@ -3,7 +3,9 @@ package com.picktoss.picktossserver.domain.document.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
+import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.document.controller.request.UpdateDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -13,14 +15,11 @@ import com.picktoss.picktossserver.domain.document.repository.DocumentUploadRepo
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.question.entity.Question;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
-import com.picktoss.picktossserver.global.enums.DocumentFormat;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,14 +40,15 @@ public class DocumentService {
     private final DocumentUploadRepository documentUploadRepository;
 
     @Transactional
-    public Long saveDocument(String documentName, String s3Key, Subscription subscription, Category category, Member member) {
-        Document document = Document.builder()
-                .name(documentName)
-                .s3Key(s3Key)
-                .format(DocumentFormat.MARKDOWN)
-                .status(DocumentStatus.UNPROCESSED)
-                .category(category)
-                .build();
+    public Long saveDocument(String documentName, String s3Key, Subscription subscription, Category category, Member member, Long memberId) {
+        Integer lastOrder = documentRepository.findLastOrderByMemberId(memberId);
+        if (lastOrder == null) {
+            lastOrder = 0;
+        }
+
+        int order = lastOrder;
+
+        Document document = Document.createDocument(documentName, s3Key, order + 1, DocumentStatus.UNPROCESSED, true, category);
 
         DocumentUpload documentUpload = DocumentUpload.builder()
                 .member(member)
@@ -67,12 +67,12 @@ public class DocumentService {
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         List<Question> questions = document.getQuestions();
-        List<GetSingleDocumentResponse.QuestionDto> questionDtos = new ArrayList<>();
+        List<GetSingleDocumentResponse.GetSingleDocumentKeyPointDto> questionDtos = new ArrayList<>();
 
         String content = s3Provider.findFile(document.getS3Key());
 
         for (Question question : questions) {
-            GetSingleDocumentResponse.QuestionDto questionDto = GetSingleDocumentResponse.QuestionDto.builder()
+            GetSingleDocumentResponse.GetSingleDocumentKeyPointDto questionDto = GetSingleDocumentResponse.GetSingleDocumentKeyPointDto.builder()
                     .id(question.getId())
                     .question(question.getQuestion())
                     .answer(question.getAnswer())
@@ -81,7 +81,7 @@ public class DocumentService {
             questionDtos.add(questionDto);
         }
 
-        GetSingleDocumentResponse.CategoryDto categoryDto = GetSingleDocumentResponse.CategoryDto.builder()
+        GetSingleDocumentResponse.GetSingleDocumentCategoryDto categoryDto = GetSingleDocumentResponse.GetSingleDocumentCategoryDto.builder()
                 .id(document.getCategory().getId())
                 .name(document.getCategory().getName())
                 .build();
@@ -89,19 +89,18 @@ public class DocumentService {
         return GetSingleDocumentResponse.builder()
                 .id(document.getId())
                 .documentName(document.getName())
-                .summary(document.getSummary())
                 .status(document.getStatus())
-                .format(document.getFormat())
+                .quizGenerationStatus(true)
                 .category(categoryDto)
-                .questions(questionDtos)
+                .keyPoints(questionDtos)
                 .content(content)
                 .createdAt(document.getCreatedAt())
                 .build();
     }
 
-    public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId) {
         List<Document> documents = documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
-        List<GetAllDocumentsResponse.DocumentDto> documentDtos = new ArrayList<>();
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
             DocumentStatus status = DocumentStatus.UNPROCESSED;
             if (document.getStatus() == DocumentStatus.PARTIAL_SUCCESS ||
@@ -110,11 +109,11 @@ public class DocumentService {
                 status = DocumentStatus.PROCESSED;
             }
 
-            GetAllDocumentsResponse.DocumentDto documentDto = GetAllDocumentsResponse.DocumentDto.builder()
+            GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
                     .id(document.getId())
                     .documentName(document.getName())
                     .status(status)
-                    .summary(document.getSummary())
+                    .quizGenerationStatus(true)
                     .createdAt(document.getCreatedAt())
                     .build();
 
@@ -136,6 +135,21 @@ public class DocumentService {
         }
 
         documentRepository.delete(document);
+    }
+
+    @Transactional
+    public void updateDocumentOrder(List<UpdateDocumentsOrderRequest.UpdateDocumentDto> documentDtos, Long memberId) {
+        for (UpdateDocumentsOrderRequest.UpdateDocumentDto documentDto : documentDtos) {
+            Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentDto.getId(), memberId);
+
+            if (optionalDocument.isEmpty()) {
+                return ;
+            }
+
+            Document document = optionalDocument.get();
+
+            document.updateDocumentOrder(documentDto.getOrder());
+        }
     }
 
     //현재 시점에 업로드된 문서 개수

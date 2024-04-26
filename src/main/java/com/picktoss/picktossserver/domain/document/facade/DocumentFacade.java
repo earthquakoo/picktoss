@@ -2,18 +2,14 @@ package com.picktoss.picktossserver.domain.document.facade;
 
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
-import com.picktoss.picktossserver.domain.document.controller.response.CreateDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.request.UpdateDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
-import com.picktoss.picktossserver.global.enums.DocumentFormat;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,20 +37,25 @@ public class DocumentFacade {
 
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        return documentService.saveDocument(documentName, s3Key, subscription, category, member);
+        return documentService.saveDocument(documentName, s3Key, subscription, category, member, memberId);
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
         return documentService.findSingleDocument(memberId, documentId);
     }
 
-    public List<GetAllDocumentsResponse.DocumentDto> findAllDocuments(Long memberId, Long categoryId) {
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId) {
         return documentService.findAllDocuments(memberId, categoryId);
     }
 
     @Transactional
     public void deleteDocument(Long memberId, Long documentId) {
         documentService.deleteDocument(memberId, documentId);
+    }
+
+    @Transactional
+    public void updateDocumentOrder(List<UpdateDocumentsOrderRequest.UpdateDocumentDto> documentDtos, Long memberId) {
+        documentService.updateDocumentOrder(documentDtos, memberId);
     }
 
     public int findNumCurrentUploadDocument(Long memberId) {

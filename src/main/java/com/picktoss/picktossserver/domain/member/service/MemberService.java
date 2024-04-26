@@ -1,23 +1,14 @@
 package com.picktoss.picktossserver.domain.member.service;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
-import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
-import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
-import com.picktoss.picktossserver.domain.subscription.repository.SubscriptionRepository;
-import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
-import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
@@ -82,7 +73,13 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMember() {
+    public void deleteMember(Long memberId) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        if (optionalMember.isEmpty()) {
+            return ;
+        }
 
+        Member member = optionalMember.get();
+        memberRepository.delete(member);
     }
 }

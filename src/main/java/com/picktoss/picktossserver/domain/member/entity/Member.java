@@ -2,11 +2,11 @@ package com.picktoss.picktossserver.domain.member.entity;
 
 
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentUpload;
 import com.picktoss.picktossserver.domain.feedback.entity.Feedback;
 import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.question.entity.QuestionSet;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
@@ -53,4 +53,8 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DocumentUpload> documentUploads = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizSet> quizSets = new ArrayList<>();
+
 }

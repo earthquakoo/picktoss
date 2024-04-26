@@ -2,11 +2,8 @@ package com.picktoss.picktossserver.domain.question.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.question.controller.response.GetAllCategoryQuestionsResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
+import com.picktoss.picktossserver.domain.question.controller.response.*;
 import com.picktoss.picktossserver.domain.question.facade.QuestionFacade;
-import com.picktoss.picktossserver.domain.question.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

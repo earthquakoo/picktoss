@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.category.controller.response;
 
+import com.picktoss.picktossserver.global.enums.CategoryTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,12 +12,22 @@ import java.util.List;
 @AllArgsConstructor
 public class GetAllCategoriesResponse {
 
-    private List<CategoryDto> categories;
+    private List<GetAllCategoriesCategoryDto> categories;
+    @Getter
+    @Builder
+    public static class GetAllCategoriesCategoryDto {
+        private Long id;
+        private String name;
+        private CategoryTag tag;
+        private int order;
+        private List<GetAllCategoriesDocumentDto> documents;
+    }
 
     @Getter
     @Builder
-    public static class CategoryDto {
+    public static class GetAllCategoriesDocumentDto {
         private Long id;
         private String name;
+        private int order;
     }
 }
