@@ -4,9 +4,6 @@ import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 
 public final class DocumentConstant {
 
-    public static final int DOCUMENT_MAX_LEN = 15000;
-    public static final int DOCUMENT_MIN_LEN = 500;
-
     //현재 구독 사이클에 업로드할 수 있는 문서 최대 개수
     public static final int FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM = 15;
     public static final int PRO_PLAN_MONTHLY_MAX_DOCUMENT_NUM = 40;
