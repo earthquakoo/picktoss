@@ -1,5 +1,8 @@
 package com.picktoss.picktossserver.domain.document.service;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
@@ -8,6 +11,7 @@ import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.controller.request.UpdateDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentNameResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentUpload;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
@@ -17,9 +21,12 @@ import com.picktoss.picktossserver.domain.question.entity.Question;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -149,6 +156,75 @@ public class DocumentService {
             Document document = optionalDocument.get();
 
             document.updateDocumentOrder(documentDto.getOrder());
+        }
+    }
+
+    public SearchDocumentNameResponse searchDocumentName(String word) {
+        Optional<Document> optionalDocument = documentRepository.findBySpecificWord(word);
+
+        if (optionalDocument.isEmpty()) {
+            throw new CustomException(DOCUMENT_NOT_FOUND);
+        }
+
+        Document document = optionalDocument.get();
+
+        return SearchDocumentNameResponse.builder()
+                .id(document.getId())
+                .name(document.getName())
+                .status(document.getStatus())
+                .quizGenerationStatus(document.isQuizGenerationStatus())
+                .createdAt(document.getCreatedAt())
+                .build();
+    }
+
+    //https://adjh54.tistory.com/375
+    public void createDefaultDocument() throws IOException {
+        String result = "";
+
+        // [STEP1] JsonFactory Builder 구성
+        JsonFactory factory = JsonFactory.builder().build();
+
+        // [STEP2] JSON 파일 불러오기
+        File file = new File(System.getProperty("user.dir") + "/data.json");
+
+        // [STEP3] 파일을 기반으로 JsonParser 구성
+        JsonParser parser = factory.createParser(file);
+
+        // [STEP4] JSONArray 확인
+        if (parser.nextToken() != JsonToken.START_ARRAY) {
+            throw new IOException("Error: Expected data to start with an Object");
+        }
+        try {
+            // [STEP5] JSONArray의 끝인 배열이 나올때까지 반복합니다.
+            while (parser.nextToken() != JsonToken.END_ARRAY) {
+
+                // [STEP6] 시작 데이터가 Object인지 확인
+                if (parser.currentToken() == JsonToken.START_OBJECT) {
+
+                    // [STEP7] Object 데이터 끝이 될때까지 반복합니다.
+                    while (parser.nextToken() != JsonToken.END_OBJECT) {
+
+                        // [STEP8] JSON의 키 값을 가져옵니다.
+                        String fieldName = parser.getCurrentName();
+                        parser.nextToken();
+
+                        // [STEP9] JSON의 키 값을 기반으로 값을 추출합니다.
+                        if ("name".equals(fieldName)) {
+                            String name = parser.getValueAsString();
+                            System.out.println("name :: " + name);
+                        } else if ("age".equals(fieldName)) {
+                            int age = parser.getIntValue();
+                            System.out.println("age :: " + age);
+                        } else if ("city".equals(fieldName)) {
+                            String city = parser.getValueAsString();
+                            System.out.println("city :: " + city);
+                        }
+                    }
+                }
+            }
+            parser.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

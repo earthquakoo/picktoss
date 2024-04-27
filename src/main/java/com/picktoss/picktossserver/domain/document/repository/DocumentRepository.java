@@ -29,4 +29,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT MAX(d.order) FROM Document d JOIN d.category c WHERE c.member.id = :memberId")
     Integer findLastOrderByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT d FROM Document d WHERE d.name LIKE CONCAT('%', :word, '%')")
+    Optional<Document> findBySpecificWord(@Param("word") String word);
 }

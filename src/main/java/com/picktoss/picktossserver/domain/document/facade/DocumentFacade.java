@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.document.controller.request.UpdateDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentNameResponse;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
@@ -56,6 +57,10 @@ public class DocumentFacade {
     @Transactional
     public void updateDocumentOrder(List<UpdateDocumentsOrderRequest.UpdateDocumentDto> documentDtos, Long memberId) {
         documentService.updateDocumentOrder(documentDtos, memberId);
+    }
+
+    public SearchDocumentNameResponse searchDocumentName(String word) {
+        return documentService.searchDocumentName(word);
     }
 
     public int findNumCurrentUploadDocument(Long memberId) {

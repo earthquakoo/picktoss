@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.quiz.entity;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.question.entity.QuestionQuestionSet;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
+import com.picktoss.picktossserver.global.enums.QuizType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Inheritance(strategy = InheritanceType.JOINED)
 public class Quiz extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +31,14 @@ public class Quiz extends AuditBase {
     @Column(name = "explanation", columnDefinition = "TEXT", nullable = false)
     private String explanation;
 
+    @Column(name = "options")
+    private List<String> options;
+
     @Column(name = "delivered_count", nullable = false)
     private int deliveredCount;
+
+    @Column(name = "quiz_type", nullable = false)
+    private QuizType quizType;
 
     @Column(name = "bookmark", nullable = false)
     private boolean bookmark;

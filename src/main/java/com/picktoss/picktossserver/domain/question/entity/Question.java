@@ -2,7 +2,6 @@ package com.picktoss.picktossserver.domain.question.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.*;
 
