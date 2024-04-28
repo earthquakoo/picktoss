@@ -2,13 +2,10 @@ package com.picktoss.picktossserver.domain.quiz.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
+import com.picktoss.picktossserver.domain.quiz.controller.request.CheckQuizAnswerRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateBookmarkQuizRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetBookmarkQuizResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetQuizSetResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetQuizSetTodayResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetSingleQuizResponse;
+import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,7 +71,7 @@ public class QuizController {
 
     @Operation(summary = "Update bookmarked quiz")
     @PatchMapping("/bookmark/{quiz_id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateBookmarkQuiz(
             @Valid @RequestBody UpdateBookmarkQuizRequest request,
             @PathVariable("quiz_id") Long quizId) {
@@ -82,5 +79,26 @@ public class QuizController {
         Long memberId = jwtUserInfo.getMemberId();
 
         quizFacade.updateBookmarkQuiz(quizId, request.isBookmark());
+    }
+
+    @Operation(summary = "Get quiz result")
+    @PostMapping("/quiz/result")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetQuizResultResponse> getQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<GetQuizResultResponse.GetQuizResultCategoryDto> response = quizFacade.findQuizResult(request.getQuizSetId());
+        return ResponseEntity.ok().body(new GetQuizResultResponse(response));
+    }
+
+    @Operation(summary = "Check quiz answer")
+    @PatchMapping("/quiz/check-answer")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void checkQuizAnswer(@Valid @RequestBody CheckQuizAnswerRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.checkQuizAnswer(request.getQuizId(), request.isAnswer());
     }
 }

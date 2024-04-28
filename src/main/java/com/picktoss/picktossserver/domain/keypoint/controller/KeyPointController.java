@@ -3,7 +3,6 @@ package com.picktoss.picktossserver.domain.keypoint.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDocumentKeyPointsResponse;
-import com.picktoss.picktossserver.domain.keypoint.controller.response.GetKeyPointSetResponse;
 import com.picktoss.picktossserver.domain.keypoint.facade.KeyPointFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,13 +31,5 @@ public class KeyPointController {
 
         List<GetAllDocumentKeyPointsResponse.GetAllDocumentDto> allCategoryQuestions = keyPointFacade.findAllCategoryKeyPoints(categoryId, memberId);
         return ResponseEntity.ok().body(new GetAllDocumentKeyPointsResponse(allCategoryQuestions));
-    }
-
-    @Operation(summary = "Get key-point set")
-    @GetMapping("/key-point-sets/{key_point_set_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetKeyPointSetResponse> getKeyPointSet(@PathVariable("question_set_id") String questionSetId) {
-        List<GetKeyPointSetResponse.GetKeyPointDto> keyPointDtos = keyPointFacade.findKeyPointSet(questionSetId);
-        return ResponseEntity.ok().body(new GetKeyPointSetResponse(keyPointDtos));
     }
 }

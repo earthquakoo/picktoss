@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.question.entity.QuestionQuestionSet;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import jakarta.persistence.*;
@@ -31,21 +30,25 @@ public class Quiz extends AuditBase {
     @Column(name = "explanation", columnDefinition = "TEXT", nullable = false)
     private String explanation;
 
-    @Column(name = "options")
-    private List<String> options;
-
     @Column(name = "delivered_count", nullable = false)
     private int deliveredCount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "quiz_type", nullable = false)
     private QuizType quizType;
 
     @Column(name = "bookmark", nullable = false)
     private boolean bookmark;
 
+    @Column(name = "answer_count")
+    private int answerCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
+
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Option> options = new ArrayList<>();
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
@@ -53,5 +56,9 @@ public class Quiz extends AuditBase {
     // Business Logics
     public void updateBookmark(boolean bookmark) {
         this.bookmark = bookmark;
+    }
+
+    public void addAnswerCount() {
+        this.answerCount += 1;
     }
 }

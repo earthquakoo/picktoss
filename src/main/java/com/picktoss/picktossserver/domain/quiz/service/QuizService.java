@@ -4,20 +4,15 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
-import com.picktoss.picktossserver.domain.question.entity.Question;
-import com.picktoss.picktossserver.domain.question.entity.QuestionQuestionSet;
-import com.picktoss.picktossserver.domain.question.entity.QuestionSet;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetBookmarkQuizResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetQuizSetResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetQuizSetTodayResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetSingleQuizResponse;
+import com.picktoss.picktossserver.domain.quiz.controller.response.*;
+import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
+import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
+import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,19 +29,28 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 @Transactional(readOnly = true)
 public class QuizService {
 
-    private final QuizSetRepository quizSetRepository;
     private final QuizRepository quizRepository;
+    private final QuizSetRepository quizSetRepository;
+    private final QuizSetQuizRepository quizSetQuizRepository;
 
     public GetSingleQuizResponse findQuiz(Long quizId) {
         Optional<Quiz> optionQuiz = quizRepository.findById(quizId);
 
-//        if (optionQuiz.isEmpty()) {
-//            return ;
-//        }
+        if (optionQuiz.isEmpty()) {
+            throw new CustomException(QUIZ_NOT_FOUND_ERROR);
+        }
 
         Quiz quiz = optionQuiz.get();
         Document document = quiz.getDocument();
         Category category = document.getCategory();
+
+        List<String> optionList = new ArrayList<>();
+        if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+            List<Option> options = quiz.getOptions();
+            for (Option option : options) {
+                optionList.add(option.getOption());
+            }
+        }
 
         GetSingleQuizResponse.GetSingleQuizDocumentDto documentDto = GetSingleQuizResponse.GetSingleQuizDocumentDto.builder()
                 .id(document.getId())
@@ -62,7 +66,7 @@ public class QuizService {
                 .id(quiz.getId())
                 .question(quiz.getQuestion())
                 .answer(quiz.getAnswer())
-                .options(quiz.getOptions())
+                .options(optionList)
                 .explanation(quiz.getExplanation())
                 .quizType(quiz.getQuizType())
                 .document(documentDto)
@@ -83,6 +87,14 @@ public class QuizService {
             Document document = quiz.getDocument();
             Category category = document.getCategory();
 
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                List<Option> options = quiz.getOptions();
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+
             GetQuizSetResponse.GetQuizSetCategoryDto categoryDto = GetQuizSetResponse.GetQuizSetCategoryDto.builder()
                     .id(category.getId())
                     .name(category.getName())
@@ -97,7 +109,7 @@ public class QuizService {
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
-                    .options(quiz.getOptions())
+                    .options(optionList)
                     .quizType(quiz.getQuizType())
                     .document(documentDto)
                     .category(categoryDto)
@@ -150,6 +162,14 @@ public class QuizService {
             Document document = quiz.getDocument();
             Category category = document.getCategory();
 
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                List<Option> options = quiz.getOptions();
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+
             GetBookmarkQuizResponse.GetBookmarkDocumentDto documentDto = GetBookmarkQuizResponse.GetBookmarkDocumentDto.builder()
                     .id(document.getId())
                     .name(document.getName())
@@ -164,7 +184,7 @@ public class QuizService {
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
-                    .options(quiz.getOptions())
+                    .options(optionList)
                     .quizType(quiz.getQuizType())
                     .document(documentDto)
                     .category(categoryDto)
@@ -186,5 +206,51 @@ public class QuizService {
         Quiz quiz = optionQuiz.get();
 
         quiz.updateBookmark(bookmark);
+    }
+
+    public List<GetQuizResultResponse.GetQuizResultCategoryDto> findQuizResult(String quizSetId) {
+        Optional<QuizSet> optionalQuizSet = quizSetRepository.findById(quizSetId);
+
+        if (optionalQuizSet.isEmpty()) {
+            throw new CustomException(QUIZ_SET_NOT_FOUND_ERROR);
+        }
+
+        QuizSet quizSet = optionalQuizSet.get();
+        List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
+
+        List<GetQuizResultResponse.GetQuizResultCategoryDto> categoryDtos = new ArrayList<>();
+
+        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            if (!quizSetQuiz.isAnswer()) {
+                Category category = quizSetQuiz.getQuiz().getDocument().getCategory();
+                GetQuizResultResponse.GetQuizResultCategoryDto categoryDto = GetQuizResultResponse.GetQuizResultCategoryDto.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .build();
+
+                categoryDtos.add(categoryDto);
+            }
+        }
+        return categoryDtos;
+    }
+
+    @Transactional
+    public void checkQuizAnswer(Long quizId, boolean answer) {
+        Optional<Quiz> optionalQuiz = quizRepository.findById(quizId);
+        Optional<QuizSetQuiz> optionalQuizSetQuiz = quizSetQuizRepository.findByQuizId(quizId);
+
+        if (optionalQuiz.isEmpty() || optionalQuizSetQuiz.isEmpty()) {
+            return ;
+        }
+
+        Quiz quiz = optionalQuiz.get();
+        QuizSetQuiz quizSetQuiz = optionalQuizSetQuiz.get();
+
+        if (answer) {
+            quiz.addAnswerCount();
+            quizSetQuiz.updateAnswer(true);
+        } else {
+            quizSetQuiz.updateAnswer(false);
+        }
     }
 }

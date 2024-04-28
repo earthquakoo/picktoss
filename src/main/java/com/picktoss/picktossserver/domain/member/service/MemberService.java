@@ -13,7 +13,6 @@ import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
-import static com.picktoss.picktossserver.domain.question.constant.QuestionConstant.*;
 
 @Service
 @RequiredArgsConstructor

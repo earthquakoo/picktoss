@@ -25,6 +25,7 @@ public class Category extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tag", nullable = false)
     private CategoryTag tag;
 

@@ -29,8 +29,4 @@ public class KeyPoint extends AuditBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
-
-    @OneToMany(mappedBy = "keyPoint", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<KeyPointKeyPointSet> keyPointKeyPointSets = new ArrayList<>();
-
 }

@@ -2,15 +2,8 @@ package com.picktoss.picktossserver.domain.quiz.facade;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetResponse;
-import com.picktoss.picktossserver.domain.question.controller.response.GetQuestionSetTodayResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetBookmarkQuizResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetQuizSetResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetQuizSetTodayResponse;
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetSingleQuizResponse;
-import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
+import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,4 +39,14 @@ public class QuizFacade {
     public void updateBookmarkQuiz(Long quizId, boolean bookmark) {
         quizService.updateBookmarkQuiz(quizId, bookmark);
     }
+
+    public List<GetQuizResultResponse.GetQuizResultCategoryDto> findQuizResult(String quizSetId) {
+        return quizService.findQuizResult(quizSetId);
+    }
+
+    @Transactional
+    public void checkQuizAnswer(Long quizId, boolean answer) {
+        quizService.checkQuizAnswer(quizId, answer);
+    }
+
 }
