@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 
 public final class DocumentConstant {
 
+
     public static final int DOCUMENT_MAX_LEN = 15000;
     public static final int DOCUMENT_MIN_LEN = 500;
 
