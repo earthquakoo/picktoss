@@ -32,7 +32,7 @@ public class Subscription {
     @Column(name = "expire_date", nullable = false)
     private LocalDateTime expireDate;
 
-    @ManyToOne(fetch = FetchType.LAZY) //, cascade = CascadeType.ALL
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 }

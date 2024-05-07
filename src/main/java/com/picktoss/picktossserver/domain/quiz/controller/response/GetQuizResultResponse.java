@@ -10,12 +10,12 @@ import java.util.List;
 @AllArgsConstructor
 public class GetQuizResultResponse {
 
-    List<GetQuizResultCategoryDto> categories;
+    private List<GetQuizResultCategoryDto> categories;
 
     @Getter
     @Builder
     public static class GetQuizResultCategoryDto {
-        private Long id;
         private String name;
+        private int incorrectAnswerCount;
     }
 }

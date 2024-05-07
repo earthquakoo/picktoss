@@ -5,38 +5,36 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @AllArgsConstructor
-public class GetQuizSetResponse {
+public class GetGeneratedQuizzesResponse {
 
-    private List<GetQuizSetQuizDto> quizSets;
+    private List<GetGeneratedQuizzesQuizDto> quizzes;
 
     @Getter
     @Builder
-    public static class GetQuizSetQuizDto {
+    public static class GetGeneratedQuizzesQuizDto {
         private Long id;
         private String question;
         private String answer;
         private List<String> options;
         private QuizType quizType;
-        private GetQuizSetDocumentDto document;
-        private GetQuizSetCategoryDto category;
+        private GetGeneratedQuizzesDocumentDto document;
+        private GetGeneratedQuizzesCategoryDto category;
     }
 
     @Getter
     @Builder
-    public static class GetQuizSetDocumentDto {
+    public static class GetGeneratedQuizzesDocumentDto {
         private Long id;
         private String name;
     }
 
     @Getter
     @Builder
-    public static class GetQuizSetCategoryDto {
+    public static class GetGeneratedQuizzesCategoryDto {
         private Long id;
         private String name;
     }

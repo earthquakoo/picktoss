@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.member.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.member.controller.response.CheckContinuousSolvedDatesResponse;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
@@ -33,5 +34,16 @@ public class MemberController {
 
         GetMemberInfoResponse memberInfo = memberFacade.findMemberInfo(memberId);
         return ResponseEntity.ok().body(memberInfo);
+    }
+
+    @Operation(summary = "Number of continuous quizzes")
+    @GetMapping("/continuous-solved-dates")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<CheckContinuousSolvedDatesResponse> checkContinuousSolvedDates() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        int checkContinuousQuizDatesCount = memberFacade.checkContinuousQuizDatesCount(memberId);
+        return ResponseEntity.ok().body(new CheckContinuousSolvedDatesResponse(checkContinuousQuizDatesCount));
     }
 }

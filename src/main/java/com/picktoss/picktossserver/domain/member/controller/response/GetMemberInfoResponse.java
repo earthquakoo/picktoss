@@ -10,21 +10,15 @@ import java.time.LocalDateTime;
 @Builder
 public class GetMemberInfoResponse {
 
+    private String name;
     private String email;
-    private QuizDto quiz;
-    private SubscriptionDto subscription;
-    private DocumentDto documentUsage;
+    private int point;
+    private GetMemberInfoSubscriptionDto subscription;
+    private GetMemberInfoDocumentDto documentUsage;
 
     @Getter
     @Builder
-    public static class QuizDto {
-        private int freePlanQuizQuestionNum;
-        private int proPlanQuizQuestionNum;
-    }
-
-    @Getter
-    @Builder
-    public static class SubscriptionDto {
+    public static class GetMemberInfoSubscriptionDto {
         private SubscriptionPlanType plan;
         private LocalDateTime purchasedDate;
         private LocalDateTime expireDate;
@@ -32,19 +26,17 @@ public class GetMemberInfoResponse {
 
     @Getter
     @Builder
-    public static class DocumentDto {
-        //현재 업로드된 문서 개수
-        private int currentPossessDocumentNum;
-        //현재 구독 기간 동안 업로드한 문서 개수
-        private int currentSubscriptionCycleUploadedDocumentNum;
-        //Free 플랜 최대 문서 보유 개수
-        private int freePlanMaxPossessDocumentNum;
-        //Free 플랜 구독 기간 최대 업로드 문서 개수
-        private int freePlanSubscriptionMaxUploadDocumentNum;
-        //Pro 플랜 최대 문서 보유 개수
-        private int proPlanMaxPossessDocumentNum;
-        //Pro 플랜 구독 기간 최대 업로드 문서 개수
-        private int proPlanSubscriptionMaxUploadDocumentNum;
+    public static class GetMemberInfoDocumentDto {
+        // 보유한 문서 개수
+        private int possessDocumentCount;
+        // 구독 기간 동안 업로드할 수 있는 문서 개수
+        private int possibleUploadedDocumentCount;
+        // Free 플랜 최대 문서 보유 개수 30
+        private int freePlanMaxPossessDocumentCount;
+        // Free 플랜 매달 업로드 가능한 문서 개수
+        private int freePlanMonthlyDocumentCount;
+        // Pro 플랜 매달 업로드 가능한 문서 개수
+        private int proPlanMonthlyDocumentCount;
     }
 
 }

@@ -14,6 +14,10 @@ public class AuthFacade {
     private final AuthService authService;
     private final MemberService memberService;
 
+    public String getUserInfo(String accessToken) {
+        return authService.getUserInfo(accessToken);
+    }
+
     @Transactional
     public void sendVerificationCode(String email) {
         authService.sendVerificationCode(email);

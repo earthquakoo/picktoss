@@ -32,17 +32,4 @@ public abstract class AuditBase {
     @Column(name = "updated_at")
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void onPrePersist() {
-        String customLocalDateTimeFormat = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        this.createdAt = LocalDateTime.parse(customLocalDateTimeFormat, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        this.updatedAt = this.createdAt;
-    }
-
-    @PreUpdate
-    public void onPreUpdate() {
-        String customLocalDateTimeFormat = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        this.updatedAt = LocalDateTime.parse(customLocalDateTimeFormat, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-    }
 }

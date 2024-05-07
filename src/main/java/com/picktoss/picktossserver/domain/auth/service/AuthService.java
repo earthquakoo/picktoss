@@ -88,6 +88,20 @@ public class AuthService {
         return null;
     }
 
+    public String getUserInfo(String accessToken) {
+        String url = "https://www.googleapis.com/oauth2/v2/userinfo";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return response.getBody();
+    }
+
     public String decodeIdToken(String idToken) {
         return new String(Base64.getDecoder().decode(idToken));
     }

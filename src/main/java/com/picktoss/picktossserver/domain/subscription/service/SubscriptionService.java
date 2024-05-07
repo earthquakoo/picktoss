@@ -65,23 +65,45 @@ public class SubscriptionService {
         return latestSubscription;
     }
 
-    public void checkDocumentUploadLimit(Subscription currentSubscription, int currentNumUploadedDocuments, int currentSubscriptionNumUploadedDocuments) {
+    public void checkDocumentUploadLimit(
+            Subscription currentSubscription,
+            int possessDocumentCount, // 보유한 모든 문서 개수
+            int uploadedDocumentCount, // 생성한 모든 문서 개수
+            int currentSubscriptionUploadedDocumentCount // 현재 구독 사이클에 업로드한 문서 개수
+    ) {
         if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
-            if (currentSubscriptionNumUploadedDocuments >= FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 15개
-                throw new CustomException(FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
-            }
-            if (currentNumUploadedDocuments >= FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 매 시점: 3개
+            if (possessDocumentCount >= FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT) {
                 throw new CustomException(FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
             }
-        } else if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.PRO) {
-            if (currentSubscriptionNumUploadedDocuments >= PRO_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 40개
-                throw new CustomException(PRO_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+            if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT) {
+                if (currentSubscriptionUploadedDocumentCount >= FREE_PLAN_MONTHLY_DOCUMENT_COUNT) {
+                    throw new CustomException(FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+                }
             }
-            if (currentNumUploadedDocuments >= PRO_PLAN_CURRENT_MAX_DOCUMENT_NUM) { // 매 시점: 15개
-                throw new CustomException(PRO_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+        } else if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.PRO) {
+            if (currentSubscriptionUploadedDocumentCount >= PRO_PLAN_MONTHLY_DOCUMENT_COUNT) { // 40개
+                throw new CustomException(PRO_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
             }
         } else {
             throw new IllegalArgumentException("Invalid Plan Type");
         }
+
+//        if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
+//            if (numCurrentSubscriptionUploadedDocuments >= FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 15개
+//                throw new CustomException(FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+//            }
+//            if (numCurrentUploadedDocuments >= FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 매 시점: 3개
+//                throw new CustomException(FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+//            }
+//        } else if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.PRO) {
+//            if (numCurrentSubscriptionUploadedDocuments >= PRO_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 40개
+//                throw new CustomException(PRO_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+//            }
+//            if (numCurrentUploadedDocuments >= PRO_PLAN_CURRENT_MAX_DOCUMENT_NUM) { // 매 시점: 15개
+//                throw new CustomException(PRO_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+//            }
+//        } else {
+//            throw new IllegalArgumentException("Invalid Plan Type");
+//        }
     }
 }

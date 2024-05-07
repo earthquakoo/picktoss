@@ -21,7 +21,6 @@ public class GetAllDocumentKeyPointsResponse {
         private Long id;
         private String documentName;
         private DocumentStatus status;
-        private String summary;
         private LocalDateTime createdAt;
         private List<GetAllKeyPointDto> keyPoints;
     }

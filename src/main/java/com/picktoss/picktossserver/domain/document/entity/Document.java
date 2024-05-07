@@ -1,10 +1,7 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
-import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.question.entity.Question;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
@@ -47,9 +44,6 @@ public class Document extends AuditBase {
     private Category category;
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
-    private List<Question> questions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<KeyPoint> keyPoints = new ArrayList<>();
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
@@ -77,8 +71,11 @@ public class Document extends AuditBase {
     }
 
     // Business Logics
-
-    public void updateDocumentOrder(int order) {
+    public void changeDocumentOrder(int order) {
         this.order = order;
+    }
+
+    public void moveDocumentToCategory(Category category) {
+        this.category = category;
     }
 }

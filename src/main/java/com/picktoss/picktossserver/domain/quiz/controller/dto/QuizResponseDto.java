@@ -1,42 +1,42 @@
-package com.picktoss.picktossserver.domain.quiz.controller.response;
+package com.picktoss.picktossserver.domain.quiz.controller.dto;
 
+import com.picktoss.picktossserver.domain.quiz.controller.response.GetBookmarkQuizResponse;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
+@Builder
 @AllArgsConstructor
-public class GetQuizSetResponse {
+public class QuizResponseDto {
 
-    private List<GetQuizSetQuizDto> quizSets;
+    private List<QuizDto> quizzes;
 
     @Getter
     @Builder
-    public static class GetQuizSetQuizDto {
+    public static class QuizDto {
         private Long id;
         private String question;
         private String answer;
         private List<String> options;
         private QuizType quizType;
-        private GetQuizSetDocumentDto document;
-        private GetQuizSetCategoryDto category;
+        private DocumentDto document;
+        private CategoryDto category;
     }
 
     @Getter
     @Builder
-    public static class GetQuizSetDocumentDto {
+    public static class DocumentDto {
         private Long id;
         private String name;
     }
 
     @Getter
     @Builder
-    public static class GetQuizSetCategoryDto {
+    public static class CategoryDto {
         private Long id;
         private String name;
     }

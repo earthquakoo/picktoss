@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.document.controller.request;
 
-import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,12 +7,12 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class UpdateDocumentsOrderRequest {
+public class ChangeDocumentsOrderRequest {
 
-    private List<UpdateDocumentDto> documents;
+    private List<ChangeDocumentDto> documents;
 
     @Getter
-    public static class UpdateDocumentDto {
+    public static class ChangeDocumentDto {
         private Long id;
         private int order;
     }

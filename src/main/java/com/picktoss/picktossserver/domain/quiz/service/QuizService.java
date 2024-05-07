@@ -4,6 +4,10 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
+import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
+import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
+import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -12,6 +16,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
+import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
@@ -33,91 +39,8 @@ public class QuizService {
     private final QuizSetRepository quizSetRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
 
-    public GetSingleQuizResponse findQuiz(Long quizId) {
-        Optional<Quiz> optionQuiz = quizRepository.findById(quizId);
-
-        if (optionQuiz.isEmpty()) {
-            throw new CustomException(QUIZ_NOT_FOUND_ERROR);
-        }
-
-        Quiz quiz = optionQuiz.get();
-        Document document = quiz.getDocument();
-        Category category = document.getCategory();
-
-        List<String> optionList = new ArrayList<>();
-        if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-            List<Option> options = quiz.getOptions();
-            for (Option option : options) {
-                optionList.add(option.getOption());
-            }
-        }
-
-        GetSingleQuizResponse.GetSingleQuizDocumentDto documentDto = GetSingleQuizResponse.GetSingleQuizDocumentDto.builder()
-                .id(document.getId())
-                .name(document.getName())
-                .build();
-
-        GetSingleQuizResponse.GetSingleQuizCategoryDto categoryDto = GetSingleQuizResponse.GetSingleQuizCategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
-
-        return GetSingleQuizResponse.builder()
-                .id(quiz.getId())
-                .question(quiz.getQuestion())
-                .answer(quiz.getAnswer())
-                .options(optionList)
-                .explanation(quiz.getExplanation())
-                .quizType(quiz.getQuizType())
-                .document(documentDto)
-                .category(categoryDto)
-                .build();
-    }
-
-    public List<GetQuizSetResponse.GetQuizSetQuizDto> findQuizSet(String quizSetId) {
-        Optional<QuizSet> optionalQuizSet = quizSetRepository.findById(quizSetId);
-        if (optionalQuizSet.isEmpty()) {
-            throw new CustomException(QUIZ_SET_NOT_FOUND_ERROR);
-        }
-        List<QuizSetQuiz> quizSetQuizzes = optionalQuizSet.get().getQuizSetQuizzes();
-        List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
-
-        for (QuizSetQuiz qqs : quizSetQuizzes) {
-            Quiz quiz = qqs.getQuiz();
-            Document document = quiz.getDocument();
-            Category category = document.getCategory();
-
-            List<String> optionList = new ArrayList<>();
-            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
-                for (Option option : options) {
-                    optionList.add(option.getOption());
-                }
-            }
-
-            GetQuizSetResponse.GetQuizSetCategoryDto categoryDto = GetQuizSetResponse.GetQuizSetCategoryDto.builder()
-                    .id(category.getId())
-                    .name(category.getName())
-                    .build();
-
-            GetQuizSetResponse.GetQuizSetDocumentDto documentDto = GetQuizSetResponse.GetQuizSetDocumentDto.builder()
-                    .id(document.getId())
-                    .name(document.getName())
-                    .build();
-
-            GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
-                    .id(quiz.getId())
-                    .question(quiz.getQuestion())
-                    .answer(quiz.getAnswer())
-                    .options(optionList)
-                    .quizType(quiz.getQuizType())
-                    .document(documentDto)
-                    .category(categoryDto)
-                    .build();
-
-            quizDtos.add(quizDto);
-        }
-        return quizDtos;
+    public List<Quiz> findQuizSet(String quizSetId, Long memberId) {
+        return quizSetQuizRepository.findAllQuizzesByQuizSetId(quizSetId);
     }
 
     public GetQuizSetTodayResponse findQuestionSetToday(Long memberId, List<Document> documents) {
@@ -154,45 +77,34 @@ public class QuizService {
                 .build();
     }
 
-    public List<GetBookmarkQuizResponse.GetBookmarkQuizDto> findBookmarkQuiz() {
-        List<Quiz> quizzes = quizRepository.findByBookmark();
-        List<GetBookmarkQuizResponse.GetBookmarkQuizDto> quizDtos = new ArrayList<>();
+    public List<Quiz> createQuizzes(List<Long> documents, int point) {
+        List<Quiz> quizSets = new ArrayList<>();
 
-        for (Quiz quiz : quizzes) {
-            Document document = quiz.getDocument();
-            Category category = document.getCategory();
+        int quizzesPerDocument = point / documents.size();
+        int remainingQuizzes = point % documents.size();
 
-            List<String> optionList = new ArrayList<>();
-            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
-                for (Option option : options) {
-                    optionList.add(option.getOption());
-                }
+        for (Long documentId : documents) {
+            List<Quiz> quizzes = quizRepository.findByDocumentId(documentId);
+            for (int i = 0; i < quizzesPerDocument; i++) {
+                Quiz quiz = quizzes.get(i);
+                quizSets.add(quiz);
             }
-
-            GetBookmarkQuizResponse.GetBookmarkDocumentDto documentDto = GetBookmarkQuizResponse.GetBookmarkDocumentDto.builder()
-                    .id(document.getId())
-                    .name(document.getName())
-                    .build();
-
-            GetBookmarkQuizResponse.GetBookmarkCategoryDto categoryDto = GetBookmarkQuizResponse.GetBookmarkCategoryDto.builder()
-                    .id(category.getId())
-                    .name(category.getName())
-                    .build();
-
-            GetBookmarkQuizResponse.GetBookmarkQuizDto bookmarkQuizDto = GetBookmarkQuizResponse.GetBookmarkQuizDto.builder()
-                    .id(quiz.getId())
-                    .question(quiz.getQuestion())
-                    .answer(quiz.getAnswer())
-                    .options(optionList)
-                    .quizType(quiz.getQuizType())
-                    .document(documentDto)
-                    .category(categoryDto)
-                    .build();
-
-            quizDtos.add(bookmarkQuizDto);
         }
-        return quizDtos;
+        // 나머지 퀴즈가 있는 경우 해당 문서에 추가 생성
+        for (int i = 0; i < remainingQuizzes; i++) {
+            List<Quiz> quizzes = quizRepository.findByDocumentId(documents.get(i));
+            Quiz quiz = quizzes.get(i);
+            quizSets.add(quiz);
+        }
+        return quizSets;
+    }
+
+    public List<Quiz> findAllGeneratedQuizzes(Long memberId) {
+        return quizSetQuizRepository.findAllQuizzesByMemberId(memberId);
+    }
+
+    public List<Quiz> findBookmarkQuiz() {
+        return quizRepository.findByBookmark();
     }
 
     @Transactional
@@ -208,7 +120,8 @@ public class QuizService {
         quiz.updateBookmark(bookmark);
     }
 
-    public List<GetQuizResultResponse.GetQuizResultCategoryDto> findQuizResult(String quizSetId) {
+    @Transactional
+    public List<GetQuizResultResponse.GetQuizResultCategoryDto> updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> resultQuizDtos, String quizSetId, Member member) {
         Optional<QuizSet> optionalQuizSet = quizSetRepository.findById(quizSetId);
 
         if (optionalQuizSet.isEmpty()) {
@@ -216,41 +129,64 @@ public class QuizService {
         }
 
         QuizSet quizSet = optionalQuizSet.get();
-        List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
+
+        HashMap<String, Integer> categoryMap = new HashMap<>();
+
+        for (GetQuizResultRequest.GetQuizResultQuizDto resultQuizDto : resultQuizDtos) {
+            String categoryName = resultQuizDto.getCategoryName();
+
+            Integer incorrectAnswerCount = categoryMap.getOrDefault(categoryName, 0);
+            if (!resultQuizDto.isAnswer()) {
+                Long quizId = resultQuizDto.getId();
+                Optional<Quiz> optionalQuiz = quizRepository.findById(quizId);
+
+                if (optionalQuiz.isEmpty()) {
+                    throw new CustomException(QUIZ_NOT_FOUND_ERROR);
+                }
+
+                Quiz quiz = optionalQuiz.get();
+                quiz.addIncorrectAnswerCount();
+
+                incorrectAnswerCount++;
+                categoryMap.put(categoryName, incorrectAnswerCount);
+            }
+        }
 
         List<GetQuizResultResponse.GetQuizResultCategoryDto> categoryDtos = new ArrayList<>();
 
-        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-            if (!quizSetQuiz.isAnswer()) {
-                Category category = quizSetQuiz.getQuiz().getDocument().getCategory();
-                GetQuizResultResponse.GetQuizResultCategoryDto categoryDto = GetQuizResultResponse.GetQuizResultCategoryDto.builder()
-                        .id(category.getId())
-                        .name(category.getName())
-                        .build();
+        for (String name : categoryMap.keySet()) {
+            GetQuizResultResponse.GetQuizResultCategoryDto categoryDto = GetQuizResultResponse.GetQuizResultCategoryDto.builder()
+                    .name(name)
+                    .incorrectAnswerCount(categoryMap.get(name))
+                    .build();
 
-                categoryDtos.add(categoryDto);
-            }
+            categoryDtos.add(categoryDto);
         }
+
+        member.updateContinuousQuizDatesCount(true);
+        quizSet.updateSolved();
+
         return categoryDtos;
     }
 
-    @Transactional
-    public void checkQuizAnswer(Long quizId, boolean answer) {
-        Optional<Quiz> optionalQuiz = quizRepository.findById(quizId);
-        Optional<QuizSetQuiz> optionalQuizSetQuiz = quizSetQuizRepository.findByQuizId(quizId);
+    public boolean checkContinuousQuizDatesCount(Long memberId) {
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberId(memberId);
 
-        if (optionalQuiz.isEmpty() || optionalQuizSetQuiz.isEmpty()) {
-            return ;
+        if (quizSets.isEmpty()) {
+            return false;
         }
 
-        Quiz quiz = optionalQuiz.get();
-        QuizSetQuiz quizSetQuiz = optionalQuizSetQuiz.get();
+        QuizSet quizSet = quizSets.stream()
+                .sorted(Comparator.comparing(QuizSet::getCreatedAt).reversed())
+                .toList()
+                .getFirst();
 
-        if (answer) {
-            quiz.addAnswerCount();
-            quizSetQuiz.updateAnswer(true);
-        } else {
-            quizSetQuiz.updateAnswer(false);
+        boolean isWithinOneDay = LocalDateTime.now().minusDays(1).isBefore(quizSet.getCreatedAt());
+
+        if (!quizSet.isSolved()) { // 퀴즈를 풀지 않았을 때 하루가 지났다면 false, 지나지 않았다면 true
+            return isWithinOneDay;
+        } else { // 퀴즈를 풀었는데 하루가 지났다면 false, 지나지 않았다면 true
+            return isWithinOneDay;
         }
     }
 }

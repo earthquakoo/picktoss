@@ -2,7 +2,12 @@ package com.picktoss.picktossserver.domain.quiz.facade;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
+import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.member.service.MemberService;
+import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
+import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
+import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,13 +22,10 @@ public class QuizFacade {
 
     private final DocumentService documentService;
     private final QuizService quizService;
+    private final MemberService memberService;
 
-    public GetSingleQuizResponse findQuiz(Long quizId) {
-        return quizService.findQuiz(quizId);
-    }
-
-    public List<GetQuizSetResponse.GetQuizSetQuizDto> findQuizSet(String quizSetId) {
-        return quizService.findQuizSet(quizSetId);
+    public List<Quiz> findQuizSet(String quizSetId, Long memberId) {
+        return quizService.findQuizSet(quizSetId, memberId);
     }
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
@@ -31,7 +33,15 @@ public class QuizFacade {
         return quizService.findQuestionSetToday(memberId, documents);
     }
 
-    public List<GetBookmarkQuizResponse.GetBookmarkQuizDto> findBookmarkQuiz() {
+    public List<Quiz> createQuizzes(List<Long> documents, int point) {
+        return quizService.createQuizzes(documents, point);
+    }
+
+    public List<Quiz> findAllGeneratedQuizzes(Long memberId) {
+        return quizService.findAllGeneratedQuizzes(memberId);
+    }
+
+    public List<Quiz> findBookmarkQuiz() {
         return quizService.findBookmarkQuiz();
     }
 
@@ -40,13 +50,9 @@ public class QuizFacade {
         quizService.updateBookmarkQuiz(quizId, bookmark);
     }
 
-    public List<GetQuizResultResponse.GetQuizResultCategoryDto> findQuizResult(String quizSetId) {
-        return quizService.findQuizResult(quizSetId);
-    }
-
     @Transactional
-    public void checkQuizAnswer(Long quizId, boolean answer) {
-        quizService.checkQuizAnswer(quizId, answer);
+    public List<GetQuizResultResponse.GetQuizResultCategoryDto> updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> resultQuizDtos, String quizSetId, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        return quizService.updateQuizResult(resultQuizDtos, quizSetId, member);
     }
-
 }

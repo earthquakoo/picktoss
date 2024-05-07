@@ -3,16 +3,12 @@ package com.picktoss.picktossserver.domain.document.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.s3.S3Provider;
-import com.picktoss.picktossserver.core.sqs.SqsProvider;
+import com.picktoss.picktossserver.domain.document.controller.request.MoveDocumentToCategoryRequest;
 import com.picktoss.picktossserver.domain.document.controller.request.SearchDocumentNameRequest;
-import com.picktoss.picktossserver.domain.document.controller.request.UpdateDocumentsOrderRequest;
-import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
+import com.picktoss.picktossserver.domain.document.controller.request.ChangeDocumentsOrderRequest;
+import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.controller.request.CreateDocumentRequest;
-import com.picktoss.picktossserver.domain.document.controller.response.CreateDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentNameResponse;
 import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
-import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -47,8 +43,7 @@ public class DocumentController {
         Long memberId = jwtUserInfo.getMemberId();
         Long categoryId = Long.valueOf(request.getCategoryId());
 
-        String s3Key = s3Provider.uploadFile(request.getFile());
-        Long documentId = documentFacade.saveDocument(request.getUserDocumentName(), s3Key, memberId, categoryId);
+        Long documentId = documentFacade.saveDocument(request.getUserDocumentName(), request.getDocumentStatus(), request.getFile(), memberId, categoryId);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -82,13 +77,24 @@ public class DocumentController {
     }
 
     @Operation(summary = "Get document by file name")
-    @PostMapping("/documents/{word}")
+    @PostMapping("/documents/search")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<SearchDocumentNameResponse> searchDocumentName(@Valid @RequestBody SearchDocumentNameRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        SearchDocumentNameResponse response = documentFacade.searchDocumentName(request.getWord());
+        SearchDocumentNameResponse response = documentFacade.searchDocumentName(request.getWord(), memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "Get most incorrect top 5 document")
+    @GetMapping("/documents/top-five")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetMostIncorrectDocumentsResponse> getMostIncorrectDocuments() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetMostIncorrectDocumentsResponse response = documentFacade.findMostIncorrectDocuments(memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -102,13 +108,23 @@ public class DocumentController {
         documentFacade.deleteDocument(memberId, documentId);
     }
 
-    @Operation(summary = "Update document order")
+    @Operation(summary = "Change document order")
     @PatchMapping("/documents/reorder")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateDocumentsOrder(@Valid @RequestBody UpdateDocumentsOrderRequest request) {
+    public void changeDocumentsOrder(@Valid @RequestBody ChangeDocumentsOrderRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.updateDocumentOrder(request.getDocuments(), memberId);
+        documentFacade.changeDocumentOrder(request.getDocuments(), memberId);
+    }
+
+    @Operation(summary = "Move document to category")
+    @PatchMapping("/documents/move")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void moveDocumentToCategory(@Valid @RequestBody MoveDocumentToCategoryRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentFacade.moveDocumentToCategory(request.getDocumentId(), request.getCategoryId(), memberId);
     }
 }

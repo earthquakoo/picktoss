@@ -40,8 +40,8 @@ public class Quiz extends AuditBase {
     @Column(name = "bookmark", nullable = false)
     private boolean bookmark;
 
-    @Column(name = "answer_count")
-    private int answerCount;
+    @Column(name = "answer_count", nullable = false)
+    private int incorrectAnswerCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
@@ -58,7 +58,7 @@ public class Quiz extends AuditBase {
         this.bookmark = bookmark;
     }
 
-    public void addAnswerCount() {
-        this.answerCount += 1;
+    public void addIncorrectAnswerCount() {
+        this.incorrectAnswerCount += 1;
     }
 }

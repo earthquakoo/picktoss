@@ -13,6 +13,8 @@ import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
+import static com.picktoss.picktossserver.domain.quiz.constant.QuizConstant.FREE_PLAN_QUIZ_QUESTION_NUM;
+import static com.picktoss.picktossserver.domain.quiz.constant.QuizConstant.PRO_PLAN_QUIZ_QUESTION_NUM;
 
 @Service
 @RequiredArgsConstructor
@@ -30,34 +32,32 @@ public class MemberService {
     public GetMemberInfoResponse findMemberInfo(
             Long memberId,
             Subscription subscription,
-            int currentSubscriptionUploadedDocumentNum,
-            int currentUploadedDocumentNum) {
+            int possessDocumentCount,
+            int possibleUploadedDocumentCount,
+            int point
+            ) {
 
         Member member = findMemberById(memberId);
 
-        GetMemberInfoResponse.DocumentDto documentDto = GetMemberInfoResponse.DocumentDto.builder()
-                .currentPossessDocumentNum(currentSubscriptionUploadedDocumentNum)
-                .currentSubscriptionCycleUploadedDocumentNum(currentUploadedDocumentNum)
-                .freePlanMaxPossessDocumentNum(FREE_PLAN_CURRENT_MAX_DOCUMENT_NUM)
-                .freePlanSubscriptionMaxUploadDocumentNum(FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM)
-                .proPlanMaxPossessDocumentNum(PRO_PLAN_CURRENT_MAX_DOCUMENT_NUM)
-                .proPlanSubscriptionMaxUploadDocumentNum(PRO_PLAN_MONTHLY_MAX_DOCUMENT_NUM)
-                .build();
-        GetMemberInfoResponse.QuizDto quizDto = GetMemberInfoResponse.QuizDto.builder()
-                .freePlanQuizQuestionNum(FREE_PLAN_QUIZ_QUESTION_NUM)
-                .proPlanQuizQuestionNum(PRO_PLAN_QUIZ_QUESTION_NUM)
+        GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
+                .possessDocumentCount(possessDocumentCount)
+                .possibleUploadedDocumentCount(possibleUploadedDocumentCount)
+                .freePlanMaxPossessDocumentCount(FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT)
+                .freePlanMonthlyDocumentCount(FREE_PLAN_MONTHLY_DOCUMENT_COUNT)
+                .proPlanMonthlyDocumentCount(PRO_PLAN_MONTHLY_DOCUMENT_COUNT)
                 .build();
 
-        GetMemberInfoResponse.SubscriptionDto subscriptionDto = GetMemberInfoResponse.SubscriptionDto.builder()
+        GetMemberInfoResponse.GetMemberInfoSubscriptionDto subscriptionDto = GetMemberInfoResponse.GetMemberInfoSubscriptionDto.builder()
                 .plan(subscription.getSubscriptionPlanType())
                 .purchasedDate(subscription.getPurchasedDate())
                 .expireDate(subscription.getExpireDate())
                 .build();
 
         return GetMemberInfoResponse.builder()
+                .name(member.getName())
                 .email(member.getEmail())
+                .point(point)
                 .documentUsage(documentDto)
-                .quiz(quizDto)
                 .subscription(subscriptionDto)
                 .build();
     }
@@ -80,5 +80,14 @@ public class MemberService {
 
         Member member = optionalMember.get();
         memberRepository.delete(member);
+    }
+
+    @Transactional
+    public int checkContinuousQuizDatesCount(Member member, boolean isContinuous) {
+        if (isContinuous) {
+            return member.getContinuousQuizDatesCount();
+        }
+        member.updateContinuousQuizDatesCount(false);
+        return member.getContinuousQuizDatesCount();
     }
 }

@@ -1,6 +1,9 @@
 package com.picktoss.picktossserver.domain.auth.controller;
 
+import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
@@ -32,6 +35,7 @@ public class AuthController {
     private final MemberFacade memberFacade;
     private final AuthService authService;
     private final AuthFacade authFacade;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Oauth url api")
     @GetMapping("/oauth/url")
@@ -67,6 +71,13 @@ public class AuthController {
         return new RedirectView(oauthCallbackResponseUrl);
     }
 
+    @Operation(summary = "Kakao login")
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public String login(@Valid @RequestBody LoginRequest request) {
+        return authFacade.getUserInfo(request.getAccessToken());
+    }
+
     @Operation(summary = "Health check")
     @GetMapping("/health-check")
     @ResponseStatus(HttpStatus.OK)
@@ -77,12 +88,18 @@ public class AuthController {
     @PostMapping("/auth/verification")
     @ResponseStatus(HttpStatus.OK)
     public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
         authFacade.sendVerificationCode(request.getEmail());
     }
 
     @PostMapping("/auth/verification/check")
     @ResponseStatus(HttpStatus.OK)
     public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
         authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode());
     }
 }

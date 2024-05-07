@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 "/api/v1/callback",
                                 "swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/v1/health-check"
+                                "/api/v1/health-check",
+                                "/api/v1/login"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
