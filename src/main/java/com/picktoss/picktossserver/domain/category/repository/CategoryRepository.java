@@ -21,12 +21,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             @Param("memberId") Long memberId
     );
 
-    @Query("SELECT c FROM Category c WHERE c.member.id = :memberId")
-    Optional<Category> findByMemberId(Long memberId);
-
     @Query("SELECT c FROM Category c WHERE c.name = :name AND c.member.id = :memberId")
     Optional<Category> findByNameAndMemberId(
             @Param("name") String name,
             @Param("memberId") Long memberId
     );
+
+    @Query("SELECT MAX(c.order) FROM Category c WHERE c.member.id = :memberId")
+    Integer findLastOrderByMemberId(@Param("memberId") Long memberId);
 }

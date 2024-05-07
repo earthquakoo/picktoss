@@ -24,6 +24,26 @@ logging.level:
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6
 
+springdoc:
+  packages-to-scan:
+    - com.picktoss.picktossserver.domain.auth.controller
+    - com.picktoss.picktossserver.domain.category.controller
+    - com.picktoss.picktossserver.domain.document.controller
+    - com.picktoss.picktossserver.domain.member.controller
+    - com.picktoss.picktossserver.domain.question.controller
+    - com.picktoss.picktossserver.domain.quiz.controller
+    - com.picktoss.picktossserver.domain.keypoint.controller
+    - com.picktoss.picktossserver.domain.feedback.controller
+    - com.picktoss.picktossserver.domain.payment.controller
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: method
+    tags-sorter: alpha
+
 jwt:
   secret: ${PICKTOSS_JWT_SECRET_KEY}
   access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
@@ -35,6 +55,13 @@ oauth:
     client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
     redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
     oauth_callback_response_url: ${PICKTOSS_OAUTH_CALLBACK_RESPONSE_REDIRECT_URL}
+
+mailgun:
+  api_key: ${MAILGUN_API_KEY}
+  domain: ${MAILGUN_DOMAIN}
+
+email_verification:
+  expire_seconds: ${VERIFICATION_EXPIRE_SECONDS}
 
 cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}

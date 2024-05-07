@@ -1,5 +1,5 @@
 server:
-  port: 8181
+  port: 8080
 
 spring:
   config:
@@ -27,6 +27,8 @@ springdoc:
     - com.picktoss.picktossserver.domain.document.controller
     - com.picktoss.picktossserver.domain.member.controller
     - com.picktoss.picktossserver.domain.question.controller
+    - com.picktoss.picktossserver.domain.quiz.controller
+    - com.picktoss.picktossserver.domain.keypoint.controller
     - com.picktoss.picktossserver.domain.feedback.controller
     - com.picktoss.picktossserver.domain.payment.controller
   default-consumes-media-type: application/json;charset=UTF-8
@@ -42,6 +44,13 @@ jwt:
   secret: ${PICKTOSS_JWT_SECRET_KEY}
   access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
   refresh_token_expiration_ms: ${PICKTOSS_JWT_REFRESH_TOKEN_EXPIRE_MINUTES}
+
+mailgun:
+  api_key: ${PICKTOSS_MAILGUN_API_KEY}
+  domain: ${PICKTOSS_MAILGUN_DOMAIN}
+
+email_verification:
+  expire_seconds: ${PICKTOSS_VERIFICATION_EXPIRE_SECONDS}
 
 cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}

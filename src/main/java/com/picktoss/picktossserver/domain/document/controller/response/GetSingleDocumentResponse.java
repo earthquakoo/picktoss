@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.document.controller.response;
 
-import com.picktoss.picktossserver.global.enums.DocumentFormat;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,23 +16,22 @@ public class GetSingleDocumentResponse {
     private Long id;
     private String documentName;
     private DocumentStatus status;
-    private DocumentFormat format;
-    private CategoryDto category;
-    private List<QuestionDto> questions;
-    private String summary;
+    private boolean quizGenerationStatus;
+    private GetSingleDocumentCategoryDto category;
+    private List<GetSingleDocumentKeyPointDto> keyPoints;
     private String content;
     private LocalDateTime createdAt;
 
     @Getter
     @Builder
-    public static class CategoryDto {
+    public static class GetSingleDocumentCategoryDto {
         private Long id;
         private String name;
     }
 
     @Getter
     @Builder
-    public static class QuestionDto {
+    public static class GetSingleDocumentKeyPointDto {
         private Long id;
         private String question;
         private String answer;

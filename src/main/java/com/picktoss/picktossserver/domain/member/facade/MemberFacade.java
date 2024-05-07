@@ -3,17 +3,23 @@ package com.picktoss.picktossserver.domain.member.facade;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
+import com.picktoss.picktossserver.domain.event.service.EventService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
+import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
+import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_DEFAULT_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MONTHLY_DOCUMENT_COUNT;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +30,8 @@ public class MemberFacade {
     private final MemberService memberService;
     private final DocumentService documentService;
     private final SubscriptionService subscriptionService;
+    private final QuizService quizService;
+    private final EventService eventService;
 
     @Transactional
     public JwtTokenDto createMember(MemberInfoDto memberInfoDto) {
@@ -33,6 +41,7 @@ public class MemberFacade {
             Member member = memberInfoDto.toEntity();
             memberService.createMember(member);
             subscriptionService.createSubscription(member);
+            eventService.attendanceCheck(member);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
@@ -43,9 +52,38 @@ public class MemberFacade {
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-        int currentSubscriptionUploadedDocumentNum = documentService.findNumUploadedDocumentsForCurrentSubscription(memberId, subscription);
-        int currentUploadedDocumentNum = documentService.findNumCurrentUploadDocument(memberId);
+        int point = eventService.attendanceCheck(member);
 
-        return memberService.findMemberInfo(memberId, subscription, currentSubscriptionUploadedDocumentNum, currentUploadedDocumentNum);
+        int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
+        int uploadedDocumentCount = documentService.findUploadedDocumentCount(memberId);
+        int uploadedDocumentCountForCurrentSubscription = documentService.findUploadedDocumentCountForCurrentSubscription(memberId, subscription);
+        int possibleUploadedDocumentCount = getPossibleUploadedDocumentCount(subscription, uploadedDocumentCount, uploadedDocumentCountForCurrentSubscription);
+
+        return memberService.findMemberInfo(
+                memberId,
+                subscription,
+                possessDocumentCount,
+                possibleUploadedDocumentCount,
+                point
+        );
+    }
+
+    @Transactional
+    public int checkContinuousQuizDatesCount(Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        boolean isContinuous = quizService.checkContinuousQuizDatesCount(memberId);
+        return memberService.checkContinuousQuizDatesCount(member, isContinuous);
+    }
+
+    private static int getPossibleUploadedDocumentCount(Subscription subscription, int uploadedDocumentCount, int uploadedDocumentCountForCurrentSubscription) {
+        int possibleUploadedDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT - uploadedDocumentCount;
+
+        if (subscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
+            if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT &&
+                    uploadedDocumentCountForCurrentSubscription <= FREE_PLAN_MONTHLY_DOCUMENT_COUNT) {
+                possibleUploadedDocumentCount = FREE_PLAN_MONTHLY_DOCUMENT_COUNT - uploadedDocumentCountForCurrentSubscription;
+            }
+        }
+        return possibleUploadedDocumentCount;
     }
 }

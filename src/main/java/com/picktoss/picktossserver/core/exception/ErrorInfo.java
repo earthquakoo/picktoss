@@ -9,6 +9,12 @@ public enum ErrorInfo {
      **/
     MEMBER_ALREADY_EXIST(400, "MEMBER_ALREADY_EXIST", "Member with the given email already exists."),
     MEMBER_NOT_FOUND(400, "MEMBER_NOT_FOUND", "Member with the given email does not exist."),
+    EMAIL_VERIFICATION_NOT_FOUND(400, "EMAIL_VERIFICATION_NOT_FOUND", "Email verification with the given email is not found."),
+    EMAIL_ALREADY_VERIFIED(400, "EMAIL_ALREADY_VERIFIED", "Email address is already verified."),
+    EMAIL_NOT_VERIFIED(400, "EMAIL_NOT_VERIFIED", "Email is not verified."),
+    INVALID_VERIFICATION_CODE(400, "INVALID_VERIFICATION_CODE", "Invalid verification code."),
+    VERIFICATION_CODE_EXPIRED(400, "VERIFICATION_CODE_EXPIRED", "Verification code is expired"),
+    INVALID_PASSWORD(400, "INVALID_PASSWORD", "Password is invalid."),
 
     /**
      * Category
@@ -42,9 +48,10 @@ public enum ErrorInfo {
     PRO_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "PRO_PLAN_ANYTIME_UPLOAD_ERROR", "프로 플랜으로 매 시점에 등록할 수 있는 문서의 최대 개수를 초과했습니다."),
 
     /**
-     * Question
+     * Quiz
      */
-    QUESTION_SET_NOT_FOUND_ERROR(400, "QUESTION_SET_NOT_FOUND", "Question set not found.");
+    QUIZ_NOT_FOUND_ERROR(400, "QUIZ_NOT_FOUND", "Quiz set not found."),
+    QUIZ_SET_NOT_FOUND_ERROR(400, "QUIZ_SET_NOT_FOUND", "Quiz set not found.");
 
 
 

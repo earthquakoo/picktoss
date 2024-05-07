@@ -4,5 +4,6 @@ public enum DocumentStatus {
     UNPROCESSED,
     PROCESSED,
     COMPLETELY_FAILED,
-    PARTIAL_SUCCESS
+    PARTIAL_SUCCESS,
+    TEMPORARY_STORAGE
 }

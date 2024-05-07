@@ -12,15 +12,15 @@ import java.util.List;
 @AllArgsConstructor
 public class GetAllDocumentsResponse {
 
-    private List<DocumentDto> documents;
+    private List<GetAllDocumentsDocumentDto> documents;
 
     @Getter
     @Builder
-    public static class DocumentDto {
+    public static class GetAllDocumentsDocumentDto {
         private Long id;
         private String documentName;
         private DocumentStatus status;
-        private String summary;
+        private boolean quizGenerationStatus;
         private LocalDateTime createdAt;
     }
 }

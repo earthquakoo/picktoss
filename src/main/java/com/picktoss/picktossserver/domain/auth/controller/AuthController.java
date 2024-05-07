@@ -1,12 +1,20 @@
 package com.picktoss.picktossserver.domain.auth.controller;
 
+import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
+import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +26,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.HashMap;
 
+@Tag(name = "1. Auth")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -25,16 +34,17 @@ public class AuthController {
 
     private final MemberFacade memberFacade;
     private final AuthService authService;
+    private final AuthFacade authFacade;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Oauth url api")
-    @SneakyThrows
     @GetMapping("/oauth/url")
-    public HashMap<String, String> oauthUrlApi(HttpServletResponse response) {
+    public HashMap<String, String> oauthUrlApi() {
         return authService.getRedirectUri();
     }
 
-//    @SneakyThrows
 //    @GetMapping("/oauth/url")
+//    @SneakyThrows
 //    public String oauthUrlApi(HttpServletResponse response) {
 //        String redirectUri = authService.getRedirectUri();
 //        response.sendRedirect(redirectUri);
@@ -61,6 +71,13 @@ public class AuthController {
         return new RedirectView(oauthCallbackResponseUrl);
     }
 
+    @Operation(summary = "Kakao login")
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public String login(@Valid @RequestBody LoginRequest request) {
+        return authFacade.getUserInfo(request.getAccessToken());
+    }
+
     @Operation(summary = "Health check")
     @GetMapping("/health-check")
     @ResponseStatus(HttpStatus.OK)
@@ -68,4 +85,21 @@ public class AuthController {
         return "I'm doing fine";
     }
 
+    @PostMapping("/auth/verification")
+    @ResponseStatus(HttpStatus.OK)
+    public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        authFacade.sendVerificationCode(request.getEmail());
+    }
+
+    @PostMapping("/auth/verification/check")
+    @ResponseStatus(HttpStatus.OK)
+    public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode());
+    }
 }
