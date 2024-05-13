@@ -12,5 +12,4 @@ public class CreateDocumentRequest {
     private MultipartFile file;
     private String userDocumentName;
     private String categoryId;
-    private DocumentStatus documentStatus;
 }

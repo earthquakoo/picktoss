@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/v1/health-check",
-                                "/api/v1/login"
+                                "/api/v1/login",
+                                "/api/v1/auth"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -67,7 +68,7 @@ public class SecurityConfig {
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
-        ;
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

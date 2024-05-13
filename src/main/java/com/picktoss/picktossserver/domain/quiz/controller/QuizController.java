@@ -61,7 +61,7 @@ public class QuizController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.createQuizzes(request.getDocuments(), request.getPoint());
+        List<Quiz> quizzes = quizFacade.createQuizzes(request.getDocuments(), request.getPoint(), request.getQuizType(), memberId);
         QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
         return ResponseEntity.ok().body(quizResponseDto);
     }
@@ -79,7 +79,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Get bookmarked quiz")
-    @GetMapping("/bookmark")
+    @GetMapping("/quiz/bookmark")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<QuizResponseDto> getBookmarkedQuiz() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -91,7 +91,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Update bookmarked quiz")
-    @PatchMapping("/bookmark/{quiz_id}")
+    @PatchMapping("/quiz/{quiz_id}/bookmark/")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateBookmarkQuiz(
             @Valid @RequestBody UpdateBookmarkQuizRequest request,

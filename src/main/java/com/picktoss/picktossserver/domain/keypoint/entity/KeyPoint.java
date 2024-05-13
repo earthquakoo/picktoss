@@ -26,7 +26,14 @@ public class KeyPoint extends AuditBase {
     @Column(name = "answer", columnDefinition = "TEXT", nullable = false)
     private String answer;
 
+    @Column(name = "bookmark", nullable = false)
+    private boolean bookmark;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
+
+    public void updateBookmark(boolean bookmark) {
+        this.bookmark = bookmark;
+    }
 }

@@ -20,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_DEFAULT_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MONTHLY_DOCUMENT_COUNT;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -31,17 +34,23 @@ public class DocumentFacade {
     private final SubscriptionService subscriptionService;
 
     @Transactional
-    public Long saveDocument(String documentName, DocumentStatus documentStatus, MultipartFile file, Long memberId, Long categoryId) {
-        int possessDocumentCount = findPossessDocumentCount(memberId);
-        int uploadedDocumentCount = findUploadedDocumentCount(memberId);
-        int uploadedDocumentCountForCurrentSubscription = findUploadedDocumentCountForCurrentSubscription(memberId);
-
+    public Long saveDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-        subscriptionService.checkDocumentUploadLimit(subscription, possessDocumentCount, uploadedDocumentCount, uploadedDocumentCountForCurrentSubscription);
+
+        int possessDocumentCount = findPossessDocumentCount(memberId);
+        int uploadedDocumentCount = findUploadedDocumentCount(memberId);
+
+        int uploadableDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getUploadedDocumentCount() - uploadedDocumentCount;
+
+        subscriptionService.checkDocumentUploadLimit(subscription, possessDocumentCount, uploadedDocumentCount, uploadableDocumentCount);
+
+        if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT) {
+            subscription.minusUploadedDocumentCount();
+        }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        return documentService.saveDocument(documentName, documentStatus, file, subscription, category, member, memberId);
+        return documentService.saveDocument(documentName, file, subscription, category, member, memberId);
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {

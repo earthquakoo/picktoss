@@ -14,7 +14,7 @@ public class MemberInfoDto {
 
     public Member toEntity() {
         return Member.builder()
-                .googleClientId(sub)
+                .clientId(sub)
                 .name(name)
                 .email(email)
                 .build();

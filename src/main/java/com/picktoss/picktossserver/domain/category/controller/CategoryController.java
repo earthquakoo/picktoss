@@ -47,7 +47,7 @@ public class CategoryController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long categoryId = categoryFacade.createCategory(memberId, request.getName(), request.getTag());
+        Long categoryId = categoryFacade.createCategory(memberId, request.getName(), request.getTag(), request.getEmoji());
         return ResponseEntity.status(HttpStatus.CREATED).body(new CreateCategoryResponse(categoryId));
     }
 

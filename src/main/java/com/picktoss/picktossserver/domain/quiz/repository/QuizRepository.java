@@ -13,6 +13,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q WHERE q.bookmark = true")
     List<Quiz> findByBookmark();
 
-    @Query("SELECT q FROM Quiz q WHERE q.document.id = :documentId ORDER BY q.deliveredCount ASC")
-    List<Quiz> findByDocumentId(@Param("documentId") Long documentId);
+    @Query("SELECT q FROM Quiz q WHERE q.document.id = :documentId AND q.quizType = :quizType ORDER BY q.deliveredCount ASC")
+    List<Quiz> findByDocumentIdAndQuizType(
+            @Param("documentId") Long documentId,
+            @Param("quizType") QuizType quizType
+    );
 }

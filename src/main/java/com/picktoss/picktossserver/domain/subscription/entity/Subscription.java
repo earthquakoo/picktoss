@@ -21,6 +21,9 @@ public class Subscription {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "uploaded_document_count", nullable = false)
+    private int uploadedDocumentCount;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
     private SubscriptionPlanType subscriptionPlanType;
@@ -35,4 +38,8 @@ public class Subscription {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    public void minusUploadedDocumentCount() {
+        this.uploadedDocumentCount -= 1;
+    }
 }

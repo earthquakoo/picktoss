@@ -6,18 +6,19 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.email.MailgunVerificationEmailManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
+import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
 import com.picktoss.picktossserver.domain.auth.entity.EmailVerification;
 import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepository;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
+import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.security.SecureRandom;
@@ -52,6 +53,10 @@ public class AuthService {
     @Value("${email_verification.expire_seconds}")
     private long verificationExpireDurationSeconds;
 
+    private static final String defaultNickname = "Picktoss#";
+    private static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int randomCodeLen = 6;
+
     public HashMap<String, String> getRedirectUri() {
         String oauthUrl = String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
                 oauthClientId, redirectUri);
@@ -83,21 +88,26 @@ public class AuthService {
         ResponseEntity<OauthResponseDto> responseEntity = restTemplate.postForEntity(googleTokenRequestUrl, params, OauthResponseDto.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            System.out.println("responseEntity = " + responseEntity.getBody().getAccessToken());
             return responseEntity.getBody().getIdToken().split("\\.")[1];
         }
         return null;
     }
 
-    public String getUserInfo(String accessToken) {
-        String url = "https://www.googleapis.com/oauth2/v2/userinfo";
+    public String getUserInfo(String accessToken, SocialPlatform socialPlatform) {
+        String url = "https://www.googleapis.com/oauth2/v1/userinfo";
+
+        if (socialPlatform == SocialPlatform.KAKAO) {
+            url = "https://kapi.kakao.com/v2/user/me";
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
 
         return response.getBody();
     }
@@ -114,6 +124,36 @@ public class AuthService {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public GoogleMemberDto transJsonToGoogleMemberDto(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            return mapper.readValue(json, GoogleMemberDto.class);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public KakaoMemberDto transJsonToKakaoMemberDto(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            return mapper.readValue(json, KakaoMemberDto.class);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void login(String accessToken, SocialPlatform socialPlatform) {
+        String userInfoJson = getUserInfo(accessToken, socialPlatform);
+        if (socialPlatform == SocialPlatform.KAKAO) {
+            KakaoMemberDto kakaoMemberDto = transJsonToKakaoMemberDto(userInfoJson);
+
         }
     }
 
@@ -172,17 +212,25 @@ public class AuthService {
         emailVerification.verify();
     }
 
-
     private String generateVerificationCode() {
-        int tokenLen = 6;
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new SecureRandom();
-        StringBuilder verificationCode = new StringBuilder(tokenLen);
-        for (int i = 0; i < tokenLen; i++) {
+        StringBuilder verificationCode = new StringBuilder(randomCodeLen);
+        for (int i = 0; i < randomCodeLen; i++) {
             verificationCode.append(
                     chars.charAt(random.nextInt(chars.length()))
             );
         }
         return verificationCode.toString();
+    }
+
+    public String generateUniqueName() {
+        Random random = new SecureRandom();
+        StringBuilder uniqueName = new StringBuilder(defaultNickname);
+
+        for (int i = 0; i < randomCodeLen; i++) {
+            uniqueName.append(chars.charAt(random.nextInt(chars.length())));
+        }
+
+        return uniqueName.toString();
     }
 }

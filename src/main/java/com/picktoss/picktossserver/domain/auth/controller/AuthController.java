@@ -6,18 +6,15 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
-import com.picktoss.picktossserver.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,18 +68,13 @@ public class AuthController {
         return new RedirectView(oauthCallbackResponseUrl);
     }
 
-    @Operation(summary = "Kakao login")
+    @Operation(summary = "login")
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public String login(@Valid @RequestBody LoginRequest request) {
-        return authFacade.getUserInfo(request.getAccessToken());
-    }
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
-    @Operation(summary = "Health check")
-    @GetMapping("/health-check")
-    @ResponseStatus(HttpStatus.OK)
-    public String healthCheck() {
-        return "I'm doing fine";
+        JwtTokenDto jwtTokenDto = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
+        return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken()));
     }
 
     @PostMapping("/auth/verification")
@@ -101,5 +93,12 @@ public class AuthController {
         Long memberId = jwtUserInfo.getMemberId();
 
         authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode());
+    }
+
+    @Operation(summary = "Health check")
+    @GetMapping("/health-check")
+    @ResponseStatus(HttpStatus.OK)
+    public String healthCheck() {
+        return "I'm doing fine";
     }
 }

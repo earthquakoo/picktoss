@@ -9,4 +9,5 @@ import java.util.List;
 public class CreateQuizzesRequest {
     private List<Long> documents;
     private int point;
+    private QuizType quizType;
 }

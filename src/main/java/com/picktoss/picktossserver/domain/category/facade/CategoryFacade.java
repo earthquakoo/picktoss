@@ -27,9 +27,9 @@ public class CategoryFacade {
     }
 
     @Transactional
-    public Long createCategory(Long memberId, String name, CategoryTag tag) {
+    public Long createCategory(Long memberId, String name, CategoryTag tag, String emoji) {
         Member member = memberService.findMemberById(memberId);
-        return categoryService.createCategory(name, tag, memberId, member);
+        return categoryService.createCategory(name, tag, memberId, member, emoji);
     }
 
     @Transactional

@@ -29,6 +29,9 @@ public class Category extends AuditBase {
     @Column(name = "tag", nullable = false)
     private CategoryTag tag;
 
+    @Column(name = "emoji")
+    private String emoji;
+
     @Column(name = "orders")
     private int order;
 
@@ -40,12 +43,13 @@ public class Category extends AuditBase {
     private List<Document> documents = new ArrayList<>();
 
     // Constructor methods
-    public static Category createCategory(Member member, String name, CategoryTag tag, int order) {
+    public static Category createCategory(Member member, String name, CategoryTag tag, int order, String emoji) {
         Category category = Category.builder()
                 .name(name)
                 .member(member)
                 .tag(tag)
                 .order(order)
+                .emoji(emoji)
                 .build();
 
         category.setMember(member);

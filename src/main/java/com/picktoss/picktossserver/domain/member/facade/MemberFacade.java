@@ -2,6 +2,8 @@ package com.picktoss.picktossserver.domain.member.facade;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
+import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.service.EventService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
@@ -57,7 +59,10 @@ public class MemberFacade {
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
         int uploadedDocumentCount = documentService.findUploadedDocumentCount(memberId);
         int uploadedDocumentCountForCurrentSubscription = documentService.findUploadedDocumentCountForCurrentSubscription(memberId, subscription);
-        int possibleUploadedDocumentCount = getPossibleUploadedDocumentCount(subscription, uploadedDocumentCount, uploadedDocumentCountForCurrentSubscription);
+//        int possibleUploadedDocumentCount = getPossibleUploadedDocumentCount(subscription, uploadedDocumentCount, uploadedDocumentCountForCurrentSubscription);
+
+        int possibleUploadedDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getUploadedDocumentCount() - uploadedDocumentCount;
+
 
         return memberService.findMemberInfo(
                 memberId,

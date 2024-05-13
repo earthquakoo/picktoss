@@ -26,13 +26,13 @@ public class Member extends AuditBase {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "google_client_id", nullable = false)
-    private String googleClientId;
+    @Column(name = "client_id", nullable = false)
+    private String clientId;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "continuous_solved_date_count")

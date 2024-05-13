@@ -48,6 +48,18 @@ public enum ErrorInfo {
     PRO_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "PRO_PLAN_ANYTIME_UPLOAD_ERROR", "프로 플랜으로 매 시점에 등록할 수 있는 문서의 최대 개수를 초과했습니다."),
 
     /**
+     * KeyPoint
+     */
+    KEY_POINT_NOT_FOUND(400, "KEY_POINT_NOT_FOUND", "keypoint not found."),
+
+
+    /**
+     * Event
+     */
+    EVENT_NOT_FOUND(400, "EVENT_NOT_FOUND", "Event not found."),
+
+
+    /**
      * Quiz
      */
     QUIZ_NOT_FOUND_ERROR(400, "QUIZ_NOT_FOUND", "Quiz set not found."),

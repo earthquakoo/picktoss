@@ -20,6 +20,7 @@ public class GetAllCategoriesResponse {
         private String name;
         private CategoryTag tag;
         private int order;
+        private String emoji;
         private List<GetAllCategoriesDocumentDto> documents;
     }
 

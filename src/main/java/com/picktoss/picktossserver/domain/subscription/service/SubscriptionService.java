@@ -29,6 +29,7 @@ public class SubscriptionService {
     @Transactional
     public void createSubscription(Member member) {
         Subscription subscription = Subscription.builder()
+                .uploadedDocumentCount(FREE_PLAN_MONTHLY_DOCUMENT_COUNT)
                 .subscriptionPlanType(SubscriptionPlanType.FREE)
                 .member(member)
                 .purchasedDate(LocalDateTime.now())
@@ -69,19 +70,19 @@ public class SubscriptionService {
             Subscription currentSubscription,
             int possessDocumentCount, // 보유한 모든 문서 개수
             int uploadedDocumentCount, // 생성한 모든 문서 개수
-            int currentSubscriptionUploadedDocumentCount // 현재 구독 사이클에 업로드한 문서 개수
+            int uploadableDocumentCount // 현재 구독 사이클에 업로드할 수 있는 문서 개수
     ) {
         if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
             if (possessDocumentCount >= FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT) {
                 throw new CustomException(FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
             }
             if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT) {
-                if (currentSubscriptionUploadedDocumentCount >= FREE_PLAN_MONTHLY_DOCUMENT_COUNT) {
+                if (uploadableDocumentCount >= FREE_PLAN_MONTHLY_DOCUMENT_COUNT) {
                     throw new CustomException(FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
                 }
             }
         } else if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.PRO) {
-            if (currentSubscriptionUploadedDocumentCount >= PRO_PLAN_MONTHLY_DOCUMENT_COUNT) { // 40개
+            if (uploadableDocumentCount >= PRO_PLAN_MONTHLY_DOCUMENT_COUNT) { // 40개
                 throw new CustomException(PRO_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
             }
         } else {
@@ -106,4 +107,5 @@ public class SubscriptionService {
 //            throw new IllegalArgumentException("Invalid Plan Type");
 //        }
     }
+
 }

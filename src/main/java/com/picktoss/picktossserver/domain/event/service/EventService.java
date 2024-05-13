@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.event.service;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.event.constant.EventConstant;
 import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.event.repository.EventRepository;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.EVENT_NOT_FOUND;
 import static com.picktoss.picktossserver.domain.event.constant.EventConstant.*;
 
 @Service
@@ -45,5 +48,10 @@ public class EventService {
             }
         }
         return event.getPoint();
+    }
+
+    public Event findEventByMemberId(Long memberId) {
+        return eventRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new CustomException((EVENT_NOT_FOUND)));
     }
 }

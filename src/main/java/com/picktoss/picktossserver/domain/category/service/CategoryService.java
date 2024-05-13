@@ -48,6 +48,7 @@ public class CategoryService {
                     .name(category.getName())
                     .tag(category.getTag())
                     .order(category.getOrder())
+                    .emoji(category.getEmoji())
                     .documents(documentDtos)
                     .build();
 
@@ -57,7 +58,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Long createCategory(String name, CategoryTag tag, Long memberId, Member member) {
+    public Long createCategory(String name, CategoryTag tag, Long memberId, Member member, String emoji) {
         Optional<Category> optionalCategory = categoryRepository.findByNameAndMemberId(name, memberId);
         if (optionalCategory.isPresent()) {
             throw new CustomException(DUPLICATE_CATEGORY);
@@ -70,7 +71,7 @@ public class CategoryService {
 
         int order = lastOrder;
 
-        Category category = Category.createCategory(member, name, tag, order + 1);
+        Category category = Category.createCategory(member, name, tag, order + 1, emoji);
         categoryRepository.save(category);
         return category.getId();
     }

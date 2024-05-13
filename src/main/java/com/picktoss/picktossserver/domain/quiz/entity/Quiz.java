@@ -40,7 +40,7 @@ public class Quiz extends AuditBase {
     @Column(name = "bookmark", nullable = false)
     private boolean bookmark;
 
-    @Column(name = "answer_count", nullable = false)
+    @Column(name = "incorrect_answer_count", nullable = false)
     private int incorrectAnswerCount;
 
     @ManyToOne(fetch = FetchType.LAZY)

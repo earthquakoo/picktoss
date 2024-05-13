@@ -43,7 +43,7 @@ public class DocumentController {
         Long memberId = jwtUserInfo.getMemberId();
         Long categoryId = Long.valueOf(request.getCategoryId());
 
-        Long documentId = documentFacade.saveDocument(request.getUserDocumentName(), request.getDocumentStatus(), request.getFile(), memberId, categoryId);
+        Long documentId = documentFacade.saveDocument(request.getUserDocumentName(), request.getFile(), memberId, categoryId);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -74,6 +74,12 @@ public class DocumentController {
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
+    }
+
+    @GetMapping("/categories/{category_id}/documents/sort")
+    @ResponseStatus(HttpStatus.OK)
+    public void changeDocumentSort() {
+
     }
 
     @Operation(summary = "Get document by file name")

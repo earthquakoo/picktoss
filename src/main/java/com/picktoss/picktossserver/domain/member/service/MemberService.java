@@ -68,7 +68,11 @@ public class MemberService {
     }
 
     public Optional<Member> findMemberByGoogleClientId(String googleClientId) {
-        return memberRepository.findByGoogleClientId(googleClientId);
+        return memberRepository.findByClientId(googleClientId);
+    }
+
+    public Optional<Member> findMemberByClientId(String clientId) {
+        return memberRepository.findByClientId(clientId);
     }
 
     @Transactional

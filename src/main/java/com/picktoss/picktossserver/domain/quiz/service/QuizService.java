@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
+import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
@@ -77,14 +78,14 @@ public class QuizService {
                 .build();
     }
 
-    public List<Quiz> createQuizzes(List<Long> documents, int point) {
+    public List<Quiz> createQuizzes(List<Long> documents, int point, QuizType quizType, Event event) {
         List<Quiz> quizSets = new ArrayList<>();
 
         int quizzesPerDocument = point / documents.size();
         int remainingQuizzes = point % documents.size();
 
         for (Long documentId : documents) {
-            List<Quiz> quizzes = quizRepository.findByDocumentId(documentId);
+            List<Quiz> quizzes = quizRepository.findByDocumentIdAndQuizType(documentId, quizType);
             for (int i = 0; i < quizzesPerDocument; i++) {
                 Quiz quiz = quizzes.get(i);
                 quizSets.add(quiz);
@@ -92,10 +93,15 @@ public class QuizService {
         }
         // 나머지 퀴즈가 있는 경우 해당 문서에 추가 생성
         for (int i = 0; i < remainingQuizzes; i++) {
-            List<Quiz> quizzes = quizRepository.findByDocumentId(documents.get(i));
+            List<Quiz> quizzes = quizRepository.findByDocumentIdAndQuizType(documents.get(i), quizType);
             Quiz quiz = quizzes.get(i);
-            quizSets.add(quiz);
+            if (quiz.getQuizType() == quizType) {
+                quizSets.add(quiz);
+            }
         }
+
+        event.usePoint(point);
+
         return quizSets;
     }
 
@@ -134,8 +140,11 @@ public class QuizService {
 
         for (GetQuizResultRequest.GetQuizResultQuizDto resultQuizDto : resultQuizDtos) {
             String categoryName = resultQuizDto.getCategoryName();
+            if (!categoryMap.containsKey(categoryName)) {
+                categoryMap.put(categoryName, 0);
+            }
 
-            Integer incorrectAnswerCount = categoryMap.getOrDefault(categoryName, 0);
+            System.out.println(categoryMap);
             if (!resultQuizDto.isAnswer()) {
                 Long quizId = resultQuizDto.getId();
                 Optional<Quiz> optionalQuiz = quizRepository.findById(quizId);
@@ -146,6 +155,8 @@ public class QuizService {
 
                 Quiz quiz = optionalQuiz.get();
                 quiz.addIncorrectAnswerCount();
+
+                Integer incorrectAnswerCount = categoryMap.get(categoryName);
 
                 incorrectAnswerCount++;
                 categoryMap.put(categoryName, incorrectAnswerCount);

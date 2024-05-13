@@ -8,4 +8,5 @@ public class CreateCategoryRequest {
 
     private String name;
     private CategoryTag tag;
+    private String emoji;
 }

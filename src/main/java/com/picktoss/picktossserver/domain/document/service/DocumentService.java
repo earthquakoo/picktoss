@@ -40,13 +40,8 @@ public class DocumentService {
     private final DocumentUploadRepository documentUploadRepository;
 
     @Transactional
-    public Long saveDocument(String documentName, DocumentStatus documentStatus, MultipartFile file, Subscription subscription, Category category, Member member, Long memberId) {
+    public Long saveDocument(String documentName, MultipartFile file, Subscription subscription, Category category, Member member, Long memberId) {
         String s3Key = s3Provider.uploadFile(file);
-        if (documentStatus == DocumentStatus.TEMPORARY_STORAGE) {
-            Document document = Document.createDocument(documentName, s3Key, 0, documentStatus, false, category);
-            documentRepository.save(document);
-            return document.getId();
-        }
 
         Integer lastOrder = documentRepository.findLastOrderByMemberId(memberId);
         if (lastOrder == null) {
@@ -265,6 +260,8 @@ public class DocumentService {
         }
         return currentSubscriptionDocumentUploads.size();
     }
+
+
 
     public List<Document> findAllByCategoryIdAndMemberId(Long categoryId, Long memberId) {
         return documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);

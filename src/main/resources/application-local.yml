@@ -57,11 +57,11 @@ oauth:
     oauth_callback_response_url: ${PICKTOSS_OAUTH_CALLBACK_RESPONSE_REDIRECT_URL}
 
 mailgun:
-  api_key: ${MAILGUN_API_KEY}
-  domain: ${MAILGUN_DOMAIN}
+  api_key: ${PICKTOSS_MAILGUN_API_KEY}
+  domain: ${PICKTOSS_MAILGUN_DOMAIN}
 
 email_verification:
-  expire_seconds: ${VERIFICATION_EXPIRE_SECONDS}
+  expire_seconds: ${PICKTOSS_VERIFICATION_EXPIRE_SECONDS}
 
 cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}

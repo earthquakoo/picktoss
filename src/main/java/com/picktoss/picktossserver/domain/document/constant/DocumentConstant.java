@@ -12,7 +12,7 @@ public final class DocumentConstant {
     public static final int FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT = 30;
 
     // 기본으로 업로드할 수 있는 문서 개수
-    public static final int FREE_PLAN_DEFAULT_DOCUMENT_COUNT = 20;
+    public static final int FREE_PLAN_DEFAULT_DOCUMENT_COUNT = 15;
 
     // 매 달 생성할 수 있는 문서 개수
     public static final int FREE_PLAN_MONTHLY_DOCUMENT_COUNT = 5;
