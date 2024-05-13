@@ -29,9 +29,9 @@ public class AuthFacade {
 
     @Transactional
     public JwtTokenDto login(String accessToken, SocialPlatform socialPlatform) {
-        String nickname = authService.generateUniqueName();
         String userInfoJson = getUserInfo(accessToken, socialPlatform);
         if (socialPlatform == SocialPlatform.KAKAO) {
+            String nickname = authService.generateUniqueName();
             KakaoMemberDto kakaoMemberDto = authService.transJsonToKakaoMemberDto(userInfoJson);
             return kakaoMemberCreate(kakaoMemberDto, nickname);
         } else {

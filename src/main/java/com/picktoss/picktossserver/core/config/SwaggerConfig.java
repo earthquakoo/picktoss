@@ -34,16 +34,12 @@ import java.util.function.Predicate;
                 @Server(url = "https://api.picktoss.com:{port}",
                         description = "The production API server",
                         variables = {
-                                @ServerVariable(name = "port", description = "Booking data",
-                                        defaultValue = "444")
+                                @ServerVariable(name = "port", defaultValue = "444")
                         }
                 )
         }
 )
 public class SwaggerConfig {
-
-    @Value("${picktoss.server_url")
-    public String picktossServerUrl;
 
     @Bean
     public OpenAPI openAPI() {

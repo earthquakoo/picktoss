@@ -20,6 +20,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -29,6 +31,9 @@ public class SecurityConfig {
 
     @Value("${cors.cors_allowed_origin}")
     private String corsAllowedOrigin;
+
+    @Value("${picktoss.server_url}")
+    private String picktossServerUrl;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,8 +50,7 @@ public class SecurityConfig {
                                 "swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/v1/health-check",
-                                "/api/v1/login",
-                                "/api/v1/auth"
+                                "/api/v1/login"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -64,7 +68,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin(corsAllowedOrigin);
+//        config.addAllowedOrigin(corsAllowedOrigin);
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, picktossServerUrl));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
