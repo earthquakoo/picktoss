@@ -2,17 +2,15 @@ package com.picktoss.picktossserver.domain.document.facade;
 
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
-import com.picktoss.picktossserver.domain.document.controller.request.ChangeDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentNameResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_DEFAULT_DOCUMENT_COUNT;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MONTHLY_DOCUMENT_COUNT;
 
 @Service
 @Transactional(readOnly = true)
@@ -50,7 +47,7 @@ public class DocumentFacade {
         }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        return documentService.saveDocument(documentName, file, subscription, category, member, memberId);
+        return documentService.saveDocument(documentName, file, subscription, category, memberId);
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
@@ -67,8 +64,8 @@ public class DocumentFacade {
     }
 
     @Transactional
-    public void changeDocumentOrder(List<ChangeDocumentsOrderRequest.ChangeDocumentDto> documentDtos, Long memberId) {
-        documentService.changeDocumentOrder(documentDtos, memberId);
+    public void changeDocumentOrder(Long documentId, int preDragDocumentOrder, int afterDragDocumentOrder, Long memberId) {
+        documentService.changeDocumentOrder(documentId, preDragDocumentOrder, afterDragDocumentOrder, memberId);
     }
 
     @Transactional
@@ -77,12 +74,24 @@ public class DocumentFacade {
         documentService.moveDocumentToCategory(documentId, memberId, category);
     }
 
-    public SearchDocumentNameResponse searchDocumentName(String word, Long memberId) {
-        return documentService.searchDocumentName(word, memberId);
+    public List<SearchDocumentResponse.SearchDocumentDto> searchDocument(String word, Long memberId) {
+        return documentService.searchDocument(word, memberId);
     }
 
     public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
         return documentService.findMostIncorrectDocuments(memberId);
+    }
+
+    @Transactional
+    public void updateDocumentContent(Long documentId, Long memberId, MultipartFile file) {
+        documentService.updateDocumentContent(documentId, memberId, file);
+    }
+
+    @Transactional
+    public void reUploadDocument(Long documentId, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
+        documentService.reUploadDocument(documentId, memberId, subscription);
     }
 
     public int findPossessDocumentCount(Long memberId) {

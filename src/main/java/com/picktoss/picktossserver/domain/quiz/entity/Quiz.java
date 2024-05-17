@@ -43,6 +43,9 @@ public class Quiz extends AuditBase {
     @Column(name = "incorrect_answer_count", nullable = false)
     private int incorrectAnswerCount;
 
+    @Column(name = "latest", nullable = false)
+    private boolean latest;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
@@ -50,7 +53,7 @@ public class Quiz extends AuditBase {
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Option> options = new ArrayList<>();
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "quiz", orphanRemoval = true)
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
     // Business Logics

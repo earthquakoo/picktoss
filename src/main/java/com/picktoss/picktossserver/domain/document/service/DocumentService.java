@@ -4,15 +4,12 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.controller.request.ChangeDocumentsOrderRequest;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentNameResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.document.entity.DocumentUpload;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
-import com.picktoss.picktossserver.domain.document.repository.DocumentUploadRepository;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -37,13 +34,12 @@ public class DocumentService {
     private final SqsProvider sqsProvider;
 
     private final DocumentRepository documentRepository;
-    private final DocumentUploadRepository documentUploadRepository;
 
     @Transactional
-    public Long saveDocument(String documentName, MultipartFile file, Subscription subscription, Category category, Member member, Long memberId) {
+    public Long saveDocument(String documentName, MultipartFile file, Subscription subscription, Category category, Long memberId) {
         String s3Key = s3Provider.uploadFile(file);
 
-        Integer lastOrder = documentRepository.findLastOrderByMemberId(memberId);
+        Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
         if (lastOrder == null) {
             lastOrder = 0;
         }
@@ -52,12 +48,7 @@ public class DocumentService {
 
         Document document = Document.createDocument(documentName, s3Key, order + 1, DocumentStatus.UNPROCESSED, true, category);
 
-        DocumentUpload documentUpload = DocumentUpload.builder()
-                .member(member)
-                .build();
-
         documentRepository.save(document);
-        documentUploadRepository.save(documentUpload);
 
         sqsProvider.sendMessage(s3Key, document.getId(), subscription.getSubscriptionPlanType());
 
@@ -126,7 +117,7 @@ public class DocumentService {
 
     @Transactional
     public void deleteDocument(Long memberId, Long documentId) {
-        Optional<Document> optionalDocument = documentRepository.findById(documentId);
+        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
         if (optionalDocument.isEmpty()) {
             return ;
         }
@@ -136,22 +127,27 @@ public class DocumentService {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
 
+        documentRepository.updateMinusDocumentOrderByDeletedOrder(document.getOrder(), memberId);
         documentRepository.delete(document);
     }
 
     @Transactional
-    public void changeDocumentOrder(List<ChangeDocumentsOrderRequest.ChangeDocumentDto> documentDtos, Long memberId) {
-        for (ChangeDocumentsOrderRequest.ChangeDocumentDto documentDto : documentDtos) {
-            Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentDto.getId(), memberId);
+    public void changeDocumentOrder(Long documentId, int preDragDocumentOrder, int afterDragDocumentOrder, Long memberId) {
+        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
 
-            if (optionalDocument.isEmpty()) {
-                return ;
-            }
-
-            Document document = optionalDocument.get();
-
-            document.changeDocumentOrder(documentDto.getOrder());
+        if (optionalDocument.isEmpty()) {
+            throw new CustomException(DOCUMENT_NOT_FOUND);
         }
+
+        Document document = optionalDocument.get();
+
+        if (preDragDocumentOrder > afterDragDocumentOrder) {
+            documentRepository.updatePlusDocumentOrderByPreOrderGreaterThanAfterOrder(afterDragDocumentOrder, preDragDocumentOrder, memberId);
+        } else {
+            documentRepository.updateMinusDocumentOrderByPreOrderLessThanAfterOrder(preDragDocumentOrder, afterDragDocumentOrder, memberId);
+        }
+
+        document.updateDocumentOrder(afterDragDocumentOrder);
     }
 
     @Transactional
@@ -163,26 +159,49 @@ public class DocumentService {
         }
 
         Document document = optionalDocument.get();
-
         document.moveDocumentToCategory(category);
-    }
 
-    public SearchDocumentNameResponse searchDocumentName(String word, Long memberId) {
-        Optional<Document> optionalDocument = documentRepository.findBySpecificWord(memberId, word);
-
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
+        Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
+        if (lastOrder == null) {
+            lastOrder = 0;
         }
 
-        Document document = optionalDocument.get();
+        document.updateDocumentOrder(lastOrder + 1);
+    }
 
-        return SearchDocumentNameResponse.builder()
-                .id(document.getId())
-                .name(document.getName())
-                .status(document.getStatus())
-                .quizGenerationStatus(document.isQuizGenerationStatus())
-                .createdAt(document.getCreatedAt())
-                .build();
+    @Transactional
+    public void changeDocumentSort() {
+
+    }
+
+    public List<SearchDocumentResponse.SearchDocumentDto> searchDocument(String word, Long memberId) {
+
+        List<SearchDocumentResponse.SearchDocumentDto> documentDtos = new ArrayList<>();
+
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        for (Document document : documents) {
+            String content = s3Provider.findFile(document.getS3Key());
+            String documentName = document.getName();
+            if (content.toLowerCase().contains(word.toLowerCase())
+                    || documentName.toLowerCase().contains(word.toLowerCase())) {
+                Category category = document.getCategory();
+                SearchDocumentResponse.SearchDocumentCategoryDto categoryDto = SearchDocumentResponse.SearchDocumentCategoryDto.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .build();
+
+                SearchDocumentResponse.SearchDocumentDto documentDto = SearchDocumentResponse.SearchDocumentDto.builder()
+                        .documentId(document.getId())
+                        .documentName(document.getName())
+                        .content(content)
+                        .category(categoryDto)
+                        .build();
+
+                documentDtos.add(documentDto);
+            }
+
+        }
+        return documentDtos;
     }
 
     public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
@@ -233,25 +252,58 @@ public class DocumentService {
         return new GetMostIncorrectDocumentsResponse(documentsDtos);
     }
 
+    @Transactional
+    public void updateDocumentContent(Long documentId, Long memberId, MultipartFile file) {
+        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+
+        if (optionalDocument.isEmpty()) {
+            throw new CustomException(DOCUMENT_NOT_FOUND);
+        }
+
+        Document document = optionalDocument.get();
+        s3Provider.deleteFile(document.getS3Key());
+
+        String s3Key = s3Provider.uploadFile(file);
+        document.updateDocumentS3Key(s3Key);
+    }
+
+    @Transactional
+    public void reUploadDocument(Long documentId, Long memberId, Subscription subscription) {
+        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+
+        if (optionalDocument.isEmpty()) {
+            throw new CustomException(DOCUMENT_NOT_FOUND);
+        }
+
+        Document document = optionalDocument.get();
+        sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+    }
+
 
     //보유한 모든 문서의 개수
     public int findPossessDocumentCount(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        return documents.size();
+        List<Document> possessDocuments = new ArrayList<>();
+        for (Document document : documents) {
+            if (document.isActivated()) {
+                possessDocuments.add(document);
+            }
+        }
+        return possessDocuments.size();
     }
 
     // 생성한 모든 문서
     public int findUploadedDocumentCount(Long memberId) {
-        List<DocumentUpload> uploadedDocuments = documentUploadRepository.findAllByMemberId(memberId);
-        return uploadedDocuments.size();
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        return documents.size();
     }
 
     //현재 구독 사이클에 업로드한 문서 개수
     public int findUploadedDocumentCountForCurrentSubscription(Long memberId, Subscription subscription) {
-        List<DocumentUpload> uploadedDocuments = documentUploadRepository.findAllByMemberId(memberId);
+        List<Document> uploadedDocuments = documentRepository.findAllByMemberId(memberId);
 
-        List<DocumentUpload> currentSubscriptionDocumentUploads = new ArrayList<>();
-        for (DocumentUpload doc : uploadedDocuments) {
+        List<Document> currentSubscriptionDocumentUploads = new ArrayList<>();
+        for (Document doc : uploadedDocuments) {
             if ((doc.getCreatedAt().isAfter(subscription.getPurchasedDate()) ||
                     doc.getCreatedAt().isEqual(subscription.getPurchasedDate())) &&
                     doc.getCreatedAt().isBefore(subscription.getExpireDate())) {
@@ -260,8 +312,6 @@ public class DocumentService {
         }
         return currentSubscriptionDocumentUploads.size();
     }
-
-
 
     public List<Document> findAllByCategoryIdAndMemberId(Long categoryId, Long memberId) {
         return documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);

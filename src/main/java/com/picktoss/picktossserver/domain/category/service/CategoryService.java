@@ -89,6 +89,7 @@ public class CategoryService {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
 
+        categoryRepository.updateMinusOrderByDeletedOrder(memberId, category.getOrder());
         categoryRepository.delete(category);
     }
 
@@ -123,18 +124,21 @@ public class CategoryService {
     }
 
     @Transactional
-    public void updateCategoriesOrder(List<UpdateCategoriesOrderRequest.UpdateCategoryDto> categoryDtos, Long memberId) {
-        for (UpdateCategoriesOrderRequest.UpdateCategoryDto categoryDto : categoryDtos) {
-            Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryDto.getId(), memberId);
-
-            if (optionalCategory.isEmpty()) {
-                return ;
-            }
-
-            Category category = optionalCategory.get();
-
-            category.updateCategoryOrder(categoryDto.getOrder());
+    public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
+        Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
+        if (optionalCategory.isEmpty()) {
+            throw new CustomException(CATEGORY_NOT_FOUND);
         }
+
+        Category category = optionalCategory.get();
+
+        if (preDragCategoryOrder > afterDragCategoryOrder) {
+            categoryRepository.updatePlusOrderByPreOrderGreaterThanAfterOrder(memberId, afterDragCategoryOrder, preDragCategoryOrder);
+        } else {
+            categoryRepository.updateMinusOrderByPreOrderLessThanAfterOrder(memberId, preDragCategoryOrder, afterDragCategoryOrder);
+        }
+
+        category.updateCategoryOrder(afterDragCategoryOrder);
     }
 
     public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {

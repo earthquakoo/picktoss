@@ -74,4 +74,8 @@ public class Category extends AuditBase {
     public void updateCategoryOrder(int order) {
         this.order = order;
     }
+
+    public void sortCategory() {
+
+    }
 }

@@ -39,6 +39,9 @@ public class Document extends AuditBase {
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
 
+    @Column(name = "activated", nullable = false)
+    private boolean activated;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -56,6 +59,7 @@ public class Document extends AuditBase {
                 .s3Key(s3Key)
                 .order(order)
                 .status(status)
+                .activated(true)
                 .quizGenerationStatus(quizGenerationStatus)
                 .category(category)
                 .build();
@@ -71,11 +75,15 @@ public class Document extends AuditBase {
     }
 
     // Business Logics
-    public void changeDocumentOrder(int order) {
+    public void updateDocumentOrder(int order) {
         this.order = order;
     }
 
     public void moveDocumentToCategory(Category category) {
         this.category = category;
+    }
+
+    public void updateDocumentS3Key(String s3Key) {
+        this.s3Key = s3Key;
     }
 }

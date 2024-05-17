@@ -86,6 +86,6 @@ public class CategoryController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        categoryFacade.updateCategoriesOrder(request.getCategories(), memberId);
+        categoryFacade.updateCategoriesOrder(request.getCategoryId(), request.getPreDragCategoryOrder(), request.getAfterDragCategoryOrder(), memberId);
     }
 }

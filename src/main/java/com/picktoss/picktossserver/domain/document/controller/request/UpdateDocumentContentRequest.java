@@ -1,14 +1,11 @@
 package com.picktoss.picktossserver.domain.document.controller.request;
 
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @AllArgsConstructor
-public class CreateDocumentRequest {
-
-    private Long categoryId;
-    private String documentName;
+public class UpdateDocumentContentRequest {
+    private MultipartFile file;
 }

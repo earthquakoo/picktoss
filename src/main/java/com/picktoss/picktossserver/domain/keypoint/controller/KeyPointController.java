@@ -2,14 +2,14 @@ package com.picktoss.picktossserver.domain.keypoint.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.keypoint.controller.dto.KeyPointResponseDto;
+import com.picktoss.picktossserver.domain.keypoint.controller.mapper.KeyPointMapper;
+import com.picktoss.picktossserver.domain.keypoint.controller.request.GetKeyPointSearchRequest;
 import com.picktoss.picktossserver.domain.keypoint.controller.request.UpdateBookmarkKeypointRequest;
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDocumentKeyPointsResponse;
-import com.picktoss.picktossserver.domain.keypoint.controller.response.GetBookmarkedKeyPointResponse;
+import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.facade.KeyPointFacade;
-import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
-import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateBookmarkQuizRequest;
-import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -43,12 +43,25 @@ public class KeyPointController {
     @Operation(summary = "Get bookmarked keypoint")
     @GetMapping("/key-point/bookmark")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetBookmarkedKeyPointResponse> getBookmarkedKeypoint() {
+    public ResponseEntity<KeyPointResponseDto> getBookmarkedKeypoint() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDto> keyPointDtos = keyPointFacade.findBookmarkedKeyPoint();
-        return ResponseEntity.ok().body(new GetBookmarkedKeyPointResponse(keyPointDtos));
+        List<KeyPoint> keyPoints = keyPointFacade.findBookmarkedKeyPoint(memberId);
+        KeyPointResponseDto keyPointResponseDto = KeyPointMapper.keyPointsToKeyPointResponseDto(keyPoints);
+        return ResponseEntity.ok().body(keyPointResponseDto);
+    }
+
+    @Operation(summary = "Get keypoint search result")
+    @GetMapping("/key-point/search")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<KeyPointResponseDto> getKeypointSearchResult(@Valid @RequestBody GetKeyPointSearchRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<KeyPoint> keyPoints = keyPointFacade.findKeypointSearchResult(request.getSearchedWord(), memberId);
+        KeyPointResponseDto keyPointResponseDto = KeyPointMapper.keyPointsToKeyPointResponseDto(keyPoints);
+        return ResponseEntity.ok().body(keyPointResponseDto);
     }
 
     @Operation(summary = "Update bookmarked keypoint")

@@ -1,11 +1,9 @@
 package com.picktoss.picktossserver.domain.keypoint.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDocumentKeyPointsResponse;
-import com.picktoss.picktossserver.domain.keypoint.controller.response.GetBookmarkedKeyPointResponse;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.repository.KeyPointRepository;
 import lombok.RequiredArgsConstructor;
@@ -54,33 +52,27 @@ public class KeyPointService {
         return documentDtos;
     }
 
-    public List<GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDto> findBookmarkedKeyPoint() {
-        List<KeyPoint> keyPoints = keyPointRepository.findByBookmark();
-        List<GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDto> keyPointDtos = new ArrayList<>();
+    public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {
+        return keyPointRepository.findByBookmark(memberId);
+    }
 
+    public List<KeyPoint> findKeypointSearchResult(String word, Long memberId) {
+        List<KeyPoint> keyPoints = keyPointRepository.findByBookmark(memberId);
+        List<KeyPoint> keyPointList = new ArrayList<>();
         for (KeyPoint keyPoint : keyPoints) {
+            String question = keyPoint.getQuestion();
+            String answer = keyPoint.getAnswer();
+
             Document document = keyPoint.getDocument();
-            GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDocumentDto documentDto = GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDocumentDto.builder()
-                    .documentId(document.getId())
-                    .documentName(document.getName())
-                    .build();
+            String documentName = document.getName();
 
-            Category category = document.getCategory();
-            GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointCategoryDto categoryDto = GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointCategoryDto.builder()
-                    .categoryId(category.getId())
-                    .categoryName(category.getName())
-                    .build();
-
-            GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDto keyPointDto = GetBookmarkedKeyPointResponse.GetBookmarkedKeyPointDto.builder()
-                    .question(keyPoint.getQuestion())
-                    .answer(keyPoint.getAnswer())
-                    .document(documentDto)
-                    .category(categoryDto)
-                    .build();
-
-            keyPointDtos.add(keyPointDto);
+            if (question.toLowerCase().contains(word.toLowerCase())
+                    || answer.toLowerCase().contains(word.toLowerCase())
+                    || documentName.toLowerCase().contains(word.toLowerCase())) {
+                keyPointList.add(keyPoint);
+            }
         }
-        return keyPointDtos;
+        return keyPointList;
     }
 
     @Transactional

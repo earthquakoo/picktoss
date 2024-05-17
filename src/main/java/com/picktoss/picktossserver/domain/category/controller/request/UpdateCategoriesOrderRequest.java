@@ -11,11 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UpdateCategoriesOrderRequest {
 
-    private List<UpdateCategoryDto> categories;
-
-    @Getter
-    public static class UpdateCategoryDto {
-        private Long id;
-        private int order;
-    }
+    private Long categoryId;
+    private int preDragCategoryOrder;
+    private int afterDragCategoryOrder;
 }

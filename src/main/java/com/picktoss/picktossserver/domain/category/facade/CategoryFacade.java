@@ -48,8 +48,8 @@ public class CategoryFacade {
     }
 
     @Transactional
-    public void updateCategoriesOrder(List<UpdateCategoriesOrderRequest.UpdateCategoryDto> categoryDtos, Long memberId) {
-        categoryService.updateCategoriesOrder(categoryDtos, memberId);
+    public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
+        categoryService.updateCategoriesOrder(categoryId, preDragCategoryOrder, afterDragCategoryOrder, memberId);
     }
 
     public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {

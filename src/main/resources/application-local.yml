@@ -44,6 +44,9 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
 
+picktoss:
+  server_url: ${PICKTOSS_SERVER_URL}
+
 jwt:
   secret: ${PICKTOSS_JWT_SECRET_KEY}
   access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}

@@ -29,7 +29,7 @@ public class S3Provider {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(multipartFile.getContentType());
 
-        String s3Key = generateS3key(multipartFile.getOriginalFilename());
+        String s3Key = generateS3key();
 
         try (InputStream inputStream = multipartFile.getInputStream()) {
             amazonS3.putObject(bucket, s3Key, inputStream, metadata);
@@ -44,10 +44,7 @@ public class S3Provider {
             S3Object s3Object = amazonS3.getObject(bucket, s3Key);
             S3ObjectInputStream file = s3Object.getObjectContent();
             byte[] contentBytes = file.readAllBytes();
-            System.out.println("contentBytes = " + contentBytes);
-            String s = decodeContentToString(contentBytes);
-            return s;
-
+            return decodeContentToString(contentBytes);
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
         } catch (IOException e) {
@@ -56,7 +53,15 @@ public class S3Provider {
         return null;
     }
 
-    private String generateS3key(String fileName) {
+    public void deleteFile(String s3Key) {
+        try {
+            amazonS3.deleteObject(bucket, s3Key);
+        } catch (AmazonServiceException e) {
+            System.err.println(e.getErrorMessage());
+        }
+    }
+
+    private String generateS3key() {
         return UUID.randomUUID().toString();
     }
 

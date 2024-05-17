@@ -26,7 +26,7 @@ public class QuizSet extends AuditBase {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "quizSet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "quizSet", orphanRemoval = true)
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
     public void updateSolved() {
