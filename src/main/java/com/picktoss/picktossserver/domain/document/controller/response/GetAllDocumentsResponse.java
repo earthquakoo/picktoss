@@ -18,7 +18,7 @@ public class GetAllDocumentsResponse {
     @Builder
     public static class GetAllDocumentsDocumentDto {
         private Long id;
-        private String documentName;
+        private String name;
         private DocumentStatus status;
         private boolean quizGenerationStatus;
         private LocalDateTime createdAt;

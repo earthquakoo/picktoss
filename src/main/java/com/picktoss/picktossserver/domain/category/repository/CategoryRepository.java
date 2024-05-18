@@ -33,13 +33,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT MAX(c.order) FROM Category c WHERE c.member.id = :memberId")
     Integer findLastOrderByMemberId(@Param("memberId") Long memberId);
 
-//    @Query("SELECT c FROM Category c WHERE c.member.id = :memberId AND c.order >= :minCategoryOrder AND c.order <= :maxCategoryOrder ORDER BY c.order DESC")
-//    List<Category> findByMemberIdBetweenOrders(
-//            @Param("memberId") Long memberId,
-//            @Param("minCategoryOrder") int minCategoryOrder,
-//            @Param("maxCategoryOrder") int maxCategoryOrder
-//    );
-
     @Transactional
     @Modifying
     @Query("UPDATE Category c SET c.order = c.order + 1 WHERE c.member.id = :memberId AND c.order >= :minCategoryOrder AND c.order < :maxCategoryOrder")

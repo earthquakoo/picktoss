@@ -53,7 +53,7 @@ public class KeyPointController {
     }
 
     @Operation(summary = "Get keypoint search result")
-    @GetMapping("/key-point/search")
+    @PostMapping("/key-point/search")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<KeyPointResponseDto> getKeypointSearchResult(@Valid @RequestBody GetKeyPointSearchRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();

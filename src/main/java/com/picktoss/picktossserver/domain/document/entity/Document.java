@@ -7,6 +7,8 @@ import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +19,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Where(clause = "activated = true")
+@SQLDelete(sql = "UPDATE document " +
+        "SET activated = false " +
+        "WHERE id = ?")
 public class Document extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +32,7 @@ public class Document extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "orders")
+    @Column(name = "orders", nullable = false)
     private int order;
 
     @Enumerated(EnumType.STRING)
@@ -77,6 +83,14 @@ public class Document extends AuditBase {
     // Business Logics
     public void updateDocumentOrder(int order) {
         this.order = order;
+    }
+
+    public void addDocumentOrder() {
+        this.order += 1;
+    }
+
+    public void minusDocumentOrder() {
+        this.order -= 1;
     }
 
     public void moveDocumentToCategory(Category category) {

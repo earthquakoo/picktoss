@@ -61,6 +61,10 @@ public class Quiz extends AuditBase {
         this.bookmark = bookmark;
     }
 
+    public void updateQuizLatest() {
+        this.latest = false;
+    }
+
     public void addIncorrectAnswerCount() {
         this.incorrectAnswerCount += 1;
     }

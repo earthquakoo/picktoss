@@ -114,6 +114,15 @@ public class QuizService {
     }
 
     @Transactional
+    public void updateQuizLatest(Long documentId) {
+        List<Quiz> quizzes = quizRepository.findByDocumentIdAndLatestIs(documentId);
+
+        for (Quiz quiz : quizzes) {
+            quiz.updateQuizLatest();
+        }
+    }
+
+    @Transactional
     public void updateBookmarkQuiz(Long quizId, boolean bookmark) {
         Optional<Quiz> optionQuiz = quizRepository.findById(quizId);
 

@@ -91,8 +91,17 @@ public class DocumentService {
                 .build();
     }
 
-    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId) {
-        List<Document> documents = documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
+        List<Document> documents;
+
+        if (documentSortOption.equals("updatedAt")) {
+            documents = documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
+        } else if (documentSortOption.equals("name")) {
+            documents = documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
+        } else {
+            documents = documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
+        }
+
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
             DocumentStatus status = DocumentStatus.UNPROCESSED;
@@ -104,7 +113,7 @@ public class DocumentService {
 
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
                     .id(document.getId())
-                    .documentName(document.getName())
+                    .name(document.getName())
                     .status(status)
                     .quizGenerationStatus(true)
                     .createdAt(document.getCreatedAt())
@@ -127,12 +136,31 @@ public class DocumentService {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
 
-        documentRepository.updateMinusDocumentOrderByDeletedOrder(document.getOrder(), memberId);
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        for (Document d : documents) {
+            if (d.getOrder() > document.getOrder()) {
+                d.minusDocumentOrder();
+            }
+        }
+
         documentRepository.delete(document);
     }
 
     @Transactional
     public void changeDocumentOrder(Long documentId, int preDragDocumentOrder, int afterDragDocumentOrder, Long memberId) {
+        if (preDragDocumentOrder > afterDragDocumentOrder) {
+            List<Document> documents = documentRepository.findByOrderGreaterThanEqualAndOrderLessThanOrderByOrderAsc(
+                    afterDragDocumentOrder, preDragDocumentOrder, memberId);
+            for (Document document : documents) {
+                document.addDocumentOrder();
+            }
+        } else {
+            List<Document> documents = documentRepository.findByOrderGreaterThanAndOrderLessThanEqualOrderByOrderAsc(
+                    preDragDocumentOrder, afterDragDocumentOrder, memberId);
+            for (Document document : documents) {
+                document.minusDocumentOrder();
+            }
+        }
         Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
 
         if (optionalDocument.isEmpty()) {
@@ -140,13 +168,6 @@ public class DocumentService {
         }
 
         Document document = optionalDocument.get();
-
-        if (preDragDocumentOrder > afterDragDocumentOrder) {
-            documentRepository.updatePlusDocumentOrderByPreOrderGreaterThanAfterOrder(afterDragDocumentOrder, preDragDocumentOrder, memberId);
-        } else {
-            documentRepository.updateMinusDocumentOrderByPreOrderLessThanAfterOrder(preDragDocumentOrder, afterDragDocumentOrder, memberId);
-        }
-
         document.updateDocumentOrder(afterDragDocumentOrder);
     }
 
@@ -167,11 +188,6 @@ public class DocumentService {
         }
 
         document.updateDocumentOrder(lastOrder + 1);
-    }
-
-    @Transactional
-    public void changeDocumentSort() {
-
     }
 
     public List<SearchDocumentResponse.SearchDocumentDto> searchDocument(String word, Long memberId) {
@@ -283,18 +299,12 @@ public class DocumentService {
     //보유한 모든 문서의 개수
     public int findPossessDocumentCount(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        List<Document> possessDocuments = new ArrayList<>();
-        for (Document document : documents) {
-            if (document.isActivated()) {
-                possessDocuments.add(document);
-            }
-        }
-        return possessDocuments.size();
+        return documents.size();
     }
 
     // 생성한 모든 문서
     public int findUploadedDocumentCount(Long memberId) {
-        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        List<Document> documents = documentRepository.findAllByMemberIdAndActivatedIs(memberId);
         return documents.size();
     }
 

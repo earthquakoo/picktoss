@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.domain.document.controller.response.SearchDoc
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
+import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class DocumentFacade {
     private final CategoryService categoryService;
     private final MemberService memberService;
     private final SubscriptionService subscriptionService;
+    private final QuizService quizService;
 
     @Transactional
     public Long saveDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
@@ -54,8 +56,8 @@ public class DocumentFacade {
         return documentService.findSingleDocument(memberId, documentId);
     }
 
-    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId) {
-        return documentService.findAllDocuments(memberId, categoryId);
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
+        return documentService.findAllDocuments(memberId, categoryId, documentSortOption);
     }
 
     @Transactional
@@ -92,6 +94,7 @@ public class DocumentFacade {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
         documentService.reUploadDocument(documentId, memberId, subscription);
+        quizService.updateQuizLatest(documentId);
     }
 
     public int findPossessDocumentCount(Long memberId) {

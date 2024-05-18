@@ -64,11 +64,13 @@ public class DocumentController {
                     content = @Content(schema = @Schema(implementation = GetAllDocumentsResponse.class)))})
     @GetMapping("/categories/{category_id}/documents")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(@PathVariable(name = "category_id") Long categoryId) {
+    public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
+            @PathVariable(name = "category_id") Long categoryId,
+            @RequestParam(required = false, defaultValue = "createdAt", value = "sort-option") String documentSortOption) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId);
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId, documentSortOption);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
