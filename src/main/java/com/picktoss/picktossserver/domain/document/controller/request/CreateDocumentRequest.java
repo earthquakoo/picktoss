@@ -10,6 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CreateDocumentRequest {
 
     private MultipartFile file;
-    private Long categoryId;
+    private String categoryId;
     private String documentName;
 }

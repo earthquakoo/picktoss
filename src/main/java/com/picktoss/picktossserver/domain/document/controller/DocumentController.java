@@ -37,8 +37,9 @@ public class DocumentController {
             ) { 
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
+        Long categoryId = Long.valueOf(request.getCategoryId());
 
-        Long documentId = documentFacade.saveDocument(request.getDocumentName(), request.getFile(), memberId, request.getCategoryId());
+        Long documentId = documentFacade.saveDocument(request.getDocumentName(), request.getFile(), memberId, categoryId);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
