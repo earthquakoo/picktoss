@@ -13,6 +13,7 @@ public class GetMemberInfoResponse {
     private String name;
     private String email;
     private int point;
+    private int continuousQuizDatesCount;
     private GetMemberInfoSubscriptionDto subscription;
     private GetMemberInfoDocumentDto documentUsage;
 

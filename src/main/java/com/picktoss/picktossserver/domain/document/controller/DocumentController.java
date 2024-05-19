@@ -33,13 +33,12 @@ public class DocumentController {
     @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CreateDocumentResponse> createDocument(
-            @RequestPart(value = "file") MultipartFile file,
-            @RequestPart(value = "request", required = false) CreateDocumentRequest request
+            CreateDocumentRequest request
             ) { 
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long documentId = documentFacade.saveDocument(request.getDocumentName(), file, memberId, request.getCategoryId());
+        Long documentId = documentFacade.saveDocument(request.getDocumentName(), request.getFile(), memberId, request.getCategoryId());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 

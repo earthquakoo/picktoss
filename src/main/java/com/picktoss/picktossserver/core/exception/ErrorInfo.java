@@ -27,7 +27,7 @@ public enum ErrorInfo {
      * Document
      **/
     DOCUMENT_NOT_FOUND(400, "DOCUMENT_NOT_FOUND", "Document not found."),
-
+    DOCUMENT_SORT_OPTION_ERROR(400, "DOCUMENT_SORT_OPTION_ERROR", "Document sort option setting error"),
     /**
      * JWT Exceptions
      **/

@@ -18,6 +18,7 @@ public class GetMostIncorrectDocumentsResponse {
     public static class GetMostIncorrectDocumentsDto {
         private Long documentId;
         private String documentName;
+        private int incorrectAnswerCount;
         private GetMostIncorrectDocumentsCategoryDto category;
     }
 

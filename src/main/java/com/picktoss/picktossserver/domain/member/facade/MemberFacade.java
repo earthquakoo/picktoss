@@ -54,13 +54,19 @@ public class MemberFacade {
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
+        boolean isContinuous = quizService.checkContinuousQuizDatesCount(memberId);
+
+
+        if (!isContinuous) {
+            member.updateContinuousQuizDatesCount(false);
+        }
+
+        int continuousQuizDatesCount = member.getContinuousQuizDatesCount();
+
         int point = eventService.attendanceCheck(member);
 
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
         int uploadedDocumentCount = documentService.findUploadedDocumentCount(memberId);
-        int uploadedDocumentCountForCurrentSubscription = documentService.findUploadedDocumentCountForCurrentSubscription(memberId, subscription);
-//        int possibleUploadedDocumentCount = getPossibleUploadedDocumentCount(subscription, uploadedDocumentCount, uploadedDocumentCountForCurrentSubscription);
-
         int possibleUploadedDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getUploadedDocumentCount() - uploadedDocumentCount;
 
 
@@ -69,15 +75,9 @@ public class MemberFacade {
                 subscription,
                 possessDocumentCount,
                 possibleUploadedDocumentCount,
-                point
+                point,
+                continuousQuizDatesCount
         );
-    }
-
-    @Transactional
-    public int checkContinuousQuizDatesCount(Long memberId) {
-        Member member = memberService.findMemberById(memberId);
-        boolean isContinuous = quizService.checkContinuousQuizDatesCount(memberId);
-        return memberService.checkContinuousQuizDatesCount(member, isContinuous);
     }
 
     private static int getPossibleUploadedDocumentCount(Subscription subscription, int uploadedDocumentCount, int uploadedDocumentCountForCurrentSubscription) {

@@ -34,10 +34,12 @@ public class MemberService {
             Subscription subscription,
             int possessDocumentCount,
             int possibleUploadedDocumentCount,
-            int point
+            int point,
+            int continuousQuizDatesCount
             ) {
 
         Member member = findMemberById(memberId);
+
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
@@ -57,6 +59,7 @@ public class MemberService {
                 .name(member.getName())
                 .email(member.getEmail())
                 .point(point)
+                .continuousQuizDatesCount(continuousQuizDatesCount)
                 .documentUsage(documentDto)
                 .subscription(subscriptionDto)
                 .build();
@@ -84,14 +87,5 @@ public class MemberService {
 
         Member member = optionalMember.get();
         memberRepository.delete(member);
-    }
-
-    @Transactional
-    public int checkContinuousQuizDatesCount(Member member, boolean isContinuous) {
-        if (isContinuous) {
-            return member.getContinuousQuizDatesCount();
-        }
-        member.updateContinuousQuizDatesCount(false);
-        return member.getContinuousQuizDatesCount();
     }
 }

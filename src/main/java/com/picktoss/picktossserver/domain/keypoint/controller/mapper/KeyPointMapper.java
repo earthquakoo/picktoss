@@ -35,6 +35,7 @@ public class KeyPointMapper {
                     .answer(keyPoint.getAnswer())
                     .category(categoryDto)
                     .document(documentDto)
+                    .updatedAt(keyPoint.getUpdatedAt())
                     .build();
 
             keyPointDtos.add(keyPointDto);

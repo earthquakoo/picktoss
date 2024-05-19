@@ -21,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.UNAUTHORIZED_OPERATION_EXCEPTION;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -92,15 +92,13 @@ public class DocumentService {
     }
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
-        List<Document> documents;
-
-        if (documentSortOption.equals("updatedAt")) {
-            documents = documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
-        } else if (documentSortOption.equals("name")) {
-            documents = documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
-        } else {
-            documents = documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
-        }
+        List<Document> documents = switch (documentSortOption) {
+            case "updatedAt" ->
+                    documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
+            case "name" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
+            case "createdAt" -> documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
+            default -> throw new CustomException(DOCUMENT_SORT_OPTION_ERROR);
+        };
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
@@ -223,7 +221,7 @@ public class DocumentService {
     public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
 
-        HashMap<Long, Integer> documentIncorrectAnswerCounts = new HashMap<>();
+        HashMap<Document, Integer> documentIncorrectAnswerCounts = new HashMap<>();
 
         for (Document document : documents) {
             List<Quiz> quizzes = document.getQuizzes();
@@ -233,24 +231,23 @@ public class DocumentService {
                 totalIncorrectAnswerCount += quiz.getIncorrectAnswerCount();
             }
 
-            documentIncorrectAnswerCounts.put(document.getId(), totalIncorrectAnswerCount);
+            documentIncorrectAnswerCounts.put(document, totalIncorrectAnswerCount);
         }
 
-        List<Long> top5Documents = documentIncorrectAnswerCounts.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .map(Map.Entry::getKey)
-                .limit(5)
-                .toList();
-
         List<GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto> documentsDtos = new ArrayList<>();
-        for (Long documentId : top5Documents) {
-            Optional<Document> optionalDocument = documentRepository.findById(documentId);
-            if (optionalDocument.isEmpty()) {
-                throw new CustomException(DOCUMENT_NOT_FOUND);
-            }
-            Document document = optionalDocument.get();
-            Category category = document.getCategory();
 
+        HashMap<Document, Integer> top5Documents = documentIncorrectAnswerCounts.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(5)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        for (Document document : top5Documents.keySet()) {
+            Category category = document.getCategory();
 
             GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsCategoryDto categoryDto = GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsCategoryDto.builder()
                     .categoryId(category.getId())
@@ -260,6 +257,7 @@ public class DocumentService {
             GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto documentDto = GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto.builder()
                     .documentId(document.getId())
                     .documentName(document.getName())
+                    .incorrectAnswerCount(top5Documents.get(document))
                     .category(categoryDto)
                     .build();
 

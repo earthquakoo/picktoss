@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,6 +22,7 @@ public class KeyPointResponseDto {
         private String answer;
         private CategoryDto category;
         private DocumentDto document;
+        private LocalDateTime updatedAt;
     }
 
     @Getter

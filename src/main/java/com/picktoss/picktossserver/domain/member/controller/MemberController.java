@@ -35,15 +35,4 @@ public class MemberController {
         GetMemberInfoResponse memberInfo = memberFacade.findMemberInfo(memberId);
         return ResponseEntity.ok().body(memberInfo);
     }
-
-    @Operation(summary = "Number of continuous quizzes")
-    @GetMapping("/continuous-solved-dates")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CheckContinuousSolvedDatesResponse> checkContinuousSolvedDates() {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        int checkContinuousQuizDatesCount = memberFacade.checkContinuousQuizDatesCount(memberId);
-        return ResponseEntity.ok().body(new CheckContinuousSolvedDatesResponse(checkContinuousQuizDatesCount));
-    }
 }
