@@ -91,7 +91,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void changeMemberName(Long memberId, String name) {
+    public void updateMemberName(Long memberId, String name) {
         Optional<Member> optionalMember = memberRepository.findById(memberId);
 
         if (optionalMember.isEmpty()) {
@@ -100,5 +100,17 @@ public class MemberService {
 
         Member member = optionalMember.get();
         member.updateMemberName(name);
+    }
+
+    @Transactional
+    public void updateQuizNotification(Long memberId, boolean isQuizNotification) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+
+        if (optionalMember.isEmpty()) {
+            throw new CustomException(MEMBER_NOT_FOUND);
+        }
+
+        Member member = optionalMember.get();
+        member.updateQuizNotification(isQuizNotification);
     }
 }

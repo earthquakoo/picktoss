@@ -81,8 +81,13 @@ public class MemberFacade {
     }
 
     @Transactional
-    public void changeMemberName(Long memberId, String name) {
-        memberService.changeMemberName(memberId, name);
+    public void updateMemberName(Long memberId, String name) {
+        memberService.updateMemberName(memberId, name);
+    }
+
+    @Transactional
+    public void updateQuizNotification(Long memberId, boolean isQuizNotification) {
+        memberService.updateQuizNotification(memberId, isQuizNotification);
     }
 
     private static int getPossibleUploadedDocumentCount(Subscription subscription, int uploadedDocumentCount, int uploadedDocumentCountForCurrentSubscription) {

@@ -70,4 +70,8 @@ public class Member extends AuditBase {
     public void updateMemberEmail(String email) {
         this.email = email;
     }
+
+    public void updateQuizNotification(boolean isQuizNotificationEnabled) {
+        this.isQuizNotificationEnabled = isQuizNotificationEnabled;
+    }
 }

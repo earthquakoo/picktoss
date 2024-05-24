@@ -3,16 +3,14 @@ package com.picktoss.picktossserver.domain.member.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.member.controller.request.ChangeMemberNameRequest;
-import com.picktoss.picktossserver.domain.member.controller.response.CheckContinuousSolvedDatesResponse;
+import com.picktoss.picktossserver.domain.member.controller.request.UpdateMemberNameRequest;
+import com.picktoss.picktossserver.domain.member.controller.request.UpdateQuizNotificationRequest;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
-import com.picktoss.picktossserver.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,13 +35,23 @@ public class MemberController {
         return ResponseEntity.ok().body(memberInfo);
     }
 
-    @Operation(summary = "Change member name")
+    @Operation(summary = "Update member name")
     @PatchMapping("/members/update-name")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changeMemberName(@Valid @RequestBody ChangeMemberNameRequest request) {
+    public void updateMemberName(@Valid @RequestBody UpdateMemberNameRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.changeMemberName(memberId, request.getName());
+        memberFacade.updateMemberName(memberId, request.getName());
+    }
+
+    @Operation(summary = "Update quiz")
+    @PatchMapping("/members/update-quiz-notification")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateQuizNotification(@Valid @RequestBody UpdateQuizNotificationRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        memberFacade.updateQuizNotification(memberId, request.isQuizNotificationEnabled());
     }
 }
