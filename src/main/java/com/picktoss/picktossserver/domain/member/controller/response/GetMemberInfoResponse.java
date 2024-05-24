@@ -16,6 +16,7 @@ public class GetMemberInfoResponse {
     private int continuousQuizDatesCount;
     private GetMemberInfoSubscriptionDto subscription;
     private GetMemberInfoDocumentDto documentUsage;
+    private boolean isQuizNotificationEnabled;
 
     @Getter
     @Builder

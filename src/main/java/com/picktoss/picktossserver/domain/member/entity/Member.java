@@ -37,6 +37,9 @@ public class Member extends AuditBase {
     @Column(name = "continuous_solved_date_count")
     private int continuousQuizDatesCount;
 
+    @Column(name = "is_quiz_notification_enabled", nullable = false)
+    private boolean isQuizNotificationEnabled;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
 
@@ -58,5 +61,13 @@ public class Member extends AuditBase {
         } else {
             this.continuousQuizDatesCount = 0;
         }
+    }
+
+    public void updateMemberName(String name) {
+        this.name = name;
+    }
+
+    public void updateMemberEmail(String email) {
+        this.email = email;
     }
 }

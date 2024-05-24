@@ -58,4 +58,24 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             @Param("memberId") Long memberId,
             @Param("deletedOrder") int deletedOrder
     );
+
+//    @Query("SELECT c FROM Category c " +
+//            "WHERE c.order >= :minDocumentOrder AND c.order < :maxDocumentOrder " +
+//            "AND c.member.id = :memberId " +
+//            "ORDER BY c.order ASC")
+//    List<Category> findByOrderGreaterThanEqualAndOrderLessThanOrderByOrderAsc(
+//            @Param("minCategoryOrder") int minCategoryOrder,
+//            @Param("maxCategoryOrder") int maxCategoryOrder,
+//            @Param("memberId") Long memberId
+//    );
+//
+//    @Query("SELECT c FROM Category c " +
+//            "WHERE c.order > :minDocumentOrder AND c.order <= :maxDocumentOrder " +
+//            "AND c.member.id = :memberId " +
+//            "ORDER BY c.order ASC")
+//    List<Category> findByOrderGreaterThanAndOrderLessThanEqualOrderByOrderAsc(
+//            @Param("minCategoryOrder") int minCategoryOrder,
+//            @Param("maxCategoryOrder") int maxCategoryOrder,
+//            @Param("memberId") Long memberId
+//    );
 }

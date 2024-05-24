@@ -49,6 +49,7 @@ public class AuthFacade {
                     .name(googleMemberDto.getName())
                     .clientId(googleMemberDto.getId())
                     .email(googleMemberDto.getEmail())
+                    .isQuizNotificationEnabled(true)
                     .build();
 
             memberService.createMember(member);
@@ -68,6 +69,7 @@ public class AuthFacade {
             Member member = Member.builder()
                     .name(nickname)
                     .clientId(kakaoMemberDto.getId())
+                    .isQuizNotificationEnabled(false)
                     .build();
 
             memberService.createMember(member);
@@ -89,7 +91,8 @@ public class AuthFacade {
     }
 
     @Transactional
-    public void verifyVerificationCode(String email, String verificationCode) {
-        authService.verifyVerificationCode(email, verificationCode);
+    public void verifyVerificationCode(String email, String verificationCode, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        authService.verifyVerificationCode(email, verificationCode, member);
     }
 }

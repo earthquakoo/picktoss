@@ -92,7 +92,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode());
+        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
     }
 
     @Operation(summary = "Health check")

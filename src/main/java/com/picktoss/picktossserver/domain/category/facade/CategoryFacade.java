@@ -48,6 +48,11 @@ public class CategoryFacade {
     }
 
     @Transactional
+    public void updateCategoryEmoji(Long memberId, Long categoryId, String emoji) {
+        categoryService.updateCategoryEmoji(memberId, categoryId, emoji);
+    }
+
+    @Transactional
     public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
         categoryService.updateCategoriesOrder(categoryId, preDragCategoryOrder, afterDragCategoryOrder, memberId);
     }

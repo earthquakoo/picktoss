@@ -42,6 +42,7 @@ public class QuizMapper {
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
                     .options(optionList)
                     .quizType(quiz.getQuizType())
                     .document(documentDto)

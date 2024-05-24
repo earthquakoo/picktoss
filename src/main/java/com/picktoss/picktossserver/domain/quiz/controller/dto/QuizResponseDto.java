@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.quiz.controller.dto;
 
-import com.picktoss.picktossserver.domain.quiz.controller.response.GetBookmarkQuizResponse;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +20,7 @@ public class QuizResponseDto {
         private Long id;
         private String question;
         private String answer;
+        private String explanation;
         private List<String> options;
         private QuizType quizType;
         private DocumentDto document;

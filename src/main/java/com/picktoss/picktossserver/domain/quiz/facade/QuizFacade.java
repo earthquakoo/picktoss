@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -37,9 +38,13 @@ public class QuizFacade {
         return quizService.findQuestionSetToday(memberId, documents);
     }
 
+    @Transactional
     public List<Quiz> createQuizzes(List<Long> documents, int point, QuizType quizType, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        List<Quiz> quizzes = quizService.createQuizzes(documents, point, quizType, member);
         Event event = eventService.findEventByMemberId(memberId);
-        return quizService.createQuizzes(documents, point, quizType, event);
+        event.usePoint(point);
+        return quizzes;
     }
 
     public List<Quiz> findAllGeneratedQuizzes(Long memberId) {
@@ -56,8 +61,17 @@ public class QuizFacade {
     }
 
     @Transactional
-    public List<GetQuizResultResponse.GetQuizResultCategoryDto> updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> resultQuizDtos, String quizSetId, Long memberId) {
+    public void updateQuizResultList(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
+        quizService.updateQuizResult(quizzes, quizSetId, memberId);
         Member member = memberService.findMemberById(memberId);
-        return quizService.updateQuizResult(resultQuizDtos, quizSetId, member);
+        member.updateContinuousQuizDatesCount(true);
+    }
+
+    public GetQuizAnalysisResponse findQuizAnalysisByCategory(Long memberId, Long categoryId) {
+        return quizService.findQuizAnalysisByCategory(memberId, categoryId);
+    }
+
+    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByCategory(Long memberId, Long categoryId, int weeks) {
+        return quizService.findQuizAnswerRateAnalysisByCategory(memberId, categoryId, weeks);
     }
 }

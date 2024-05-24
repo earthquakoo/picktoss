@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.member.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.member.controller.request.ChangeMemberNameRequest;
 import com.picktoss.picktossserver.domain.member.controller.response.CheckContinuousSolvedDatesResponse;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
@@ -34,5 +35,15 @@ public class MemberController {
 
         GetMemberInfoResponse memberInfo = memberFacade.findMemberInfo(memberId);
         return ResponseEntity.ok().body(memberInfo);
+    }
+
+    @Operation(summary = "Change member name")
+    @PatchMapping("/members/update-name")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changeMemberName(@Valid @RequestBody ChangeMemberNameRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        memberFacade.changeMemberName(memberId, request.getName());
     }
 }

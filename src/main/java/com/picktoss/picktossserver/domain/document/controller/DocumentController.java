@@ -129,13 +129,25 @@ public class DocumentController {
     @Operation(summary = "Update document content")
     @PatchMapping("/documents/{document_id}/update-content")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateDocumentContent(
+    public void changeDocumentContent(
             @PathVariable(name = "document_id") Long documentId,
             @RequestPart UpdateDocumentContentRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
         documentFacade.updateDocumentContent(documentId, memberId, request.getFile());
+    }
+
+    @Operation(summary = "Change document name")
+    @PatchMapping("/documents/{document_id}/update-name")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateDocumentName(
+            @PathVariable(name = "document_id") Long documentId,
+            @Valid @RequestBody UpdateDocumentNameRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentFacade.updateDocumentName(documentId, memberId, request.getName());
     }
 
     @Operation(summary = "Re-upload document")

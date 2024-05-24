@@ -75,6 +75,10 @@ public class Category extends AuditBase {
         this.order = order;
     }
 
+    public void updateCategoryEmoji(String emoji) {
+        this.emoji = emoji;
+    }
+
     public void sortCategory() {
 
     }

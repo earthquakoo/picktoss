@@ -2,10 +2,7 @@ package com.picktoss.picktossserver.domain.category.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.category.controller.request.CreateCategoryRequest;
-import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
-import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoryNameRequest;
-import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoryTagRequest;
+import com.picktoss.picktossserver.domain.category.controller.request.*;
 import com.picktoss.picktossserver.domain.category.controller.response.CreateCategoryResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.facade.CategoryFacade;
@@ -77,6 +74,18 @@ public class CategoryController {
         Long memberId = jwtUserInfo.getMemberId();
 
         categoryFacade.updateCategoryTag(memberId, categoryId, request.getTag());
+    }
+
+    @Operation(summary = "Update category emoji")
+    @PatchMapping("/categories/emoji/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCategoryEmoji(
+            @PathVariable(name = "id") Long categoryId,
+            @Valid @RequestBody UpdateCategoryEmojiRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        categoryFacade.updateCategoryEmoji(memberId, categoryId, request.getEmoji());
     }
 
     @Operation(summary = "Update categories order")

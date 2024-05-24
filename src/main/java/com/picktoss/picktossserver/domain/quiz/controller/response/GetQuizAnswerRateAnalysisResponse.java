@@ -4,18 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class GetQuizResultResponse {
+public class GetQuizAnswerRateAnalysisResponse {
 
-    private List<GetQuizResultCategoryDto> categories;
+    private List<QuizAnswerRateAnalysisDto> quizzes;
 
     @Getter
     @Builder
-    public static class GetQuizResultCategoryDto {
-        private String name;
+    public static class QuizAnswerRateAnalysisDto {
+        private LocalDate date;
+        private int totalQuizCount;
         private int incorrectAnswerCount;
     }
 }

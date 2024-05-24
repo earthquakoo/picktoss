@@ -35,5 +35,6 @@ public class GetSingleDocumentResponse {
         private Long id;
         private String question;
         private String answer;
+        private boolean bookmark;
     }
 }

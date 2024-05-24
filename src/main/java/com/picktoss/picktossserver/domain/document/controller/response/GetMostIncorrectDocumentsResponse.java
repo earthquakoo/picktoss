@@ -16,8 +16,8 @@ public class GetMostIncorrectDocumentsResponse {
     @Getter
     @Builder
     public static class GetMostIncorrectDocumentsDto {
-        private Long documentId;
-        private String documentName;
+        private Long id;
+        private String name;
         private int incorrectAnswerCount;
         private GetMostIncorrectDocumentsCategoryDto category;
     }
@@ -25,7 +25,7 @@ public class GetMostIncorrectDocumentsResponse {
     @Getter
     @Builder
     public static class GetMostIncorrectDocumentsCategoryDto {
-        private Long categoryId;
-        private String categoryName;
+        private Long id;
+        private String name;
     }
 }

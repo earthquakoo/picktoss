@@ -3,6 +3,8 @@ package com.picktoss.picktossserver.domain.quiz.controller.request;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Getter
@@ -16,6 +18,6 @@ public class GetQuizResultRequest {
     public static class GetQuizResultQuizDto {
         private Long id;
         private boolean answer;
-        private String categoryName;
+        private LocalTime elapsedTime;
     }
 }

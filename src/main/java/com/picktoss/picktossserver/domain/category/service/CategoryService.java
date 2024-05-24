@@ -124,6 +124,21 @@ public class CategoryService {
     }
 
     @Transactional
+    public void updateCategoryEmoji(Long memberId, Long categoryId, String emoji) {
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+
+        if (optionalCategory.isEmpty()) {
+            return ;
+        }
+
+        Category category = optionalCategory.get();
+        if (!Objects.equals(category.getMember().getId(), memberId)) {
+            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
+        category.updateCategoryEmoji(emoji);
+    }
+
+    @Transactional
     public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
         Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
         if (optionalCategory.isEmpty()) {

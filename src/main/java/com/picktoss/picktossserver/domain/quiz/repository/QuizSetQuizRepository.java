@@ -11,9 +11,40 @@ import java.util.Optional;
 
 public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> {
 
-    @Query("SELECT qsq.quiz FROM QuizSetQuiz qsq WHERE qsq.quizSet.id = :quizSetId")
-    List<Quiz> findAllQuizzesByQuizSetId(@Param("quizSetId") String quizSetId);
+    @Query("SELECT qsq.quiz FROM QuizSetQuiz qsq " +
+            "JOIN qsq.quizSet qs " +
+            "WHERE qs.id = :quizSetId " +
+            "AND qs.member.id = :memberId")
+    List<Quiz> findAllQuizzesByQuizSetIdAndMemberId(
+            @Param("quizSetId") String quizSetId,
+            @Param("memberId") Long memberId
+    );
 
-    @Query("SELECT qsq.quiz FROM QuizSetQuiz qsq JOIN qsq.quizSet qs WHERE qs.member.id = :memberId")
+    @Query("SELECT qsq.quiz FROM QuizSetQuiz qsq " +
+            "JOIN qsq.quizSet qs " +
+            "WHERE qs.member.id = :memberId")
     List<Quiz> findAllQuizzesByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN qsq.quizSet qs " +
+            "JOIN qsq.quiz q " +
+            "JOIN q.document d " +
+            "JOIN d.category c " +
+            "WHERE qs.member.id = :memberId " +
+            "AND c.id = :categoryId " +
+            "AND qs.solved = true " +
+            "ORDER BY qsq.updatedAt ASC")
+    List<QuizSetQuiz> findAllByMemberIdAndCategoryId(
+            @Param("memberId") Long memberId,
+            @Param("categoryId") Long categoryId
+    );
+
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN qsq.quizSet qs " +
+            "WHERE qs.id = :quizSetId " +
+            "AND qs.member.id = :memberId")
+    List<QuizSetQuiz> findAllByQuizSetIdAndMemberId(
+            @Param("quizSetId") String quizSetId,
+            @Param("memberId") Long memberId
+    );
 }

@@ -69,6 +69,7 @@ public class DocumentService {
                     .id(keyPoint.getId())
                     .question(keyPoint.getQuestion())
                     .answer(keyPoint.getAnswer())
+                    .bookmark(keyPoint.isBookmark())
                     .build();
 
             keyPointDtos.add(keyPointDto);
@@ -250,13 +251,13 @@ public class DocumentService {
             Category category = document.getCategory();
 
             GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsCategoryDto categoryDto = GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsCategoryDto.builder()
-                    .categoryId(category.getId())
-                    .categoryName(category.getName())
+                    .id(category.getId())
+                    .name(category.getName())
                     .build();
 
             GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto documentDto = GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto.builder()
-                    .documentId(document.getId())
-                    .documentName(document.getName())
+                    .id(document.getId())
+                    .name(document.getName())
                     .incorrectAnswerCount(top5Documents.get(document))
                     .category(categoryDto)
                     .build();
@@ -279,6 +280,19 @@ public class DocumentService {
 
         String s3Key = s3Provider.uploadFile(file);
         document.updateDocumentS3Key(s3Key);
+        document.updateDocumentStatus(DocumentStatus.KEYPOINT_UPDATE_POSSIBLE);
+    }
+
+    @Transactional
+    public void updateDocumentName(Long documentId, Long memberId, String documentName) {
+        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+
+        if (optionalDocument.isEmpty()) {
+            throw new CustomException(DOCUMENT_NOT_FOUND);
+        }
+
+        Document document = optionalDocument.get();
+        document.updateDocumentName(documentName);
     }
 
     @Transactional

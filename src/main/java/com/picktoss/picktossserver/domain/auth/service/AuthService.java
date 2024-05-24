@@ -12,6 +12,7 @@ import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
 import com.picktoss.picktossserver.domain.auth.entity.EmailVerification;
 import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepository;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -190,7 +191,7 @@ public class AuthService {
      * 이메일 인증코드 인증
      */
     @Transactional
-    public void verifyVerificationCode(String email, String verificationCode) {
+    public void verifyVerificationCode(String email, String verificationCode, Member member) {
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);
         if (optionalEmailVerification.isEmpty()) {
             throw new CustomException(EMAIL_VERIFICATION_NOT_FOUND);
@@ -210,6 +211,7 @@ public class AuthService {
             throw new CustomException(VERIFICATION_CODE_EXPIRED);
         }
         emailVerification.verify();
+        member.updateMemberEmail(email);
     }
 
     private String generateVerificationCode() {

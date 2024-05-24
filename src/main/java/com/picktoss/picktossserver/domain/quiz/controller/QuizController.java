@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Tag(name = "6. Quiz")
@@ -105,11 +106,39 @@ public class QuizController {
     @Operation(summary = "Update quiz result")
     @PatchMapping("/quiz/result")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizResultResponse> updateQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
+    public void updateQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetQuizResultResponse.GetQuizResultCategoryDto> response = quizFacade.updateQuizResult(request.getQuizzes(), request.getQuizSetId(), memberId);
-        return ResponseEntity.ok().body(new GetQuizResultResponse(response));
+        quizFacade.updateQuizResultList(request.getQuizzes(), request.getQuizSetId(), memberId);
     }
+
+    @Operation(summary = "Get quiz analysis by category")
+    @GetMapping("/categories/{category_id}/quiz-analysis")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetQuizAnalysisResponse> getQuizAnalysis(
+            @PathVariable("category_id") Long categoryId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetQuizAnalysisResponse response = quizFacade.findQuizAnalysisByCategory(memberId, categoryId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "Get quiz answer rate analysis by category")
+    @GetMapping("/categories/{category_id}/quiz-answer-rate")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysis(
+            @PathVariable("category_id") Long categoryId,
+            @RequestParam(required = false, defaultValue = "1", value = "weeks") String weeks
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+        Integer week = Integer.valueOf(weeks);
+
+        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> response = quizFacade.findQuizAnswerRateAnalysisByCategory(memberId, categoryId, week);
+        return ResponseEntity.ok().body(new GetQuizAnswerRateAnalysisResponse(response));
+    }
+
 }

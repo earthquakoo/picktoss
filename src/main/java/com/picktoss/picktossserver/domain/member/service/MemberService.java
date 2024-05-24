@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
@@ -30,16 +31,13 @@ public class MemberService {
     }
 
     public GetMemberInfoResponse findMemberInfo(
-            Long memberId,
+            Member member,
             Subscription subscription,
             int possessDocumentCount,
             int possibleUploadedDocumentCount,
             int point,
             int continuousQuizDatesCount
             ) {
-
-        Member member = findMemberById(memberId);
-
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
@@ -55,13 +53,16 @@ public class MemberService {
                 .expireDate(subscription.getExpireDate())
                 .build();
 
+        String email = Optional.ofNullable(member.getEmail()).orElse("");
+
         return GetMemberInfoResponse.builder()
                 .name(member.getName())
-                .email(member.getEmail())
+                .email(email)
                 .point(point)
                 .continuousQuizDatesCount(continuousQuizDatesCount)
                 .documentUsage(documentDto)
                 .subscription(subscriptionDto)
+                .isQuizNotificationEnabled(member.isQuizNotificationEnabled())
                 .build();
     }
 
@@ -87,5 +88,17 @@ public class MemberService {
 
         Member member = optionalMember.get();
         memberRepository.delete(member);
+    }
+
+    @Transactional
+    public void changeMemberName(Long memberId, String name) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+
+        if (optionalMember.isEmpty()) {
+            throw new CustomException(MEMBER_NOT_FOUND);
+        }
+
+        Member member = optionalMember.get();
+        member.updateMemberName(name);
     }
 }

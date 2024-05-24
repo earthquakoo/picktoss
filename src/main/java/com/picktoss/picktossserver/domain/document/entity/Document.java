@@ -100,4 +100,12 @@ public class Document extends AuditBase {
     public void updateDocumentS3Key(String s3Key) {
         this.s3Key = s3Key;
     }
+
+    public void updateDocumentName(String name) {
+        this.name = name;
+    }
+
+    public void updateDocumentStatus(DocumentStatus documentStatus) {
+        this.status = documentStatus;
+    }
 }

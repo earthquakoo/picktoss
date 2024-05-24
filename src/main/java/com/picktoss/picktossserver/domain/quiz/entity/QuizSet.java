@@ -29,6 +29,15 @@ public class QuizSet extends AuditBase {
     @OneToMany(mappedBy = "quizSet", orphanRemoval = true)
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
+    // Constructor methods
+    public static QuizSet createQuizSet(String id, Member member) {
+        return QuizSet.builder()
+                .id(id)
+                .solved(false)
+                .member(member)
+                .build();
+    }
+
     public void updateSolved() {
         this.solved = true;
     }

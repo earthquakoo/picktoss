@@ -90,6 +90,11 @@ public class DocumentFacade {
     }
 
     @Transactional
+    public void updateDocumentName(Long documentId, Long memberId, String documentName) {
+        documentService.updateDocumentName(documentId, memberId, documentName);
+    }
+
+    @Transactional
     public void reUploadDocument(Long documentId, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);

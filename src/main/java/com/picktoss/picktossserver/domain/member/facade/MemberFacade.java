@@ -71,13 +71,18 @@ public class MemberFacade {
 
 
         return memberService.findMemberInfo(
-                memberId,
+                member,
                 subscription,
                 possessDocumentCount,
                 possibleUploadedDocumentCount,
                 point,
                 continuousQuizDatesCount
         );
+    }
+
+    @Transactional
+    public void changeMemberName(Long memberId, String name) {
+        memberService.changeMemberName(memberId, name);
     }
 
     private static int getPossibleUploadedDocumentCount(Subscription subscription, int uploadedDocumentCount, int uploadedDocumentCountForCurrentSubscription) {
