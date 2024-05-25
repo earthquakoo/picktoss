@@ -22,6 +22,9 @@ public class QuizSet extends AuditBase {
     @Column(name = "solved", nullable = false)
     private boolean solved;
 
+    @Column(name = "is_today_quiz_set", nullable = false)
+    private boolean isTodayQuizSet;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -34,6 +37,7 @@ public class QuizSet extends AuditBase {
         return QuizSet.builder()
                 .id(id)
                 .solved(false)
+                .isTodayQuizSet(false)
                 .member(member)
                 .build();
     }

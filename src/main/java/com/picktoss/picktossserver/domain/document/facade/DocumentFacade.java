@@ -98,8 +98,8 @@ public class DocumentFacade {
     public void reUploadDocument(Long documentId, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-        documentService.reUploadDocument(documentId, memberId, subscription);
         quizService.updateQuizLatest(documentId);
+        documentService.reUploadDocument(documentId, memberId, subscription);
     }
 
     public int findPossessDocumentCount(Long memberId) {
