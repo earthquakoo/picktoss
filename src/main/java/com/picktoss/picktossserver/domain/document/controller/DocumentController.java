@@ -127,11 +127,11 @@ public class DocumentController {
     }
 
     @Operation(summary = "Update document content")
-    @PatchMapping("/documents/{document_id}/update-content")
+    @PatchMapping(value = "/documents/{document_id}/update-content", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changeDocumentContent(
             @PathVariable(name = "document_id") Long documentId,
-            @RequestPart UpdateDocumentContentRequest request) {
+            UpdateDocumentContentRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 

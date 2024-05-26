@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.category.facade;
 
 import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
+import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -24,6 +25,10 @@ public class CategoryFacade {
 
     public List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> findAllCategories(Long memberId) {
         return categoryService.findAllCategories(memberId);
+    }
+
+    public GetSingleCategoryResponse findSingleCategory(Long categoryId, Long memberId) {
+        return categoryService.findSingleCategory(categoryId, memberId);
     }
 
     @Transactional

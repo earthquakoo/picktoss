@@ -13,15 +13,31 @@ import java.util.List;
 
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
-    @Query("SELECT q FROM Quiz q WHERE q.bookmark = true")
+    @Query("SELECT q FROM Quiz q " +
+            "WHERE q.bookmark = true")
     List<Quiz> findByBookmark();
 
-    @Query("SELECT q FROM Quiz q WHERE q.document.id = :documentId AND q.quizType = :quizType ORDER BY q.deliveredCount ASC")
+    @Query("SELECT q FROM Quiz q " +
+            "JOIN q.document d " +
+            "JOIN d.category c " +
+            "WHERE d.id = :documentId " +
+            "AND c.member.id = :memberId")
+    List<Quiz> findAllByDocumentIdAndMemberId(
+            @Param("documentId") Long documentId,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT q FROM Quiz q " +
+            "WHERE q.document.id = :documentId " +
+            "AND q.quizType = :quizType " +
+            "ORDER BY q.deliveredCount ASC")
     List<Quiz> findByDocumentIdAndQuizType(
             @Param("documentId") Long documentId,
             @Param("quizType") QuizType quizType
     );
 
-    @Query("SELECT q FROM Quiz q WHERE q.document.id = :documentId AND q.latest = true")
+    @Query("SELECT q FROM Quiz q " +
+            "WHERE q.document.id = :documentId " +
+            "AND q.latest = true")
     List<Quiz> findByDocumentIdAndLatestIs(@Param("documentId") Long documentId);
 }

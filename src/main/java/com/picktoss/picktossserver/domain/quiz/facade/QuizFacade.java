@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.facade;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.entity.Event;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.POINT_NOT_ENOUGH;
 
 @Service
 @RequiredArgsConstructor
@@ -41,14 +44,20 @@ public class QuizFacade {
     @Transactional
     public List<Quiz> createQuizzes(List<Long> documents, int point, QuizType quizType, Long memberId) {
         Member member = memberService.findMemberById(memberId);
-        List<Quiz> quizzes = quizService.createQuizzes(documents, point, quizType, member);
         Event event = eventService.findEventByMemberId(memberId);
+
+        if (point > event.getPoint()) {
+            throw new CustomException(POINT_NOT_ENOUGH);
+        }
+
+        List<Quiz> quizzes = quizService.createQuizzes(documents, point, quizType, member);
+
         event.usePoint(point);
         return quizzes;
     }
 
-    public List<Quiz> findAllGeneratedQuizzes(Long memberId) {
-        return quizService.findAllGeneratedQuizzes(memberId);
+    public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {
+        return quizService.findAllGeneratedQuizzes(documentId, memberId);
     }
 
     public List<Quiz> findBookmarkQuiz() {
@@ -62,16 +71,21 @@ public class QuizFacade {
 
     @Transactional
     public void updateQuizResultList(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
-        quizService.updateQuizResult(quizzes, quizSetId, memberId);
-        Member member = memberService.findMemberById(memberId);
-        member.updateContinuousQuizDatesCount(true);
+        boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
+        if (isTodayQuizSet) {
+            eventService.checkContinuousQuizSolvedDate(memberId);
+        }
     }
 
     public GetQuizAnalysisResponse findQuizAnalysisByCategory(Long memberId, Long categoryId) {
         return quizService.findQuizAnalysisByCategory(memberId, categoryId);
     }
 
-    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByCategory(Long memberId, Long categoryId, int weeks) {
-        return quizService.findQuizAnswerRateAnalysisByCategory(memberId, categoryId, weeks);
+    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
+        return quizService.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
+    }
+
+    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
+        return quizService.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
     }
 }

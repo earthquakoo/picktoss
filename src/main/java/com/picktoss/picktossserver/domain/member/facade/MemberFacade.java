@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
+import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.event.service.EventService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
@@ -43,7 +44,7 @@ public class MemberFacade {
             Member member = memberInfoDto.toEntity();
             memberService.createMember(member);
             subscriptionService.createSubscription(member);
-            eventService.attendanceCheck(member);
+            eventService.createEvent(member);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
@@ -54,16 +55,12 @@ public class MemberFacade {
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-        boolean isContinuous = quizService.checkContinuousQuizDatesCount(memberId);
 
+        Event event = eventService.findEventByMemberId(memberId);
+        eventService.checkContinuousQuizSolvedDate(memberId);
 
-        if (!isContinuous) {
-            member.updateContinuousQuizDatesCount(false);
-        }
-
-        int continuousQuizDatesCount = member.getContinuousQuizDatesCount();
-
-        int point = eventService.attendanceCheck(member);
+        int point = event.getPoint();
+        int continuousQuizDatesCount = event.getContinuousSolvedQuizDateCount();
 
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
         int uploadedDocumentCount = documentService.findUploadedDocumentCount(memberId);

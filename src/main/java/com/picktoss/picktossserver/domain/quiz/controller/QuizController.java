@@ -67,14 +67,16 @@ public class QuizController {
         return ResponseEntity.ok().body(quizResponseDto);
     }
 
-    @Operation(summary = "Get all generated quizzes")
-    @GetMapping("/quizzes")
+    @Operation(summary = "Get all generated quizzes by document")
+    @GetMapping("/documents/{document_id}/quizzes")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<QuizResponseDto> getGeneratedQuizzes() {
+    public ResponseEntity<QuizResponseDto> getGeneratedQuizzes(
+            @PathVariable("document_id") Long documentId
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.findAllGeneratedQuizzes(memberId);
+        List<Quiz> quizzes = quizFacade.findAllGeneratedQuizzes(documentId, memberId);
         QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
         return ResponseEntity.ok().body(quizResponseDto);
     }
@@ -126,18 +128,33 @@ public class QuizController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Get quiz answer rate analysis by category")
-    @GetMapping("/categories/{category_id}/quiz-answer-rate")
+    @Operation(summary = "Get quiz answer rate analysis by week")
+    @GetMapping("/categories/{category_id}/quiz-answer-rate-week")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysis(
+    public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByWeek(
             @PathVariable("category_id") Long categoryId,
-            @RequestParam(required = false, defaultValue = "1", value = "weeks") String weeks
+            @RequestParam(required = false, defaultValue = "1", value = "week") String week
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
-        Integer week = Integer.valueOf(weeks);
+        Integer weeks = Integer.valueOf(week);
 
-        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> response = quizFacade.findQuizAnswerRateAnalysisByCategory(memberId, categoryId, week);
+        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
+        return ResponseEntity.ok().body(new GetQuizAnswerRateAnalysisResponse(response));
+    }
+
+    @Operation(summary = "Get quiz answer rate analysis by month")
+    @GetMapping("/categories/{category_id}/quiz-answer-rate-month/{year}/{month}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByMonth(
+            @PathVariable("category_id") Long categoryId,
+            @PathVariable("year") int year,
+            @PathVariable("month") int month
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
         return ResponseEntity.ok().body(new GetQuizAnswerRateAnalysisResponse(response));
     }
 

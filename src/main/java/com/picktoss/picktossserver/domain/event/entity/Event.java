@@ -25,8 +25,8 @@ public class Event{
     @Column(name = "point")
     private int point;
 
-    @Column(name = "continuous_attendance_dates_count")
-    private int continuousAttendanceDatesCount;
+    @Column(name = "continuous_solved_quiz_date_count")
+    private int continuousSolvedQuizDateCount;
 
     @Column(name = "updated_at")
     @LastModifiedDate
@@ -39,7 +39,7 @@ public class Event{
     public static Event createEvent(int point, int continuousAttendanceDatesCount, Member member) {
         return Event.builder()
                 .point(point)
-                .continuousAttendanceDatesCount(continuousAttendanceDatesCount)
+                .continuousSolvedQuizDateCount(continuousAttendanceDatesCount)
                 .member(member)
                 .build();
     }
@@ -54,10 +54,10 @@ public class Event{
         this.point -= point;
     }
 
-    public void initContinuousAttendanceDatesCount() {
-        this.continuousAttendanceDatesCount = 0;
+    public void initContinuousSolvedQuizDateCount() {
+        this.continuousSolvedQuizDateCount = 0;
     }
-    public void addContinuousAttendanceDatesCount() {
-        this.continuousAttendanceDatesCount += 1;
+    public void addContinuousSolvedQuizDateCount() {
+        this.continuousSolvedQuizDateCount += 1;
     }
 }

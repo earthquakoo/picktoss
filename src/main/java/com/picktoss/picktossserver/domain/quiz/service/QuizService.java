@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -93,6 +94,8 @@ public class QuizService {
             List<Quiz> quizzes = quizRepository.findByDocumentIdAndQuizType(documentId, quizType);
             for (int i = 0; i < quizzesPerDocument; i++) {
                 Quiz quiz = quizzes.get(i);
+                quiz.addDeliveredCount();
+
                 QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
                 quizSets.add(quiz);
                 quizSetQuizzes.add(quizSetQuiz);
@@ -102,6 +105,8 @@ public class QuizService {
         for (int i = 0; i < remainingQuizzes; i++) {
             List<Quiz> quizzes = quizRepository.findByDocumentIdAndQuizType(documents.get(i), quizType);
             Quiz quiz = quizzes.get(i);
+            quiz.addDeliveredCount();
+
             QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
             quizSets.add(quiz);
             quizSetQuizzes.add(quizSetQuiz);
@@ -113,8 +118,8 @@ public class QuizService {
         return quizSets;
     }
 
-    public List<Quiz> findAllGeneratedQuizzes(Long memberId) {
-        return quizSetQuizRepository.findAllQuizzesByMemberId(memberId);
+    public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {
+        return quizRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
     }
 
     public List<Quiz> findBookmarkQuiz() {
@@ -144,7 +149,7 @@ public class QuizService {
     }
 
     @Transactional
-    public void updateQuizResult(
+    public boolean updateQuizResult(
             List<GetQuizResultRequest.GetQuizResultQuizDto> quizDtos, String quizSetId, Long memberId) {
 
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
@@ -170,6 +175,9 @@ public class QuizService {
                 quizSet.updateSolved();
             }
         }
+        boolean isTodayQuizSet = quizSetQuizzes.getFirst().getQuizSet().isTodayQuizSet();
+
+        return isTodayQuizSet;
     }
 
     public GetQuizAnalysisResponse findQuizAnalysisByCategory(Long memberId, Long categoryId) {
@@ -179,7 +187,7 @@ public class QuizService {
         int mixUpQuizCount = 0;
         int multipleChoiceQuizCount = 0;
         int incorrectAnswerCount = 0;
-        LocalTime elapsedTime = LocalTime.of(0, 0, 0);
+        LocalTime totalElapsedTime = LocalTime.of(0, 0, 0);
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             Quiz quiz = quizSetQuiz.getQuiz();
@@ -190,9 +198,11 @@ public class QuizService {
             }
 
             if (!Objects.isNull(quizSetQuiz.getElapsedTime())) {
-                elapsedTime = elapsedTime.plusHours(quizSetQuiz.getElapsedTime().getHour())
-                        .plusMinutes(quizSetQuiz.getElapsedTime().getMinute())
-                        .plusSeconds(quizSetQuiz.getElapsedTime().getSecond());
+                String elapsedTime = quizSetQuiz.getElapsedTime();
+                LocalTime localTime = LocalTime.parse(elapsedTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
+                totalElapsedTime = localTime.plusHours(localTime.getHour())
+                        .plusMinutes(localTime.getMinute())
+                        .plusSeconds(localTime.getSecond());
             }
 
             incorrectAnswerCount += quiz.getIncorrectAnswerCount();
@@ -203,11 +213,11 @@ public class QuizService {
                 .mixUpQuizCount(mixUpQuizCount)
                 .multipleQuizCount(multipleChoiceQuizCount)
                 .incorrectAnswerCount(incorrectAnswerCount)
-                .elapsedTime(elapsedTime)
+                .elapsedTime(totalElapsedTime.toString())
                 .build();
     }
 
-    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByCategory(Long memberId, Long categoryId, int weeks) {
+    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
         HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new HashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new HashMap<>();
@@ -250,11 +260,53 @@ public class QuizService {
         return quizzesDtos;
     }
 
+    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
+
+        HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new HashMap<>();
+        HashMap<LocalDate, Integer> totalQuizCountByDate = new HashMap<>();
+
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            incorrectAnswerCountByDate.put(date, 0);
+            totalQuizCountByDate.put(date, 0);
+        }
+
+        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                totalQuizCountByDate.put(date, totalQuizCountByDate.get(date) + 1);
+
+                if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && !quizSetQuiz.getIsAnswer()) {
+                    incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.get(date) + 1);
+                }
+            }
+        }
+
+        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> quizzesDtos = new ArrayList<>();
+
+        for (LocalDate date : incorrectAnswerCountByDate.keySet()) {
+            GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto quizzesDto = GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto.builder()
+                    .date(date)
+                    .totalQuizCount(totalQuizCountByDate.get(date))
+                    .incorrectAnswerCount(incorrectAnswerCountByDate.get(date))
+                    .build();
+
+            quizzesDtos.add(quizzesDto);
+        }
+
+        return quizzesDtos;
+    }
+
     public boolean checkContinuousQuizDatesCount(Long memberId) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberId(memberId);
+        List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIs(memberId);
 
         if (quizSets.isEmpty()) {
-            return false;
+            return true;
         }
 
         QuizSet quizSet = quizSets.stream()

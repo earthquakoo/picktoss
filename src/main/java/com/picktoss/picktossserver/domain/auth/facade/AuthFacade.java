@@ -54,7 +54,7 @@ public class AuthFacade {
 
             memberService.createMember(member);
             subscriptionService.createSubscription(member);
-            eventService.attendanceCheck(member);
+            eventService.createEvent(member);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
@@ -74,7 +74,7 @@ public class AuthFacade {
 
             memberService.createMember(member);
             subscriptionService.createSubscription(member);
-            eventService.attendanceCheck(member);
+            eventService.createEvent(member);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();

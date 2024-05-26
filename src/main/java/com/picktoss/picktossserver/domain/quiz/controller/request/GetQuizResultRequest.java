@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ public class GetQuizResultRequest {
     public static class GetQuizResultQuizDto {
         private Long id;
         private boolean answer;
-        private LocalTime elapsedTime;
+        @Schema(type = "string", example = "HH:mm:ss")
+        private String elapsedTime;
     }
 }

@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.category.controller.request.*;
 import com.picktoss.picktossserver.domain.category.controller.response.CreateCategoryResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
+import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
 import com.picktoss.picktossserver.domain.category.facade.CategoryFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +36,17 @@ public class CategoryController {
 
         List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> allCategories = categoryFacade.findAllCategories(memberId);
         return ResponseEntity.ok().body(new GetAllCategoriesResponse(allCategories));
+    }
+
+    @Operation(summary = "Get category by id")
+    @GetMapping("/categories/{category_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetSingleCategoryResponse> getSingleCategory(@PathVariable("category_id") Long categoryId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetSingleCategoryResponse response = categoryFacade.findSingleCategory(categoryId, memberId);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "Create category")

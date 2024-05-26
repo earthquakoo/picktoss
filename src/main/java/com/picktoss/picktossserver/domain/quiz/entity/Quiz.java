@@ -68,4 +68,8 @@ public class Quiz extends AuditBase {
     public void addIncorrectAnswerCount() {
         this.incorrectAnswerCount += 1;
     }
+
+    public void addDeliveredCount() {
+        this.deliveredCount += 1;
+    }
 }

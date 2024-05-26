@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.category.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
+import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.repository.CategoryRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -55,6 +56,25 @@ public class CategoryService {
             categoryDtos.add(categoryDto);
         }
         return categoryDtos;
+    }
+
+    public GetSingleCategoryResponse findSingleCategory(Long categoryId, Long memberId) {
+        Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
+
+        if (optionalCategory.isEmpty()) {
+            throw new CustomException(CATEGORY_NOT_FOUND);
+        }
+
+        Category category = optionalCategory.get();
+
+        return GetSingleCategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .tag(category.getTag())
+                .emoji(category.getEmoji())
+                .order(category.getOrder())
+                .build();
+
     }
 
     @Transactional

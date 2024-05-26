@@ -17,6 +17,12 @@ public enum ErrorInfo {
     INVALID_PASSWORD(400, "INVALID_PASSWORD", "Password is invalid."),
 
     /**
+     * AWS Exception
+     */
+    AMAZON_SERVICE_EXCEPTION(400, "AMAZON_SERVICE_EXCEPTION", "Amazon service error."),
+    FILE_UPLOAD_ERROR(400, "FILE_UPLOAD_ERROR", "There was a problem uploading the file."),
+
+    /**
      * Category
      **/
     DUPLICATE_CATEGORY(400, "DUPLICATE_CATEGORY", "Parent category cannot have multiple child categories with the same name"),
@@ -28,6 +34,7 @@ public enum ErrorInfo {
      **/
     DOCUMENT_NOT_FOUND(400, "DOCUMENT_NOT_FOUND", "Document not found."),
     DOCUMENT_SORT_OPTION_ERROR(400, "DOCUMENT_SORT_OPTION_ERROR", "Document sort option setting error"),
+
     /**
      * JWT Exceptions
      **/
@@ -57,7 +64,7 @@ public enum ErrorInfo {
      * Event
      */
     EVENT_NOT_FOUND(400, "EVENT_NOT_FOUND", "Event not found."),
-
+    POINT_NOT_ENOUGH(400, "POINT_NOT_ENOUGH", "Point not enough."),
 
     /**
      * Quiz

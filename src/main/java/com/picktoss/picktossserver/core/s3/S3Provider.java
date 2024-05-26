@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +38,7 @@ public class S3Provider {
         try (InputStream inputStream = multipartFile.getInputStream()) {
             amazonS3.putObject(bucket, s3Key, inputStream, metadata);
         } catch (IOException e){
-            e.printStackTrace();
+            throw new CustomException(FILE_UPLOAD_ERROR, e.getMessage());
         }
         return s3Key;
     }
@@ -46,18 +50,17 @@ public class S3Provider {
             byte[] contentBytes = file.readAllBytes();
             return decodeContentToString(contentBytes);
         } catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
+            throw new CustomException(AMAZON_SERVICE_EXCEPTION, e.getErrorMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new CustomException(FILE_UPLOAD_ERROR, e.getMessage());
         }
-        return null;
     }
 
     public void deleteFile(String s3Key) {
         try {
             amazonS3.deleteObject(bucket, s3Key);
         } catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
+            throw new CustomException(AMAZON_SERVICE_EXCEPTION, e.getErrorMessage());
         }
     }
 

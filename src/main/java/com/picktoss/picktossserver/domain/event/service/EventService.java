@@ -26,28 +26,41 @@ public class EventService {
     private final EventRepository eventRepository;
 
     @Transactional
-    public int attendanceCheck(Member member) {
+    public void createEvent(Member member) {
         Optional<Event> optionalEvent = eventRepository.findByMemberId(member.getId());
 
         if (optionalEvent.isEmpty()) {
             Event event = Event.createEvent(FIRST_LOGIN_POINT, 1, member);
             eventRepository.save(event);
-            return event.getPoint();
+        }
+    }
+
+    @Transactional
+    public void checkContinuousQuizSolvedDate(Long memberId) {
+        Optional<Event> optionalEvent = eventRepository.findByMemberId(memberId);
+
+        if (optionalEvent.isEmpty()) {
+            throw new CustomException(EVENT_NOT_FOUND);
         }
 
         Event event = optionalEvent.get();
         LocalDate now = LocalDate.now();
         LocalDateTime midnight = LocalDateTime.of(now, LocalTime.MIDNIGHT);
         if (LocalDateTime.now().isAfter(midnight) && event.getUpdatedAt().isBefore(midnight)) {
-            event.addContinuousAttendanceDatesCount();
-            if (event.getContinuousAttendanceDatesCount() == 5) {
-                event.addPoint(FIVE_DAYS_CONTINUOUS_ATTENDANCE_POINT);
-                event.initContinuousAttendanceDatesCount();
+            LocalDate lastUpdatedDate = event.getUpdatedAt().toLocalDate();
+
+            if (!lastUpdatedDate.plusDays(1).equals(now)) {
+                event.initContinuousSolvedQuizDateCount();
+            }
+
+            event.addContinuousSolvedQuizDateCount();
+
+            if ((event.getContinuousSolvedQuizDateCount() % 5) == 0) {
+                event.addPoint(FIVE_DAYS_CONTINUOUS_POINT);
             } else {
-                event.addPoint(ATTENDANCE_POINT);
+                event.addPoint(ONE_DAYS_POINT);
             }
         }
-        return event.getPoint();
     }
 
     public Event findEventByMemberId(Long memberId) {

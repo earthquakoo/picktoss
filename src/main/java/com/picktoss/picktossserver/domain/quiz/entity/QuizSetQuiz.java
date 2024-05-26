@@ -19,7 +19,7 @@ public class QuizSetQuiz extends AuditBase {
     private Long id;
 
     @Column(name = "elapsed_time")
-    private LocalTime elapsedTime;
+    private String elapsedTime;
 
     @Column(name = "is_answer")
     private Boolean isAnswer;
@@ -44,7 +44,7 @@ public class QuizSetQuiz extends AuditBase {
         this.isAnswer = isAnswer;
     }
 
-    public void updateElapsedTime(LocalTime elapsedTime) {
+    public void updateElapsedTime(String elapsedTime) {
         this.elapsedTime = elapsedTime;
     }
 }
