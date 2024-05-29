@@ -58,6 +58,11 @@ public class AuthService {
     private static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int randomCodeLen = 6;
 
+
+    public void onlyBackendLogin(Member member) {
+
+    }
+
     public HashMap<String, String> getRedirectUri() {
         String oauthUrl = String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
                 oauthClientId, redirectUri);

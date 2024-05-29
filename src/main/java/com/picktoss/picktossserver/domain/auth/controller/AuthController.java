@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
+import com.picktoss.picktossserver.domain.auth.controller.request.OnlyBackendLoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
@@ -75,6 +76,14 @@ public class AuthController {
 
         JwtTokenDto jwtTokenDto = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
         return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken()));
+    }
+
+    @Operation(summary = "Only backend login")
+    @PostMapping("/backend/login")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<JwtTokenDto> onlyBackendLogin(@Valid @RequestBody OnlyBackendLoginRequest request) {
+        JwtTokenDto jwtTokenDto = authFacade.onlyBackendLogin(request.getEmail());
+        return ResponseEntity.ok().body(jwtTokenDto);
     }
 
     @PostMapping("/auth/verification")

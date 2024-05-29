@@ -85,7 +85,7 @@ public class QuizService {
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
         String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, member);
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, false, member);
 
         int quizzesPerDocument = point / documents.size();
         int remainingQuizzes = point % documents.size();
@@ -116,6 +116,38 @@ public class QuizService {
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
         return quizSets;
+    }
+
+    @Transactional
+    public void createInitialQuizSet(Long documentId, Member member) {
+        List<Quiz> quizzes = quizRepository.findAllByDocumentIdAndMemberId(documentId, member.getId());
+
+        List<Quiz> mixUpQuizzes = quizzes.stream()
+                .filter(quiz -> quiz.getQuizType().equals(QuizType.MIX_UP))
+                .toList();
+
+        List<Quiz> multipleChoiceQuizzes = quizzes.stream()
+                .filter(quiz -> quiz.getQuizType().equals(QuizType.MULTIPLE_CHOICE))
+                .toList();
+
+        List<Quiz> selectedMixUpQuizzes = mixUpQuizzes.stream().limit(5).toList();
+        List<Quiz> selectedMultipleChoiceQuizzes = multipleChoiceQuizzes.stream().limit(5).toList();
+
+        List<Quiz> selectedQuizzes = new ArrayList<>();
+        selectedQuizzes.addAll(selectedMixUpQuizzes);
+        selectedQuizzes.addAll(selectedMultipleChoiceQuizzes);
+
+        String quizSetId = createQuizSetId();
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+        for (Quiz quiz : selectedQuizzes) {
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+        }
+
+        quizSetRepository.save(quizSet);
+        quizSetQuizRepository.saveAll(quizSetQuizzes);
     }
 
     public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {

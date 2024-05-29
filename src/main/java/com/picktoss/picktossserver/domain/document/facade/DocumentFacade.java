@@ -33,7 +33,7 @@ public class DocumentFacade {
     private final QuizService quizService;
 
     @Transactional
-    public Long saveDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
+    public Long createDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
 
@@ -49,7 +49,12 @@ public class DocumentFacade {
         }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        return documentService.saveDocument(documentName, file, subscription, category, memberId);
+        Long documentId = documentService.createDocument(documentName, file, subscription, category, memberId);
+        System.out.println("possessDocumentCount = " + possessDocumentCount);
+        if (possessDocumentCount == 0) {
+            quizService.createInitialQuizSet(documentId, member);
+        }
+        return documentId;
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
@@ -85,8 +90,8 @@ public class DocumentFacade {
     }
 
     @Transactional
-    public void updateDocumentContent(Long documentId, Long memberId, MultipartFile file) {
-        documentService.updateDocumentContent(documentId, memberId, file);
+    public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
+        documentService.updateDocumentContent(documentId, memberId, name, file);
     }
 
     @Transactional

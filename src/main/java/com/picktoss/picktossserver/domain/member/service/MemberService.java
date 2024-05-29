@@ -37,7 +37,7 @@ public class MemberService {
             int possibleUploadedDocumentCount,
             int point,
             int continuousQuizDatesCount
-            ) {
+    ) {
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
@@ -75,6 +75,11 @@ public class MemberService {
         return memberRepository.findByClientId(googleClientId);
     }
 
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+    }
+
     public Optional<Member> findMemberByClientId(String clientId) {
         return memberRepository.findByClientId(clientId);
     }
@@ -83,7 +88,7 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         Optional<Member> optionalMember = memberRepository.findById(memberId);
         if (optionalMember.isEmpty()) {
-            return ;
+            return;
         }
 
         Member member = optionalMember.get();
@@ -110,7 +115,10 @@ public class MemberService {
             throw new CustomException(MEMBER_NOT_FOUND);
         }
 
+        System.out.println("isQuizNotification = " + isQuizNotification);
         Member member = optionalMember.get();
+        System.out.println("member.getId() = " + member.getId());
         member.updateQuizNotification(isQuizNotification);
+        System.out.println("member.isQuizNotificationEnabled() = " + member.isQuizNotificationEnabled());
     }
 }

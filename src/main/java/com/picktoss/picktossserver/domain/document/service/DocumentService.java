@@ -36,7 +36,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
 
     @Transactional
-    public Long saveDocument(String documentName, MultipartFile file, Subscription subscription, Category category, Long memberId) {
+    public Long createDocument(String documentName, MultipartFile file, Subscription subscription, Category category, Long memberId) {
         String s3Key = s3Provider.uploadFile(file);
 
         Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
@@ -50,7 +50,7 @@ public class DocumentService {
 
         documentRepository.save(document);
 
-        sqsProvider.sendMessage(s3Key, document.getId(), subscription.getSubscriptionPlanType());
+//        sqsProvider.sendMessage(s3Key, document.getId(), subscription.getSubscriptionPlanType());
 
         return document.getId();
     }
@@ -268,7 +268,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public void updateDocumentContent(Long documentId, Long memberId, MultipartFile file) {
+    public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
         Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
 
         if (optionalDocument.isEmpty()) {
@@ -280,6 +280,7 @@ public class DocumentService {
 
         String s3Key = s3Provider.uploadFile(file);
         document.updateDocumentS3Key(s3Key);
+        document.updateDocumentName(name);
         document.updateDocumentStatus(DocumentStatus.KEYPOINT_UPDATE_POSSIBLE);
     }
 

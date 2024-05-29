@@ -39,7 +39,7 @@ public class DocumentController {
         Long memberId = jwtUserInfo.getMemberId();
         Long categoryId = Long.valueOf(request.getCategoryId());
 
-        Long documentId = documentFacade.saveDocument(request.getDocumentName(), request.getFile(), memberId, categoryId);
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, categoryId);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -135,7 +135,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.updateDocumentContent(documentId, memberId, request.getFile());
+        documentFacade.updateDocumentContent(documentId, memberId, request.getName(), request.getFile());
     }
 
     @Operation(summary = "Change document name")

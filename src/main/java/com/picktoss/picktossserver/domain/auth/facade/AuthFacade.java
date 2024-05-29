@@ -27,6 +27,12 @@ public class AuthFacade {
     private final EventService eventService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    public JwtTokenDto onlyBackendLogin(String email) {
+        Member member = memberService.findMemberByEmail(email);
+        authService.onlyBackendLogin(member);
+        return jwtTokenProvider.generateToken(member.getId());
+    }
+
     @Transactional
     public JwtTokenDto login(String accessToken, SocialPlatform socialPlatform) {
         String userInfoJson = getUserInfo(accessToken, socialPlatform);

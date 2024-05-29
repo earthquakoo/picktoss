@@ -33,11 +33,11 @@ public class QuizSet extends AuditBase {
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
     // Constructor methods
-    public static QuizSet createQuizSet(String id, Member member) {
+    public static QuizSet createQuizSet(String id, boolean isTodayQuizSet, Member member) {
         return QuizSet.builder()
                 .id(id)
                 .solved(false)
-                .isTodayQuizSet(false)
+                .isTodayQuizSet(isTodayQuizSet)
                 .member(member)
                 .build();
     }

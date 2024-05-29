@@ -45,7 +45,7 @@ public class MemberController {
         memberFacade.updateMemberName(memberId, request.getName());
     }
 
-    @Operation(summary = "Update quiz")
+    @Operation(summary = "Update quiz notification")
     @PatchMapping("/members/update-quiz-notification")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateQuizNotification(@Valid @RequestBody UpdateQuizNotificationRequest request) {

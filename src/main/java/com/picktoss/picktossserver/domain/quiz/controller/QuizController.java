@@ -94,7 +94,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Update bookmarked quiz")
-    @PatchMapping("/quiz/{quiz_id}/bookmark/")
+    @PatchMapping("/quiz/{quiz_id}/bookmark")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateBookmarkQuiz(
             @Valid @RequestBody UpdateBookmarkQuizRequest request,

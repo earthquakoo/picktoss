@@ -30,7 +30,7 @@ public class EventService {
         Optional<Event> optionalEvent = eventRepository.findByMemberId(member.getId());
 
         if (optionalEvent.isEmpty()) {
-            Event event = Event.createEvent(FIRST_LOGIN_POINT, 1, member);
+            Event event = Event.createEvent(FIRST_LOGIN_POINT, 0, member);
             eventRepository.save(event);
         }
     }
