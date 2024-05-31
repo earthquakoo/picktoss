@@ -14,6 +14,5 @@ public class GetQuizAnalysisResponse {
     private int mixUpQuizCount;
     private int multipleQuizCount;
     private int incorrectAnswerCount;
-    @Schema(type = "string", example = "HH:mm:ss")
-    private String elapsedTime;
+    private int elapsedTime;
 }

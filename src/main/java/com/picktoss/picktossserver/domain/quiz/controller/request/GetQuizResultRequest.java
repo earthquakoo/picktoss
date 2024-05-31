@@ -19,7 +19,6 @@ public class GetQuizResultRequest {
     public static class GetQuizResultQuizDto {
         private Long id;
         private boolean answer;
-        @Schema(type = "string", example = "HH:mm:ss")
-        private String elapsedTime;
+        private int elapsedTime;
     }
 }

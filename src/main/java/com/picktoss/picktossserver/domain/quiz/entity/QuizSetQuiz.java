@@ -18,8 +18,8 @@ public class QuizSetQuiz extends AuditBase {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "elapsed_time")
-    private String elapsedTime;
+    @Column(name = "elapsed_time_ms")
+    private Integer elapsedTimeMs;
 
     @Column(name = "is_answer")
     private Boolean isAnswer;
@@ -44,7 +44,7 @@ public class QuizSetQuiz extends AuditBase {
         this.isAnswer = isAnswer;
     }
 
-    public void updateElapsedTime(String elapsedTime) {
-        this.elapsedTime = elapsedTime;
+    public void updateElapsedTime(int elapsedTimeMs) {
+        this.elapsedTimeMs = elapsedTimeMs;
     }
 }

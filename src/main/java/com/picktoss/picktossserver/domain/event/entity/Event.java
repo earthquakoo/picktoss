@@ -22,13 +22,13 @@ public class Event{
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "point")
+    @Column(name = "point", nullable = false)
     private int point;
 
-    @Column(name = "continuous_solved_quiz_date_count")
+    @Column(name = "continuous_solved_quiz_date_count", nullable = false)
     private int continuousSolvedQuizDateCount;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
@@ -36,10 +36,10 @@ public class Event{
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Event createEvent(int point, int continuousAttendanceDatesCount, Member member) {
+    public static Event createEvent(int point, int continuousSolvedQuizDateCount, Member member) {
         return Event.builder()
                 .point(point)
-                .continuousSolvedQuizDateCount(continuousAttendanceDatesCount)
+                .continuousSolvedQuizDateCount(continuousSolvedQuizDateCount)
                 .member(member)
                 .build();
     }

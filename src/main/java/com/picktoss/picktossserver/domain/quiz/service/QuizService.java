@@ -41,8 +41,51 @@ public class QuizService {
     private final QuizSetRepository quizSetRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
 
-    public List<Quiz> findQuizSet(String quizSetId, Long memberId) {
-        return quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
+    public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
+        List<Quiz> quizzes = quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
+
+        boolean isTodayQuizSet = quizzes.getFirst().getQuizSetQuizzes().getFirst().getQuizSet().isTodayQuizSet();
+
+        List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
+        for (Quiz quiz : quizzes) {
+
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                List<Option> options = quiz.getOptions();
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+
+            Document document = quiz.getDocument();
+
+            GetQuizSetResponse.GetQuizSetDocumentDto documentDto = GetQuizSetResponse.GetQuizSetDocumentDto.builder()
+                    .id(document.getId())
+                    .name(document.getName())
+                    .build();
+
+
+            Category category = document.getCategory();
+
+            GetQuizSetResponse.GetQuizSetCategoryDto categoryDto = GetQuizSetResponse.GetQuizSetCategoryDto.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .build();
+
+            GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
+                    .id(quiz.getId())
+                    .question(quiz.getQuestion())
+                    .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
+                    .options(optionList)
+                    .quizType(quiz.getQuizType())
+                    .document(documentDto)
+                    .category(categoryDto)
+                    .build();
+
+            quizDtos.add(quizDto);
+        }
+        return new GetQuizSetResponse(quizDtos, isTodayQuizSet);
     }
 
     public GetQuizSetTodayResponse findQuestionSetToday(Long memberId, List<Document> documents) {
@@ -55,7 +98,7 @@ public class QuizService {
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
 
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberId(memberId);
+        List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIs(memberId);
         List<QuizSet> todayQuizSets = new ArrayList<>();
         for (QuizSet qs : quizSets) {
             if (qs.getCreatedAt().isAfter(todayStartTime) && qs.getCreatedAt().isBefore(todayEndTime)) {
@@ -219,7 +262,7 @@ public class QuizService {
         int mixUpQuizCount = 0;
         int multipleChoiceQuizCount = 0;
         int incorrectAnswerCount = 0;
-        LocalTime totalElapsedTime = LocalTime.of(0, 0, 0);
+        int totalElapsedTimeMs = 0;
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             Quiz quiz = quizSetQuiz.getQuiz();
@@ -229,12 +272,9 @@ public class QuizService {
                 multipleChoiceQuizCount += 1;
             }
 
-            if (!Objects.isNull(quizSetQuiz.getElapsedTime())) {
-                String elapsedTime = quizSetQuiz.getElapsedTime();
-                LocalTime localTime = LocalTime.parse(elapsedTime, DateTimeFormatter.ofPattern("HH:mm:ss"));
-                totalElapsedTime = localTime.plusHours(localTime.getHour())
-                        .plusMinutes(localTime.getMinute())
-                        .plusSeconds(localTime.getSecond());
+            if (!Objects.isNull(quizSetQuiz.getElapsedTimeMs())) {
+                int elapsedTimeMs = quizSetQuiz.getElapsedTimeMs();
+                totalElapsedTimeMs += elapsedTimeMs;
             }
 
             incorrectAnswerCount += quiz.getIncorrectAnswerCount();
@@ -245,7 +285,7 @@ public class QuizService {
                 .mixUpQuizCount(mixUpQuizCount)
                 .multipleQuizCount(multipleChoiceQuizCount)
                 .incorrectAnswerCount(incorrectAnswerCount)
-                .elapsedTime(totalElapsedTime.toString())
+                .elapsedTime(totalElapsedTimeMs)
                 .build();
     }
 

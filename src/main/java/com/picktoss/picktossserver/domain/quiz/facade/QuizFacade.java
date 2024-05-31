@@ -32,7 +32,7 @@ public class QuizFacade {
     private final MemberService memberService;
     private final EventService eventService;
 
-    public List<Quiz> findQuizSet(String quizSetId, Long memberId) {
+    public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
         return quizService.findQuizSet(quizSetId, memberId);
     }
 

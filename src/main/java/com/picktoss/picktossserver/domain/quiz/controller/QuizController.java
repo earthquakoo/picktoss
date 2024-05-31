@@ -34,13 +34,12 @@ public class QuizController {
     @Operation(summary = "Get quiz set")
     @GetMapping("/quiz-sets/{quiz_set_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<QuizResponseDto> getQuizSet(@PathVariable("quiz_set_id") String quizSetId) {
+    public ResponseEntity<GetQuizSetResponse> getQuizSet(@PathVariable("quiz_set_id") String quizSetId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.findQuizSet(quizSetId, memberId);
-        QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
-        return ResponseEntity.ok().body(quizResponseDto);
+        GetQuizSetResponse response = quizFacade.findQuizSet(quizSetId, memberId);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "Get quiz set today")

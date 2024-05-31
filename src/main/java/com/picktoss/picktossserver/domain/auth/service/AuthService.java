@@ -55,7 +55,7 @@ public class AuthService {
     private long verificationExpireDurationSeconds;
 
     private static final String defaultNickname = "Picktoss#";
-    private static final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String chars = "0123456789";
     private static final int randomCodeLen = 6;
 
 
