@@ -5,10 +5,12 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
+import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.event.service.EventService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
+import com.picktoss.picktossserver.global.enums.CategoryTag;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class AuthFacade {
     private final SubscriptionService subscriptionService;
     private final EventService eventService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CategoryService categoryService;
 
     public JwtTokenDto onlyBackendLogin(String email) {
         Member member = memberService.findMemberByEmail(email);
@@ -58,9 +61,10 @@ public class AuthFacade {
                     .isQuizNotificationEnabled(true)
                     .build();
 
-            memberService.createMember(member);
+            Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
+            categoryService.createCategory("Default folder", CategoryTag.ETC, memberId, member, null);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();

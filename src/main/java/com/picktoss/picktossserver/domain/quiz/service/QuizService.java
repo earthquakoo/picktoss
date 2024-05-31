@@ -1,13 +1,8 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
-import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
 import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
@@ -17,20 +12,17 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
-import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
+import com.picktoss.picktossserver.global.enums.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
-import org.joda.time.Duration;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -91,7 +83,7 @@ public class QuizService {
     public GetQuizSetTodayResponse findQuestionSetToday(Long memberId, List<Document> documents) {
         if (documents.isEmpty()) {
             return GetQuizSetTodayResponse.builder()
-                    .message("Document not create yet.")
+                    .type(QuizSetResponseType.NOT_READY)
                     .build();
         }
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
@@ -108,7 +100,7 @@ public class QuizService {
 
         if (todayQuizSets.isEmpty()) {
             return GetQuizSetTodayResponse.builder()
-                    .message("Quiz set not ready.")
+                    .type(QuizSetResponseType.NOT_READY)
                     .build();
         }
 
@@ -117,8 +109,16 @@ public class QuizService {
                 .toList()
                 .getFirst();
 
+        if (todayQuizSet.isSolved()) {
+            return GetQuizSetTodayResponse.builder()
+                    .quizSetId(todayQuizSet.getId())
+                    .type(QuizSetResponseType.DONE)
+                    .build();
+        }
+
         return GetQuizSetTodayResponse.builder()
                 .quizSetId(todayQuizSet.getId())
+                .type(QuizSetResponseType.READY)
                 .build();
     }
 

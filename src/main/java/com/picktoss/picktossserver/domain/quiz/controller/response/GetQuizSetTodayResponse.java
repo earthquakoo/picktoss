@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.response;
 
+import com.picktoss.picktossserver.global.enums.QuizSetResponseType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,5 +11,5 @@ import lombok.Getter;
 public class GetQuizSetTodayResponse {
 
     private String quizSetId;
-    private String message;
+    private QuizSetResponseType type;
 }

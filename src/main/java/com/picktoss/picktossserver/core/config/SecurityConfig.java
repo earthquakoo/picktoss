@@ -32,6 +32,9 @@ public class SecurityConfig {
     @Value("${cors.cors_allowed_origin}")
     private String corsAllowedOrigin;
 
+    @Value("${cors.cors_allowed_origin_prod}")
+    private String corsAllowedOriginProd;
+
     @Value("${picktoss.server_url}")
     private String picktossServerUrl;
 
@@ -70,7 +73,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, picktossServerUrl));
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, picktossServerUrl, corsAllowedOriginProd));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
