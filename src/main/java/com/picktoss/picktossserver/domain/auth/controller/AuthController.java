@@ -75,7 +75,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
         JwtTokenDto jwtTokenDto = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
-        return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken()));
+        return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration()));
     }
 
     @Operation(summary = "Only backend login")

@@ -41,6 +41,7 @@ public class JwtTokenProvider {
 
         return JwtTokenDto.builder()
                 .accessToken(accessToken)
+                .accessTokenExpiration(accessTokenExpiration)
                 .build();
     }
 
