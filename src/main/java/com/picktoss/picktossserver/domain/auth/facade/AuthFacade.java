@@ -82,9 +82,10 @@ public class AuthFacade {
                     .isQuizNotificationEnabled(false)
                     .build();
 
-            memberService.createMember(member);
+            Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
+            categoryService.createCategory("Default folder", CategoryTag.ETC, memberId, member, null);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
