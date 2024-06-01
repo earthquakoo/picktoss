@@ -52,7 +52,7 @@ public class Category extends AuditBase {
                 .emoji(emoji)
                 .build();
 
-        category.setMember(member);
+//        category.setMember(member);
         return category;
     }
 
