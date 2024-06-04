@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.entity.Event;
@@ -35,6 +36,7 @@ public class MemberFacade {
     private final SubscriptionService subscriptionService;
     private final QuizService quizService;
     private final EventService eventService;
+    private final CategoryService categoryService;
 
     @Transactional
     public JwtTokenDto createMember(MemberInfoDto memberInfoDto) {
@@ -42,10 +44,12 @@ public class MemberFacade {
 
         if (optionalMember.isEmpty()) {
             Member member = memberInfoDto.toEntity();
-            memberService.createMember(member);
+            Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            return jwtTokenProvider.generateToken(member.getId());
+            Category category = categoryService.createDefaultCategory(memberId, member);
+            documentService.createDefaultDocument(memberId, category);
+            return jwtTokenProvider.generateToken(memberId);
         }
         Long memberId = optionalMember.get().getId();
         return jwtTokenProvider.generateToken(memberId);

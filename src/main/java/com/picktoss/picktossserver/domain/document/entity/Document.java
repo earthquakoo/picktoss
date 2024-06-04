@@ -70,7 +70,7 @@ public class Document extends AuditBase {
                 .category(category)
                 .build();
 
-        document.setCategory(category);
+//        document.setCategory(category);
         return document;
     }
 
