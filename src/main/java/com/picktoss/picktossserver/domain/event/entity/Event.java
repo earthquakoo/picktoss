@@ -39,12 +39,13 @@ public class Event{
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Event createEvent(int point, int maxContinuousSolvedQuizDateCount, int continuousSolvedQuizDateCount, Member member) {
+    public static Event createEvent(int point, int maxContinuousSolvedQuizDateCount, int continuousSolvedQuizDateCount, Member member, LocalDateTime updatedAt) {
         return Event.builder()
                 .point(point)
                 .continuousSolvedQuizDateCount(continuousSolvedQuizDateCount)
                 .maxContinuousSolvedQuizDateCount(maxContinuousSolvedQuizDateCount)
                 .member(member)
+                .updatedAt(updatedAt)
                 .build();
     }
 

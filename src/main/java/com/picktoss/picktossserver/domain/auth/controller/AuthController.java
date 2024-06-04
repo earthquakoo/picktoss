@@ -66,14 +66,6 @@ public class AuthController {
         return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration()));
     }
 
-    @Operation(summary = "Only backend login")
-    @PostMapping("/backend/login")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<JwtTokenDto> onlyBackendLogin(@Valid @RequestBody OnlyBackendLoginRequest request) {
-        JwtTokenDto jwtTokenDto = authFacade.onlyBackendLogin(request.getEmail());
-        return ResponseEntity.ok().body(jwtTokenDto);
-    }
-
     @PostMapping("/auth/verification")
     @ResponseStatus(HttpStatus.OK)
     public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {

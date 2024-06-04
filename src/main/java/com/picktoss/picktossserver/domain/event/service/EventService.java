@@ -31,7 +31,7 @@ public class EventService {
 
         if (optionalEvent.isEmpty()) {
             Event event = Event.createEvent(
-                    FIRST_LOGIN_POINT, 0, 0, member);
+                    FIRST_LOGIN_POINT, 0, 0, member, LocalDateTime.now());
             eventRepository.save(event);
         }
     }

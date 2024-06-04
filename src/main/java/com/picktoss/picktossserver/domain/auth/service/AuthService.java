@@ -55,10 +55,6 @@ public class AuthService {
     private static final int randomCodeLen = 6;
 
 
-    public void onlyBackendLogin(Member member) {
-
-    }
-
     public String getRedirectUri() {
         RestTemplate restTemplate = new RestTemplate();
         return String.format(
