@@ -35,17 +35,15 @@ public class AuthController {
     private final AuthFacade authFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @Operation(summary = "Oauth url api")
-    @GetMapping("/oauth/url")
-    public RedirectView oauthUrlApi() {
-        String oauthUrl = String.format(
-                "https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
-                "398224167939-k1no10o1jhphqv7efvrmvcm32bm3gk85.apps.googleusercontent.com",
-                "http://localhost:8080/api/v1/callback"
-        );
-
-        return new RedirectView(oauthUrl);
-    }
+//    @Operation(summary = "Oauth url api")
+//    @GetMapping("/oauth/url")
+//    public RedirectView oauthUrlApi() {
+//        String oauthUrl = String.format(
+//
+//        );
+//
+//        return new RedirectView(oauthUrl);
+//    }
 
     @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
