@@ -47,10 +47,6 @@ public class AuthService {
     @Value("${oauth.google.redirect_uri}")
     private String redirectUri;
 
-    @Getter
-    @Value("${oauth.google.oauth_callback_response_url}")
-    private String oauthCallbackResponseUrl;
-
     @Value("${email_verification.expire_seconds}")
     private long verificationExpireDurationSeconds;
 
@@ -63,21 +59,18 @@ public class AuthService {
 
     }
 
-    public HashMap<String, String> getRedirectUri() {
-        String oauthUrl = String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
-                oauthClientId, redirectUri);
-        HashMap<String, String> urlMapping = new HashMap<>();
-        urlMapping.put("oauth_url", oauthUrl);
-        return urlMapping;
-    }
+    public void getRedirectUri() {
+        RestTemplate restTemplate = new RestTemplate();
+//        HashMap<String, String> params = new HashMap<>();
+        String oauthUrl = "https://accounts.google.com/o/oauth2/auth?client_id=398224167939-k1no10o1jhphqv7efvrmvcm32bm3gk85.apps.googleusercontent.com&response_type=code&redirect_uri=http://localhost:8080/api/v1/callback&scope=openid%%20email%%20profile";
 
-//    public String getRedirectUri() {
-//        return "https://accounts.google.com/o/oauth2/auth?" +
-//                "client_id=" + oauthClientId + "&" +
-//                "response_type=code&" +
-//                "redirect_uri=" + redirectUri + "&" +
-//                "scope=openid%20email%20profile";
-//    }
+//        params.put("client_id", oauthClientId);
+//        params.put("client_secret", oauthClientSecret);
+//        params.put("redirect_uri", redirectUri);
+//        params.put("scope", "openid%%20email%%20profile");
+
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(oauthUrl, String.class);
+    }
 
     public String getOauthAccessToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();

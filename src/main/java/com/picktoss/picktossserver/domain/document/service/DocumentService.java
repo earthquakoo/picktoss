@@ -48,7 +48,9 @@ public class DocumentService {
 
         int order = lastOrder;
 
-        Document document = Document.createDocument(documentName, s3Key, order + 1, UNPROCESSED, true, category);
+        Document document = Document.createDocument(
+                documentName, s3Key, order + 1, UNPROCESSED, true, category
+        );
 
         documentRepository.save(document);
         return document.getId();
@@ -337,7 +339,13 @@ public class DocumentService {
     //보유한 모든 문서의 개수
     public int findPossessDocumentCount(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        return documents.size();
+        int possessDocumentCount = documents.size();
+        for (Document document : documents) {
+            if (document.getStatus() == DEFAULT_DOCUMENT) {
+                return possessDocumentCount - 1;
+            }
+        }
+        return possessDocumentCount;
     }
 
     // 생성한 모든 문서

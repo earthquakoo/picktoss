@@ -89,24 +89,6 @@ public class SubscriptionService {
         } else {
             throw new IllegalArgumentException("Invalid Plan Type");
         }
-
-//        if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
-//            if (numCurrentSubscriptionUploadedDocuments >= FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 15개
-//                throw new CustomException(FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
-//            }
-//            if (numCurrentUploadedDocuments >= FREE_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 매 시점: 3개
-//                throw new CustomException(FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
-//            }
-//        } else if (currentSubscription.getSubscriptionPlanType() == SubscriptionPlanType.PRO) {
-//            if (numCurrentSubscriptionUploadedDocuments >= PRO_PLAN_MONTHLY_MAX_DOCUMENT_NUM) { // 40개
-//                throw new CustomException(PRO_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
-//            }
-//            if (numCurrentUploadedDocuments >= PRO_PLAN_CURRENT_MAX_DOCUMENT_NUM) { // 매 시점: 15개
-//                throw new CustomException(PRO_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
-//            }
-//        } else {
-//            throw new IllegalArgumentException("Invalid Plan Type");
-//        }
     }
 
 }

@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.document.facade;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
@@ -19,8 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_DEFAULT_DOCUMENT_COUNT;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -35,19 +38,10 @@ public class DocumentFacade {
 
     @Transactional
     public Long createDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
-        Member member = memberService.findMemberById(memberId);
-        Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
+        int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
 
-        int aiPickCount = member.getAiPickCount();
-        int possessDocumentCount = findPossessDocumentCount(memberId);
-        int uploadedDocumentCount = findUploadedDocumentCount(memberId);
-
-        int availableAiPickCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getAvailableAiPickCount() - aiPickCount;
-
-        subscriptionService.checkDocumentUploadLimit(subscription, possessDocumentCount, uploadedDocumentCount, availableAiPickCount);
-
-        if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT) {
-            subscription.minusAvailableAiPickCount();
+        if (possessDocumentCount >= FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT) {
+            throw new CustomException(FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
         }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
@@ -57,8 +51,18 @@ public class DocumentFacade {
     @Transactional
     public void createAiPick(Long documentId, Long memberId) {
         Member member = memberService.findMemberById(memberId);
-
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
+
+        int aiPickCount = member.getAiPickCount();
+        int availableAiPickCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getAvailableAiPickCount() - aiPickCount;
+
+        if (availableAiPickCount >= AVAILABLE_AI_PICK_COUNT) {
+            if (subscription.getAvailableAiPickCount() < 1) {
+                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
+            }
+            subscription.minusAvailableAiPickCount();
+        }
+
         documentService.createAiPick(documentId, memberId, subscription);
         member.useAiPick();
     }
@@ -111,19 +115,5 @@ public class DocumentFacade {
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
         quizService.updateQuizLatest(documentId);
         documentService.reUploadDocument(documentId, memberId, subscription);
-    }
-
-    public int findPossessDocumentCount(Long memberId) {
-        return documentService.findPossessDocumentCount(memberId);
-    }
-
-    public int findUploadedDocumentCountForCurrentSubscription(Long memberId) {
-        Member member = memberService.findMemberById(memberId);
-        Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-        return documentService.findUploadedDocumentCountForCurrentSubscription(memberId, subscription);
-    }
-
-    public int findUploadedDocumentCount(Long memberId) {
-        return documentService.findUploadedDocumentCount(memberId);
     }
 }

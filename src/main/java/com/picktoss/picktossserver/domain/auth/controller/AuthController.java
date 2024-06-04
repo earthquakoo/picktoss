@@ -37,21 +37,19 @@ public class AuthController {
 
     @Operation(summary = "Oauth url api")
     @GetMapping("/oauth/url")
-    public HashMap<String, String> oauthUrlApi() {
-        return authService.getRedirectUri();
-    }
+    public RedirectView oauthUrlApi() {
+        String oauthUrl = String.format(
+                "https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
+                "398224167939-k1no10o1jhphqv7efvrmvcm32bm3gk85.apps.googleusercontent.com",
+                "http://localhost:8080/api/v1/callback"
+        );
 
-//    @GetMapping("/oauth/url")
-//    @SneakyThrows
-//    public String oauthUrlApi(HttpServletResponse response) {
-//        String redirectUri = authService.getRedirectUri();
-//        response.sendRedirect(redirectUri);
-//        return redirectUri;
-//    }
+        return new RedirectView(oauthUrl);
+    }
 
     @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
-    public RedirectView googleLogin(
+    public void googleLogin(
             @RequestParam("code") String code,
             RedirectAttributes redirectAttributes
     ) {
@@ -62,11 +60,6 @@ public class AuthController {
         MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
         JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
-
-        String oauthCallbackResponseUrl = authService.getOauthCallbackResponseUrl();
-
-        redirectAttributes.addAttribute("access-token", jwtTokenDto.getAccessToken());
-        return new RedirectView(oauthCallbackResponseUrl);
     }
 
     @Operation(summary = "login")

@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.subscription.entity;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import jakarta.persistence.*;
@@ -8,6 +9,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR;
 
 @Entity
 @Getter

@@ -57,13 +57,12 @@ public class QuizController {
     @Operation(summary = "Create quiz")
     @PostMapping("/quizzes")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<QuizResponseDto> createQuizzes(@Valid @RequestBody CreateQuizzesRequest request) {
+    public ResponseEntity<CreateQuizzesResponse> createQuizzes(@Valid @RequestBody CreateQuizzesRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.createQuizzes(request.getDocuments(), request.getPoint(), request.getQuizType(), memberId);
-        QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
-        return ResponseEntity.ok().body(quizResponseDto);
+        String quizSetId = quizFacade.createQuizzes(request.getDocuments(), request.getPoint(), request.getQuizType(), memberId);
+        return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
     }
 
     @Operation(summary = "Get all generated quizzes by document")

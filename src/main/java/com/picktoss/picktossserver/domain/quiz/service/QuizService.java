@@ -129,7 +129,7 @@ public class QuizService {
     }
 
     @Transactional
-    public List<Quiz> createQuizzes(List<Long> documents, int point, QuizType quizType, Member member) {
+    public String createQuizzes(List<Long> documents, int point, QuizType quizType, Member member) {
         List<Quiz> quizSets = new ArrayList<>();
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
@@ -164,7 +164,7 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return quizSets;
+        return quizSetId;
     }
 
     public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {

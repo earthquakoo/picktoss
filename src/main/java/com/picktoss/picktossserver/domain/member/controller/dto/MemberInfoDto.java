@@ -17,6 +17,8 @@ public class MemberInfoDto {
                 .clientId(sub)
                 .name(name)
                 .email(email)
+                .isQuizNotificationEnabled(true)
+                .aiPickCount(0)
                 .build();
     }
 }

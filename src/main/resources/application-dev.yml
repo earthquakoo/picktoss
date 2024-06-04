@@ -64,7 +64,6 @@ oauth:
     client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
     client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
     redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
-    oauth_callback_response_url: ${PICKTOSS_OAUTH_CALLBACK_RESPONSE_REDIRECT_URL}
 
 cloud:
   aws:
