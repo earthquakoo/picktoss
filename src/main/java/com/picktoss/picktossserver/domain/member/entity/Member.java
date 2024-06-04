@@ -37,6 +37,9 @@ public class Member extends AuditBase {
     @Column(name = "is_quiz_notification_enabled", nullable = false)
     private boolean isQuizNotificationEnabled;
 
+    @Column(name = "ai_pick_count", nullable = false)
+    private int aiPickCount;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
 
@@ -51,6 +54,10 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSet> quizSets = new ArrayList<>();
+
+    public void useAiPick() {
+        this.aiPickCount += 1;
+    }
 
     public void updateMemberName(String name) {
         this.name = name;

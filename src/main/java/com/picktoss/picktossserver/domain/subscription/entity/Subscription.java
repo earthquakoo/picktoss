@@ -21,8 +21,8 @@ public class Subscription {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "uploaded_document_count", nullable = false)
-    private int uploadedDocumentCount;
+    @Column(name = "available_ai_pick_count", nullable = false)
+    private int availableAiPickCount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
@@ -39,7 +39,7 @@ public class Subscription {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public void minusUploadedDocumentCount() {
-        this.uploadedDocumentCount -= 1;
+    public void minusAvailableAiPickCount() {
+        this.availableAiPickCount -= 1;
     }
 }

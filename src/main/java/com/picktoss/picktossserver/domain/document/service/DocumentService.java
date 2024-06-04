@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.document.constant.DocumentConstant;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
@@ -24,6 +25,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.DEFAULT_DOCUMENT_S3KEY;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +35,10 @@ public class DocumentService {
 
     private final S3Provider s3Provider;
     private final SqsProvider sqsProvider;
-
     private final DocumentRepository documentRepository;
 
     @Transactional
-    public Long createDocument(String documentName, MultipartFile file, Subscription subscription, Category category, Long memberId) {
+    public Long createDocument(String documentName, MultipartFile file, Category category, Long memberId) {
         String s3Key = s3Provider.uploadFile(file);
 
         Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
@@ -46,13 +48,38 @@ public class DocumentService {
 
         int order = lastOrder;
 
-        Document document = Document.createDocument(documentName, s3Key, order + 1, DocumentStatus.UNPROCESSED, true, category);
+        Document document = Document.createDocument(documentName, s3Key, order + 1, UNPROCESSED, true, category);
 
         documentRepository.save(document);
-
-//        sqsProvider.sendMessage(s3Key, document.getId(), subscription.getSubscriptionPlanType());
-
         return document.getId();
+    }
+
+    @Transactional
+    public void createAiPick(Long documentId, Long memberId, Subscription subscription) {
+        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+
+        if (optionalDocument.isEmpty()) {
+            throw new CustomException(DOCUMENT_NOT_FOUND);
+        }
+
+        Document document = optionalDocument.get();
+        document.updateDocumentStatus(PROCESSING);
+
+        sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+    }
+
+    @Transactional
+    public void createDefaultDocument(Long memberId, Category category) {
+        Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
+        if (lastOrder == null) {
+            lastOrder = 0;
+        }
+
+        int order = lastOrder;
+
+        Document document = Document.createDocument("예시 문서", DEFAULT_DOCUMENT_S3KEY, order, DEFAULT_DOCUMENT, false, category);
+
+        documentRepository.save(document);
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
@@ -94,8 +121,7 @@ public class DocumentService {
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
         List<Document> documents = switch (documentSortOption) {
-            case "updatedAt" ->
-                    documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
+            case "updatedAt" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
             case "name" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
             case "createdAt" -> documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
             default -> throw new CustomException(DOCUMENT_SORT_OPTION_ERROR);
@@ -103,11 +129,11 @@ public class DocumentService {
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
-            DocumentStatus status = DocumentStatus.UNPROCESSED;
-            if (document.getStatus() == DocumentStatus.PARTIAL_SUCCESS ||
-                    document.getStatus() == DocumentStatus.PROCESSED ||
-                    document.getStatus() == DocumentStatus.COMPLETELY_FAILED) {
-                status = DocumentStatus.PROCESSED;
+            DocumentStatus status = UNPROCESSED;
+            if (document.getStatus() == PARTIAL_SUCCESS ||
+                    document.getStatus() == PROCESSED ||
+                    document.getStatus() == COMPLETELY_FAILED) {
+                status = PROCESSED;
             }
 
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
@@ -281,7 +307,7 @@ public class DocumentService {
         String s3Key = s3Provider.uploadFile(file);
         document.updateDocumentS3Key(s3Key);
         document.updateDocumentName(name);
-        document.updateDocumentStatus(DocumentStatus.KEYPOINT_UPDATE_POSSIBLE);
+        document.updateDocumentStatus(KEYPOINT_UPDATE_POSSIBLE);
     }
 
     @Transactional
@@ -307,7 +333,6 @@ public class DocumentService {
         Document document = optionalDocument.get();
         sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
-
 
     //보유한 모든 문서의 개수
     public int findPossessDocumentCount(Long memberId) {

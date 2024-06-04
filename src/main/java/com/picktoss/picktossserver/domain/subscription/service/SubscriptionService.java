@@ -29,7 +29,7 @@ public class SubscriptionService {
     @Transactional
     public void createSubscription(Member member) {
         Subscription subscription = Subscription.builder()
-                .uploadedDocumentCount(FREE_PLAN_MONTHLY_DOCUMENT_COUNT)
+                .availableAiPickCount(FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
                 .subscriptionPlanType(SubscriptionPlanType.FREE)
                 .member(member)
                 .purchasedDate(LocalDateTime.now())
@@ -56,6 +56,7 @@ public class SubscriptionService {
 
             Subscription subscription = Subscription.builder()
                     .subscriptionPlanType(SubscriptionPlanType.FREE)
+                    .availableAiPickCount(FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
                     .purchasedDate(markExpireDate)
                     .expireDate(markExpireDate.plusDays(30))
                     .member(member)

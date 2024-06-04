@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -35,6 +37,10 @@ public class QuizService {
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
         List<Quiz> quizzes = quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
+
+        if (quizzes.isEmpty()) {
+            throw new CustomException(ErrorInfo.QUIZ_SET_NOT_FOUND_ERROR);
+        }
 
         boolean isTodayQuizSet = quizzes.getFirst().getQuizSetQuizzes().getFirst().getQuizSet().isTodayQuizSet();
 
@@ -159,38 +165,6 @@ public class QuizService {
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
         return quizSets;
-    }
-
-    @Transactional
-    public void createInitialQuizSet(Long documentId, Member member) {
-        List<Quiz> quizzes = quizRepository.findAllByDocumentIdAndMemberId(documentId, member.getId());
-
-        List<Quiz> mixUpQuizzes = quizzes.stream()
-                .filter(quiz -> quiz.getQuizType().equals(QuizType.MIX_UP))
-                .toList();
-
-        List<Quiz> multipleChoiceQuizzes = quizzes.stream()
-                .filter(quiz -> quiz.getQuizType().equals(QuizType.MULTIPLE_CHOICE))
-                .toList();
-
-        List<Quiz> selectedMixUpQuizzes = mixUpQuizzes.stream().limit(5).toList();
-        List<Quiz> selectedMultipleChoiceQuizzes = multipleChoiceQuizzes.stream().limit(5).toList();
-
-        List<Quiz> selectedQuizzes = new ArrayList<>();
-        selectedQuizzes.addAll(selectedMixUpQuizzes);
-        selectedQuizzes.addAll(selectedMultipleChoiceQuizzes);
-
-        String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
-
-        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
-        for (Quiz quiz : selectedQuizzes) {
-            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
-            quizSetQuizzes.add(quizSetQuiz);
-        }
-
-        quizSetRepository.save(quizSet);
-        quizSetQuizRepository.saveAll(quizSetQuizzes);
     }
 
     public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {
@@ -388,10 +362,10 @@ public class QuizService {
 
         boolean isWithinOneDay = LocalDateTime.now().minusDays(1).isBefore(quizSet.getCreatedAt());
 
-        if (!quizSet.isSolved()) { // 퀴즈를 풀지 않았을 때 하루가 지났다면 false, 지나지 않았다면 true
-            return isWithinOneDay;
-        } else { // 퀴즈를 풀었는데 하루가 지났다면 false, 지나지 않았다면 true
-            return isWithinOneDay;
+        if (isWithinOneDay) { // 생성된 퀴즈셋이 하루 이내라면 true
+            return true;
+        } else { // 생성된 퀴즈셋이 하루가 지났고 퀴즈를 풀었다면 true, 풀지 않았다면 false
+            return quizSet.isSolved();
         }
     }
 

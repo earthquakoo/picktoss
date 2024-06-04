@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.global.enums.CategoryTag.DEFAULT;
 
 @Service
 @RequiredArgsConstructor
@@ -94,6 +95,20 @@ public class CategoryService {
         Category category = Category.createCategory(member, name, tag, order + 1, emoji);
         categoryRepository.save(category);
         return category.getId();
+    }
+
+    @Transactional
+    public Category createDefaultCategory(Long memberId, Member member) {
+        Integer lastOrder = categoryRepository.findLastOrderByMemberId(memberId);
+        if (lastOrder == null) {
+            lastOrder = 0;
+        }
+
+        int order = lastOrder;
+
+        Category category = Category.createCategory(member, "기본 폴더", DEFAULT, order, null);
+        categoryRepository.save(category);
+        return category;
     }
 
     @Transactional

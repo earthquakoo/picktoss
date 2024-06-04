@@ -28,18 +28,22 @@ public class Event{
     @Column(name = "continuous_solved_quiz_date_count", nullable = false)
     private int continuousSolvedQuizDateCount;
 
+    @Column(name = "max_continuous_solved_quiz_date_count", nullable = false)
+    private int maxContinuousSolvedQuizDateCount;
+
     @Column(name = "updated_at", nullable = false)
-    @LastModifiedDate
+//    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Event createEvent(int point, int continuousSolvedQuizDateCount, Member member) {
+    public static Event createEvent(int point, int maxContinuousSolvedQuizDateCount, int continuousSolvedQuizDateCount, Member member) {
         return Event.builder()
                 .point(point)
                 .continuousSolvedQuizDateCount(continuousSolvedQuizDateCount)
+                .maxContinuousSolvedQuizDateCount(maxContinuousSolvedQuizDateCount)
                 .member(member)
                 .build();
     }
@@ -59,5 +63,13 @@ public class Event{
     }
     public void addContinuousSolvedQuizDateCount() {
         this.continuousSolvedQuizDateCount += 1;
+    }
+
+    public void addMaxContinuousSolvedQuizDateCount() {
+        this.maxContinuousSolvedQuizDateCount += 1;
+    }
+
+    public void updateUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

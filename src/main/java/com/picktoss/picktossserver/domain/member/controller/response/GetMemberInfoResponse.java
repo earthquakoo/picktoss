@@ -31,14 +31,13 @@ public class GetMemberInfoResponse {
     public static class GetMemberInfoDocumentDto {
         // 보유한 문서 개수
         private int possessDocumentCount;
-        // 구독 기간 동안 업로드할 수 있는 문서 개수
-        private int possibleUploadedDocumentCount;
-        // Free 플랜 최대 문서 보유 개수 30
+        // 구독 기간 동안 사용가능한 AI PICK 횟수
+        private int availableAiPickCount;
+        // Free 플랜 최대 문서 보유 개수 20
         private int freePlanMaxPossessDocumentCount;
-        // Free 플랜 매달 업로드 가능한 문서 개수
-        private int freePlanMonthlyDocumentCount;
-        // Pro 플랜 매달 업로드 가능한 문서 개수
-        private int proPlanMonthlyDocumentCount;
+        // Free 플랜 매달 사용가능한 AI PICK 횟수
+        private int freePlanMonthlyAvailableAiPickCount;
+        // Pro 플랜 매달 사용가능한 AI PICK 횟수
+        private int proPlanMonthlyAvailableAiPickCount;
     }
-
 }

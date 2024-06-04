@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_DEFAULT_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,24 +38,29 @@ public class DocumentFacade {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
 
+        int aiPickCount = member.getAiPickCount();
         int possessDocumentCount = findPossessDocumentCount(memberId);
         int uploadedDocumentCount = findUploadedDocumentCount(memberId);
 
-        int uploadableDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getUploadedDocumentCount() - uploadedDocumentCount;
+        int availableAiPickCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getAvailableAiPickCount() - aiPickCount;
 
-        subscriptionService.checkDocumentUploadLimit(subscription, possessDocumentCount, uploadedDocumentCount, uploadableDocumentCount);
+        subscriptionService.checkDocumentUploadLimit(subscription, possessDocumentCount, uploadedDocumentCount, availableAiPickCount);
 
         if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT) {
-            subscription.minusUploadedDocumentCount();
+            subscription.minusAvailableAiPickCount();
         }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        Long documentId = documentService.createDocument(documentName, file, subscription, category, memberId);
-        System.out.println("possessDocumentCount = " + possessDocumentCount);
-        if (possessDocumentCount == 0) {
-            quizService.createInitialQuizSet(documentId, member);
-        }
-        return documentId;
+        return documentService.createDocument(documentName, file, category, memberId);
+    }
+
+    @Transactional
+    public void createAiPick(Long documentId, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+
+        Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
+        documentService.createAiPick(documentId, memberId, subscription);
+        member.useAiPick();
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {

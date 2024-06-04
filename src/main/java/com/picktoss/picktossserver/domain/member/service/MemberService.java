@@ -34,17 +34,17 @@ public class MemberService {
             Member member,
             Subscription subscription,
             int possessDocumentCount,
-            int possibleUploadedDocumentCount,
+            int availableAiPickCount,
             int point,
             int continuousQuizDatesCount
     ) {
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
-                .possibleUploadedDocumentCount(possibleUploadedDocumentCount)
+                .availableAiPickCount(availableAiPickCount)
                 .freePlanMaxPossessDocumentCount(FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT)
-                .freePlanMonthlyDocumentCount(FREE_PLAN_MONTHLY_DOCUMENT_COUNT)
-                .proPlanMonthlyDocumentCount(PRO_PLAN_MONTHLY_DOCUMENT_COUNT)
+                .freePlanMonthlyAvailableAiPickCount(FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
+                .proPlanMonthlyAvailableAiPickCount(PRO_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
                 .build();
 
         GetMemberInfoResponse.GetMemberInfoSubscriptionDto subscriptionDto = GetMemberInfoResponse.GetMemberInfoSubscriptionDto.builder()

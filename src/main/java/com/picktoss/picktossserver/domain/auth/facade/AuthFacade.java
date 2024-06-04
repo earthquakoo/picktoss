@@ -5,7 +5,9 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.service.EventService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.picktoss.picktossserver.global.enums.CategoryTag.DEFAULT;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class AuthFacade {
     private final EventService eventService;
     private final JwtTokenProvider jwtTokenProvider;
     private final CategoryService categoryService;
+    private final DocumentService documentService;
 
     public JwtTokenDto onlyBackendLogin(String email) {
         Member member = memberService.findMemberByEmail(email);
@@ -59,12 +64,14 @@ public class AuthFacade {
                     .clientId(googleMemberDto.getId())
                     .email(googleMemberDto.getEmail())
                     .isQuizNotificationEnabled(true)
+                    .aiPickCount(0)
                     .build();
 
             Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            categoryService.createCategory("Default folder", CategoryTag.ETC, memberId, member, null);
+            Category category = categoryService.createDefaultCategory(memberId, member);
+            documentService.createDefaultDocument(memberId, category);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
@@ -80,12 +87,14 @@ public class AuthFacade {
                     .name(nickname)
                     .clientId(kakaoMemberDto.getId())
                     .isQuizNotificationEnabled(false)
+                    .aiPickCount(0)
                     .build();
 
             Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            categoryService.createCategory("Default folder", CategoryTag.ETC, memberId, member, null);
+            Category category = categoryService.createDefaultCategory(memberId, member);
+            documentService.createDefaultDocument(memberId, category);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
