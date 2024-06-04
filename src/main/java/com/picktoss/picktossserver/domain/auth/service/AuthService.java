@@ -59,17 +59,13 @@ public class AuthService {
 
     }
 
-    public void getRedirectUri() {
+    public String getRedirectUri() {
         RestTemplate restTemplate = new RestTemplate();
-//        HashMap<String, String> params = new HashMap<>();
-        String oauthUrl = "https://accounts.google.com/o/oauth2/auth?client_id=398224167939-k1no10o1jhphqv7efvrmvcm32bm3gk85.apps.googleusercontent.com&response_type=code&redirect_uri=http://localhost:8080/api/v1/callback&scope=openid%%20email%%20profile";
-
-//        params.put("client_id", oauthClientId);
-//        params.put("client_secret", oauthClientSecret);
-//        params.put("redirect_uri", redirectUri);
-//        params.put("scope", "openid%%20email%%20profile");
-
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(oauthUrl, String.class);
+        return String.format(
+                "https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
+                oauthClientId,
+                redirectUri
+        );
     }
 
     public String getOauthAccessToken(String accessCode) {

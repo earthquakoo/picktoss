@@ -35,21 +35,18 @@ public class AuthController {
     private final AuthFacade authFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
-//    @Operation(summary = "Oauth url api")
-//    @GetMapping("/oauth/url")
-//    public RedirectView oauthUrlApi() {
-//        String oauthUrl = String.format(
-//
-//        );
-//
-//        return new RedirectView(oauthUrl);
-//    }
+    @Operation(summary = "Oauth url api")
+    @GetMapping("/oauth/url")
+    public RedirectView oauthUrlApi() {
+        String oauthUrl = authService.getRedirectUri();
+
+        return new RedirectView(oauthUrl);
+    }
 
     @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
     public void googleLogin(
-            @RequestParam("code") String code,
-            RedirectAttributes redirectAttributes
+            @RequestParam("code") String code
     ) {
         String idToken = authService.getOauthAccessToken(code);
         System.out.println("idToken = " + idToken);
