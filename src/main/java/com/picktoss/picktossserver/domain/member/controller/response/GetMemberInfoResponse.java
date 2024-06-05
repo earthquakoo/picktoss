@@ -14,6 +14,7 @@ public class GetMemberInfoResponse {
     private String email;
     private int point;
     private int continuousQuizDatesCount;
+    private int maxContinuousQuizDatesCount;
     private GetMemberInfoSubscriptionDto subscription;
     private GetMemberInfoDocumentDto documentUsage;
     private boolean isQuizNotificationEnabled;

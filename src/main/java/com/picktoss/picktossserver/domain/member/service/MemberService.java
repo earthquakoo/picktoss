@@ -37,7 +37,8 @@ public class MemberService {
             int possessDocumentCount,
             int availableAiPickCount,
             int point,
-            int continuousQuizDatesCount
+            int continuousQuizDatesCount,
+            int maxContinuousQuizDatesCount
     ) {
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
@@ -61,6 +62,7 @@ public class MemberService {
                 .email(email)
                 .point(point)
                 .continuousQuizDatesCount(continuousQuizDatesCount)
+                .maxContinuousQuizDatesCount(maxContinuousQuizDatesCount)
                 .documentUsage(documentDto)
                 .subscription(subscriptionDto)
                 .isQuizNotificationEnabled(member.isQuizNotificationEnabled())

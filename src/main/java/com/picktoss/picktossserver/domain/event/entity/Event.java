@@ -66,8 +66,8 @@ public class Event{
         this.continuousSolvedQuizDateCount += 1;
     }
 
-    public void addMaxContinuousSolvedQuizDateCount() {
-        this.maxContinuousSolvedQuizDateCount += 1;
+    public void updateMaxContinuousSolvedQuizDateCount(int continuousSolvedQuizDateCount) {
+        this.maxContinuousSolvedQuizDateCount = continuousSolvedQuizDateCount;
     }
 
     public void updateUpdatedAt(LocalDateTime updatedAt) {
