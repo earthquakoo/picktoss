@@ -42,7 +42,7 @@ public class QuizFacade {
     }
 
     @Transactional
-    public List<Quiz> createQuizzes(List<Long> documents, int point, QuizType quizType, Long memberId) {
+    public String createQuizzes(List<Long> documents, int point, QuizType quizType, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Event event = eventService.findEventByMemberId(memberId);
 
@@ -50,10 +50,10 @@ public class QuizFacade {
             throw new CustomException(POINT_NOT_ENOUGH);
         }
 
-        List<Quiz> quizzes = quizService.createQuizzes(documents, point, quizType, member);
+        String quizSetId = quizService.createQuizzes(documents, point, quizType, member);
 
         event.usePoint(point);
-        return quizzes;
+        return quizSetId;
     }
 
     public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {

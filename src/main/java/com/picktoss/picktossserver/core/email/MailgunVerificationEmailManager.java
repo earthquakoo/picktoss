@@ -40,7 +40,7 @@ public class MailgunVerificationEmailManager implements EmailManager {
         String encodedSubject = UriUtils.encode(subject, StandardCharsets.UTF_8);
 
         String body = String.format("from=%s&to=%s&subject=%s&html=%s",
-                "picktoss <admin@girok.org>",
+                "picktoss <postmaster@picktoss.com>",
                 recipientEmail,
                 encodedSubject,
                 encodedContent);
@@ -54,18 +54,13 @@ public class MailgunVerificationEmailManager implements EmailManager {
     }
 
     public void sendVerificationCode(String recipientEmail, String verificationCode) {
-        System.out.println("A");
         try {
             ClassPathResource classPathResource = new ClassPathResource(verificationHtmlPath);
             try (InputStream inputStream = classPathResource.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                System.out.println("B");
                 String content = reader.lines().collect(Collectors.joining("\n"));
-                System.out.println("C");
                 content = content.replace("__VERIFICATION_CODE__", verificationCode);
-                System.out.println("D");
-                sendEmail(recipientEmail, "[Girok] Please verify your email", content);
-                System.out.println("E");
+                sendEmail(recipientEmail, "[Picktoss] Please verify your email", content);
             }
         } catch (IOException e) {
             // TODO: ERROR 핸들링

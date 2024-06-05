@@ -4,6 +4,8 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
+import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.event.service.EventService;
@@ -21,8 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_DEFAULT_DOCUMENT_COUNT;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MONTHLY_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class MemberFacade {
     private final SubscriptionService subscriptionService;
     private final QuizService quizService;
     private final EventService eventService;
+    private final CategoryService categoryService;
 
     @Transactional
     public JwtTokenDto createMember(MemberInfoDto memberInfoDto) {
@@ -42,10 +44,12 @@ public class MemberFacade {
 
         if (optionalMember.isEmpty()) {
             Member member = memberInfoDto.toEntity();
-            memberService.createMember(member);
+            Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            return jwtTokenProvider.generateToken(member.getId());
+            Category category = categoryService.createDefaultCategory(memberId, member);
+            documentService.createDefaultDocument(memberId, category);
+            return jwtTokenProvider.generateToken(memberId);
         }
         Long memberId = optionalMember.get().getId();
         return jwtTokenProvider.generateToken(memberId);
@@ -57,21 +61,23 @@ public class MemberFacade {
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
 
         Event event = eventService.findEventByMemberId(memberId);
-        eventService.checkContinuousQuizSolvedDate(memberId);
 
-        int point = event.getPoint();
+        boolean isContinuousQuizDate = quizService.checkContinuousQuizDatesCount(memberId);
+        if (!isContinuousQuizDate) {
+            event.initContinuousSolvedQuizDateCount();
+        }
+
         int continuousQuizDatesCount = event.getContinuousSolvedQuizDateCount();
+        int point = event.getPoint();
 
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
-        int uploadedDocumentCount = documentService.findUploadedDocumentCount(memberId);
-        int possibleUploadedDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT + subscription.getUploadedDocumentCount() - uploadedDocumentCount;
-
+        int availableAiPickCount = AVAILABLE_AI_PICK_COUNT + subscription.getAvailableAiPickCount() - member.getAiPickCount();
 
         return memberService.findMemberInfo(
                 member,
                 subscription,
                 possessDocumentCount,
-                possibleUploadedDocumentCount,
+                availableAiPickCount,
                 point,
                 continuousQuizDatesCount
         );

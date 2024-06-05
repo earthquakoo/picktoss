@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.member.controller.response.GetMemberIn
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
+import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,17 +35,17 @@ public class MemberService {
             Member member,
             Subscription subscription,
             int possessDocumentCount,
-            int possibleUploadedDocumentCount,
+            int availableAiPickCount,
             int point,
             int continuousQuizDatesCount
     ) {
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
-                .possibleUploadedDocumentCount(possibleUploadedDocumentCount)
+                .availableAiPickCount(availableAiPickCount)
                 .freePlanMaxPossessDocumentCount(FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT)
-                .freePlanMonthlyDocumentCount(FREE_PLAN_MONTHLY_DOCUMENT_COUNT)
-                .proPlanMonthlyDocumentCount(PRO_PLAN_MONTHLY_DOCUMENT_COUNT)
+                .freePlanMonthlyAvailableAiPickCount(FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
+                .proPlanMonthlyAvailableAiPickCount(PRO_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
                 .build();
 
         GetMemberInfoResponse.GetMemberInfoSubscriptionDto subscriptionDto = GetMemberInfoResponse.GetMemberInfoSubscriptionDto.builder()
@@ -115,10 +116,7 @@ public class MemberService {
             throw new CustomException(MEMBER_NOT_FOUND);
         }
 
-        System.out.println("isQuizNotification = " + isQuizNotification);
         Member member = optionalMember.get();
-        System.out.println("member.getId() = " + member.getId());
         member.updateQuizNotification(isQuizNotification);
-        System.out.println("member.isQuizNotificationEnabled() = " + member.isQuizNotificationEnabled());
     }
 }

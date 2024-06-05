@@ -47,10 +47,6 @@ public class AuthService {
     @Value("${oauth.google.redirect_uri}")
     private String redirectUri;
 
-    @Getter
-    @Value("${oauth.google.oauth_callback_response_url}")
-    private String oauthCallbackResponseUrl;
-
     @Value("${email_verification.expire_seconds}")
     private long verificationExpireDurationSeconds;
 
@@ -59,25 +55,14 @@ public class AuthService {
     private static final int randomCodeLen = 6;
 
 
-    public void onlyBackendLogin(Member member) {
-
+    public String getRedirectUri() {
+        RestTemplate restTemplate = new RestTemplate();
+        return String.format(
+                "https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
+                oauthClientId,
+                redirectUri
+        );
     }
-
-    public HashMap<String, String> getRedirectUri() {
-        String oauthUrl = String.format("https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
-                oauthClientId, redirectUri);
-        HashMap<String, String> urlMapping = new HashMap<>();
-        urlMapping.put("oauth_url", oauthUrl);
-        return urlMapping;
-    }
-
-//    public String getRedirectUri() {
-//        return "https://accounts.google.com/o/oauth2/auth?" +
-//                "client_id=" + oauthClientId + "&" +
-//                "response_type=code&" +
-//                "redirect_uri=" + redirectUri + "&" +
-//                "scope=openid%20email%20profile";
-//    }
 
     public String getOauthAccessToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();

@@ -37,23 +37,16 @@ public class AuthController {
 
     @Operation(summary = "Oauth url api")
     @GetMapping("/oauth/url")
-    public HashMap<String, String> oauthUrlApi() {
-        return authService.getRedirectUri();
-    }
+    public RedirectView oauthUrlApi() {
+        String oauthUrl = authService.getRedirectUri();
 
-//    @GetMapping("/oauth/url")
-//    @SneakyThrows
-//    public String oauthUrlApi(HttpServletResponse response) {
-//        String redirectUri = authService.getRedirectUri();
-//        response.sendRedirect(redirectUri);
-//        return redirectUri;
-//    }
+        return new RedirectView(oauthUrl);
+    }
 
     @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
-    public RedirectView googleLogin(
-            @RequestParam("code") String code,
-            RedirectAttributes redirectAttributes
+    public void googleLogin(
+            @RequestParam("code") String code
     ) {
         String idToken = authService.getOauthAccessToken(code);
         System.out.println("idToken = " + idToken);
@@ -62,11 +55,6 @@ public class AuthController {
         MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
         JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
-
-        String oauthCallbackResponseUrl = authService.getOauthCallbackResponseUrl();
-
-        redirectAttributes.addAttribute("access-token", jwtTokenDto.getAccessToken());
-        return new RedirectView(oauthCallbackResponseUrl);
     }
 
     @Operation(summary = "login")
@@ -76,14 +64,6 @@ public class AuthController {
 
         JwtTokenDto jwtTokenDto = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
         return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration()));
-    }
-
-    @Operation(summary = "Only backend login")
-    @PostMapping("/backend/login")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<JwtTokenDto> onlyBackendLogin(@Valid @RequestBody OnlyBackendLoginRequest request) {
-        JwtTokenDto jwtTokenDto = authFacade.onlyBackendLogin(request.getEmail());
-        return ResponseEntity.ok().body(jwtTokenDto);
     }
 
     @PostMapping("/auth/verification")

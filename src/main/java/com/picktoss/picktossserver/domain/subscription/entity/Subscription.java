@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.subscription.entity;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import jakarta.persistence.*;
@@ -8,6 +9,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR;
 
 @Entity
 @Getter
@@ -21,8 +24,8 @@ public class Subscription {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "uploaded_document_count", nullable = false)
-    private int uploadedDocumentCount;
+    @Column(name = "available_ai_pick_count", nullable = false)
+    private int availableAiPickCount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
@@ -39,7 +42,7 @@ public class Subscription {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public void minusUploadedDocumentCount() {
-        this.uploadedDocumentCount -= 1;
+    public void minusAvailableAiPickCount() {
+        this.availableAiPickCount -= 1;
     }
 }

@@ -53,6 +53,7 @@ public enum ErrorInfo {
     PRO_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "PRO_PLAN_CURRENT_UPLOAD_ERROR", "프로 플랜으로 한달에 등록할 수 있는 문서의 최대 개수를 초과했습니다."),
     FREE_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "FREE_PLAN_ANYTIME_UPLOAD_ERROR", "무료 플랜으로 매 시점에 등록할 수 있는 문서의 최대 개수를 초과했습니다."),
     PRO_PLAN_ANYTIME_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "PRO_PLAN_ANYTIME_UPLOAD_ERROR", "프로 플랜으로 매 시점에 등록할 수 있는 문서의 최대 개수를 초과했습니다."),
+    FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR(400, "FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR", "무료 플랜으로 사용할 수 있는 AI Pick을 초과했습니다."),
 
     /**
      * KeyPoint

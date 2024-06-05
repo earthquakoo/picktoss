@@ -43,6 +43,17 @@ public class DocumentController {
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
+    @Operation(summary = "Create AI Pick")
+    @PostMapping("/documents/{document_id}/ai-pick")
+    @ResponseStatus(HttpStatus.OK)
+    public void createAiPick(
+            @PathVariable(name = "document_id") Long documentId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentFacade.createAiPick(documentId, memberId);
+    }
+
     @Operation(summary = "Get document by id",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Get document success!",
