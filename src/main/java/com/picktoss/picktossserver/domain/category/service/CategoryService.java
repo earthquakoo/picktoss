@@ -106,7 +106,7 @@ public class CategoryService {
 
         int order = lastOrder;
 
-        Category category = Category.createCategory(member, "기본 폴더", DEFAULT, order, null);
+        Category category = Category.createCategory(member, "기본 폴더", DEFAULT, order + 1, null);
         categoryRepository.save(category);
         return category;
     }

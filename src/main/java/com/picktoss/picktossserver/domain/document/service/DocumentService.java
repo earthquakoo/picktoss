@@ -79,7 +79,7 @@ public class DocumentService {
 
         int order = lastOrder;
 
-        Document document = Document.createDocument("예시 문서", DEFAULT_DOCUMENT_S3KEY, order, DEFAULT_DOCUMENT, false, category);
+        Document document = Document.createDocument("예시 문서", DEFAULT_DOCUMENT_S3KEY, order + 1, DEFAULT_DOCUMENT, false, category);
 
         documentRepository.save(document);
     }
