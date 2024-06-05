@@ -25,6 +25,10 @@ public class KeyPointFacade {
         return keyPointService.findAllCategoryKeyPoints(documents);
     }
 
+    public List<KeyPoint> findKeyPoints(Long documentId, Long memberId) {
+        return keyPointService.findKeyPoints(documentId, memberId);
+    }
+
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {
         return keyPointService.findBookmarkedKeyPoint(memberId);
     }
