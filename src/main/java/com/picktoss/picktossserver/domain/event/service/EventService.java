@@ -52,9 +52,15 @@ public class EventService {
 
             if (!lastUpdatedDate.plusDays(1).equals(now)) {
                 event.initContinuousSolvedQuizDateCount();
+                event.updateUpdatedAt(LocalDateTime.now());
             }
 
             event.addContinuousSolvedQuizDateCount();
+            event.updateUpdatedAt(LocalDateTime.now());
+
+            if (event.getContinuousSolvedQuizDateCount() >= event.getMaxContinuousSolvedQuizDateCount()) {
+                event.updateMaxContinuousSolvedQuizDateCount(event.getContinuousSolvedQuizDateCount());
+            }
 
             if ((event.getContinuousSolvedQuizDateCount() % 5) == 0) {
                 event.addPoint(FIVE_DAYS_CONTINUOUS_POINT);

@@ -136,6 +136,10 @@ public class DocumentService {
                     document.getStatus() == PROCESSED ||
                     document.getStatus() == COMPLETELY_FAILED) {
                 status = PROCESSED;
+            } else if (document.getStatus() == PROCESSING) {
+                status = PROCESSING;
+            } else if (document.getStatus() == DEFAULT_DOCUMENT) {
+                status = DEFAULT_DOCUMENT;
             }
 
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()

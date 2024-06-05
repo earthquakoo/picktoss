@@ -17,6 +17,17 @@ public interface KeyPointRepository extends JpaRepository<KeyPoint, Long> {
             "WHERE m.id = :memberId AND k.bookmark = true")
     List<KeyPoint> findByBookmark(@Param("memberId") Long memberId);
 
+    @Query("SELECT k FROM KeyPoint k " +
+            "JOIN k.document d " +
+            "JOIN d.category c " +
+            "JOIN c.member m " +
+            "WHERE d.id = :documentId AND m.id = :memberId"
+    )
+    List<KeyPoint> findAllByDocumentIdAndMemberId(
+            @Param("documentId") Long documentId,
+            @Param("memberId") Long memberId
+    );
+
 //    @Query("SELECT k FROM KeyPoint k " +
 //            "JOIN k.document d " +
 //            "JOIN d.category c " +

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
@@ -65,9 +66,11 @@ public class MemberFacade {
         boolean isContinuousQuizDate = quizService.checkContinuousQuizDatesCount(memberId);
         if (!isContinuousQuizDate) {
             event.initContinuousSolvedQuizDateCount();
+            event.updateUpdatedAt(LocalDateTime.now());
         }
 
         int continuousQuizDatesCount = event.getContinuousSolvedQuizDateCount();
+        int maxContinuousQuizDatesCount = event.getMaxContinuousSolvedQuizDateCount();
         int point = event.getPoint();
 
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
@@ -79,7 +82,8 @@ public class MemberFacade {
                 possessDocumentCount,
                 availableAiPickCount,
                 point,
-                continuousQuizDatesCount
+                continuousQuizDatesCount,
+                maxContinuousQuizDatesCount
         );
     }
 

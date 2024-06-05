@@ -52,6 +52,10 @@ public class KeyPointService {
         return documentDtos;
     }
 
+    public List<KeyPoint> findKeyPoints(Long documentId, Long memberId) {
+        return keyPointRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
+    }
+
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {
         return keyPointRepository.findByBookmark(memberId);
     }
