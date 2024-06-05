@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.keypoint.controller.mapper.KeyPointMap
 import com.picktoss.picktossserver.domain.keypoint.controller.request.GetKeyPointSearchRequest;
 import com.picktoss.picktossserver.domain.keypoint.controller.request.UpdateBookmarkKeypointRequest;
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDocumentKeyPointsResponse;
+import com.picktoss.picktossserver.domain.keypoint.controller.response.GetKeyPointsResponse;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.facade.KeyPointFacade;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
@@ -43,13 +44,12 @@ public class KeyPointController {
     @Operation(summary = "Get keypoint by document id")
     @GetMapping("/documents/{document_id}/key-point")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<KeyPointResponseDto> getKeyPoints(@PathVariable("document_id") Long documentId) {
+    public ResponseEntity<GetKeyPointsResponse> getKeyPoints(@PathVariable("document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<KeyPoint> keyPoints = keyPointFacade.findKeyPoints(documentId, memberId);
-        KeyPointResponseDto keyPointResponseDto = KeyPointMapper.keyPointsToKeyPointResponseDto(keyPoints);
-        return ResponseEntity.ok().body(keyPointResponseDto);
+        List<GetKeyPointsResponse.GetKeyPointsDto> keyPoints = keyPointFacade.findKeyPoints(documentId, memberId);
+        return ResponseEntity.ok().body(new GetKeyPointsResponse(keyPoints));
     }
 
     @Operation(summary = "Get bookmarked keypoint")

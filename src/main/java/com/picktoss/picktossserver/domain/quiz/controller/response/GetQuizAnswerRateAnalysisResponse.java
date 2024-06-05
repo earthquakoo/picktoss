@@ -8,9 +8,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class GetQuizAnswerRateAnalysisResponse {
 
+    private Integer totalQuizCount;
+    private Integer mixUpQuizCount;
+    private Integer multipleQuizCount;
+    private Integer incorrectAnswerCount;
+    private Integer elapsedTime;
     private List<QuizAnswerRateAnalysisDto> quizzes;
 
     @Getter

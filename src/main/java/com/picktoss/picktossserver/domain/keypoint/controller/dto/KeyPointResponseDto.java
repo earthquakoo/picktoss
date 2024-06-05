@@ -20,6 +20,7 @@ public class KeyPointResponseDto {
         private Long id;
         private String question;
         private String answer;
+        private boolean bookmark;
         private CategoryDto category;
         private DocumentDto document;
         private LocalDateTime updatedAt;

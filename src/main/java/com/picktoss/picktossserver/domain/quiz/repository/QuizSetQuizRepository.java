@@ -26,6 +26,17 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN q.document d " +
             "JOIN d.category c " +
             "WHERE qs.member.id = :memberId " +
+            "AND qs.solved = true")
+    List<QuizSetQuiz> findAllByMemberId(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN qsq.quizSet qs " +
+            "JOIN qsq.quiz q " +
+            "JOIN q.document d " +
+            "JOIN d.category c " +
+            "WHERE qs.member.id = :memberId " +
             "AND c.id = :categoryId " +
             "AND qs.solved = true " +
             "ORDER BY qsq.updatedAt ASC")

@@ -16,7 +16,7 @@ public class GetSingleDocumentResponse {
     private Long id;
     private String documentName;
     private DocumentStatus status;
-    private boolean quizGenerationStatus;
+    private boolean isTodayQuizIncluded;
     private GetSingleDocumentCategoryDto category;
     private List<GetSingleDocumentKeyPointDto> keyPoints;
     private String content;

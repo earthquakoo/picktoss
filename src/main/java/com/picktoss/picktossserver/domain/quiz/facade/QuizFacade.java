@@ -77,15 +77,11 @@ public class QuizFacade {
         }
     }
 
-    public GetQuizAnalysisResponse findQuizAnalysisByCategory(Long memberId, Long categoryId) {
-        return quizService.findQuizAnalysisByCategory(memberId, categoryId);
-    }
-
-    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
+    public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
         return quizService.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
     }
 
-    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
+    public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
         return quizService.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
     }
 }

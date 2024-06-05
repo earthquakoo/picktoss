@@ -33,6 +33,7 @@ public class KeyPointMapper {
                     .id(keyPoint.getId())
                     .question(keyPoint.getQuestion())
                     .answer(keyPoint.getAnswer())
+                    .bookmark(keyPoint.isBookmark())
                     .category(categoryDto)
                     .document(documentDto)
                     .updatedAt(keyPoint.getUpdatedAt())
