@@ -113,19 +113,6 @@ public class QuizController {
         quizFacade.updateQuizResultList(request.getQuizzes(), request.getQuizSetId(), memberId);
     }
 
-    @Operation(summary = "Get quiz analysis by category")
-    @GetMapping("/categories/{category_id}/quiz-analysis")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizAnalysisResponse> getQuizAnalysis(
-            @PathVariable("category_id") Long categoryId
-    ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        GetQuizAnalysisResponse response = quizFacade.findQuizAnalysisByCategory(memberId, categoryId);
-        return ResponseEntity.ok().body(response);
-    }
-
     @Operation(summary = "Get quiz answer rate analysis by week")
     @GetMapping("/categories/{category_id}/quiz-answer-rate-week")
     @ResponseStatus(HttpStatus.OK)
@@ -137,8 +124,8 @@ public class QuizController {
         Long memberId = jwtUserInfo.getMemberId();
         Integer weeks = Integer.valueOf(week);
 
-        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
-        return ResponseEntity.ok().body(new GetQuizAnswerRateAnalysisResponse(response));
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "Get quiz answer rate analysis by month")
@@ -152,8 +139,8 @@ public class QuizController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
-        return ResponseEntity.ok().body(new GetQuizAnswerRateAnalysisResponse(response));
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
+        return ResponseEntity.ok().body(response);
     }
 
 }

@@ -4,7 +4,6 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.constant.DocumentConstant;
 import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
@@ -12,7 +11,6 @@ import com.picktoss.picktossserver.domain.document.controller.response.SearchDoc
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
-import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
@@ -113,7 +111,7 @@ public class DocumentService {
                 .id(document.getId())
                 .documentName(document.getName())
                 .status(document.getStatus())
-                .quizGenerationStatus(true)
+                .isTodayQuizIncluded(true)
                 .category(categoryDto)
                 .keyPoints(keyPointDtos)
                 .content(content)
@@ -146,7 +144,7 @@ public class DocumentService {
                     .id(document.getId())
                     .name(document.getName())
                     .status(status)
-                    .quizGenerationStatus(true)
+                    .isTodayQuizIncluded(true)
                     .createdAt(document.getCreatedAt())
                     .build();
 

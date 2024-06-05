@@ -2,8 +2,6 @@ package com.picktoss.picktossserver.domain.member.facade;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
-import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
-import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;

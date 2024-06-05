@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDocumentKeyPointsResponse;
+import com.picktoss.picktossserver.domain.keypoint.controller.response.GetKeyPointsResponse;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.repository.KeyPointRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,8 +53,32 @@ public class KeyPointService {
         return documentDtos;
     }
 
-    public List<KeyPoint> findKeyPoints(Long documentId, Long memberId) {
-        return keyPointRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
+    public List<GetKeyPointsResponse.GetKeyPointsDto> findKeyPoints(Long documentId, Long memberId) {
+        List<KeyPoint> keyPoints = keyPointRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
+
+        List<GetKeyPointsResponse.GetKeyPointsDto> keyPointsDtos = new ArrayList<>();
+
+        for (KeyPoint keyPoint : keyPoints) {
+            Document document = keyPoint.getDocument();
+
+            GetKeyPointsResponse.GetKeyPointsDocumentDto documentDto = GetKeyPointsResponse.GetKeyPointsDocumentDto.builder()
+                    .id(document.getId())
+                    .name(document.getName())
+                    .documentStatus(document.getStatus())
+                    .build();
+
+            GetKeyPointsResponse.GetKeyPointsDto keyPointsDto = GetKeyPointsResponse.GetKeyPointsDto.builder()
+                    .id(keyPoint.getId())
+                    .question(keyPoint.getQuestion())
+                    .answer(keyPoint.getAnswer())
+                    .bookmark(keyPoint.isBookmark())
+                    .updatedAt(keyPoint.getUpdatedAt())
+                    .document(documentDto)
+                    .build();
+
+            keyPointsDtos.add(keyPointsDto);
+        }
+        return keyPointsDtos;
     }
 
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {

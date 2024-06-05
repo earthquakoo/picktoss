@@ -20,7 +20,7 @@ public class GetAllDocumentsResponse {
         private Long id;
         private String name;
         private DocumentStatus status;
-        private boolean quizGenerationStatus;
+        private boolean isTodayQuizIncluded;
         private LocalDateTime createdAt;
     }
 }

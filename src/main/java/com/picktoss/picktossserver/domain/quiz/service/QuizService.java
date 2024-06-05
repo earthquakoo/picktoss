@@ -229,44 +229,23 @@ public class QuizService {
         return isTodayQuizSet;
     }
 
-    public GetQuizAnalysisResponse findQuizAnalysisByCategory(Long memberId, Long categoryId) {
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
-
-        int totalQuizCount = quizSetQuizzes.size();
-        int mixUpQuizCount = 0;
-        int multipleChoiceQuizCount = 0;
-        int incorrectAnswerCount = 0;
-        int totalElapsedTimeMs = 0;
-
-        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-            Quiz quiz = quizSetQuiz.getQuiz();
-            if (quiz.getQuizType() == QuizType.MIX_UP) {
-                mixUpQuizCount += 1;
-            } else {
-                multipleChoiceQuizCount += 1;
-            }
-
-            if (!Objects.isNull(quizSetQuiz.getElapsedTimeMs())) {
-                int elapsedTimeMs = quizSetQuiz.getElapsedTimeMs();
-                totalElapsedTimeMs += elapsedTimeMs;
-            }
-
-            incorrectAnswerCount += quiz.getIncorrectAnswerCount();
+    public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
+        List<QuizSetQuiz> quizSetQuizzes;
+        if (categoryId == 0) {
+            quizSetQuizzes = quizSetQuizRepository.findAllByMemberId(memberId);
+        } else {
+            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
         }
 
-        return GetQuizAnalysisResponse.builder()
-                .totalQuizCount(totalQuizCount)
-                .mixUpQuizCount(mixUpQuizCount)
-                .multipleQuizCount(multipleChoiceQuizCount)
-                .incorrectAnswerCount(incorrectAnswerCount)
-                .elapsedTime(totalElapsedTimeMs)
-                .build();
-    }
-
-    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
         HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new HashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new HashMap<>();
+
+        HashMap<String, Integer> quizAnalysis = quizAnalysis(quizSetQuizzes);
+        Integer totalQuizCount = quizAnalysis.get("totalQuizCount");
+        Integer mixUpQuizCount = quizAnalysis.get("mixUpQuizCount");
+        Integer multipleChoiceQuizCount = quizAnalysis.get("multipleChoiceQuizCount");
+        Integer incorrectAnswerCount = quizAnalysis.get("incorrectAnswerCount");
+        Integer totalElapsedTimeMs = quizAnalysis.get("totalElapsedTimeMs");
 
         LocalDate startDate = LocalDate.now().minusWeeks(weeks);
 
@@ -303,14 +282,33 @@ public class QuizService {
                 quizzesDtos.add(quizzesDto);
             }
         }
-        return quizzesDtos;
+        return new GetQuizAnswerRateAnalysisResponse(
+                totalQuizCount,
+                mixUpQuizCount,
+                multipleChoiceQuizCount,
+                incorrectAnswerCount,
+                totalElapsedTimeMs,
+                quizzesDtos
+                );
     }
 
-    public List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
+    public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
+        List<QuizSetQuiz> quizSetQuizzes;
+        if (categoryId == 0) {
+            quizSetQuizzes = quizSetQuizRepository.findAllByMemberId(memberId);
+        } else {
+            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
+        }
 
         HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new HashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new HashMap<>();
+
+        HashMap<String, Integer> quizAnalysis = quizAnalysis(quizSetQuizzes);
+        Integer totalQuizCount = quizAnalysis.get("totalQuizCount");
+        Integer mixUpQuizCount = quizAnalysis.get("mixUpQuizCount");
+        Integer multipleChoiceQuizCount = quizAnalysis.get("multipleChoiceQuizCount");
+        Integer incorrectAnswerCount = quizAnalysis.get("incorrectAnswerCount");
+        Integer totalElapsedTimeMs = quizAnalysis.get("totalElapsedTimeMs");
 
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate startDate = yearMonth.atDay(1);
@@ -345,7 +343,14 @@ public class QuizService {
             quizzesDtos.add(quizzesDto);
         }
 
-        return quizzesDtos;
+        return new GetQuizAnswerRateAnalysisResponse(
+                totalQuizCount,
+                mixUpQuizCount,
+                multipleChoiceQuizCount,
+                incorrectAnswerCount,
+                totalElapsedTimeMs,
+                quizzesDtos
+        );
     }
 
     public boolean checkContinuousQuizDatesCount(Long memberId) {
@@ -371,5 +376,30 @@ public class QuizService {
 
     private static String createQuizSetId() {
         return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private HashMap<String, Integer> quizAnalysis(List<QuizSetQuiz> quizSetQuizzes) {
+        HashMap<String, Integer> quizAnalysis = new HashMap<>();
+        quizAnalysis.put("totalQuizCount", quizSetQuizzes.size());
+        quizAnalysis.put("mixUpQuizCount", 0);
+        quizAnalysis.put("multipleChoiceQuizCount", 0);
+        quizAnalysis.put("incorrectAnswerCount", 0);
+        quizAnalysis.put("totalElapsedTimeMs", 0);
+
+        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            Quiz quiz = quizSetQuiz.getQuiz();
+            if (quiz.getQuizType() == QuizType.MIX_UP) {
+                quizAnalysis.put("mixUpQuizCount", quizAnalysis.get("mixUpQuizCount") + 1);
+            } else {
+                quizAnalysis.put("multipleChoiceQuizCount", quizAnalysis.get("multipleChoiceQuizCount") + 1);
+            }
+
+            if (!Objects.isNull(quizSetQuiz.getElapsedTimeMs())) {
+                int elapsedTimeMs = quizSetQuiz.getElapsedTimeMs();
+                quizAnalysis.put("totalElapsedTimeMs", quizAnalysis.get("totalElapsedTimeMs") + elapsedTimeMs);
+            }
+            quizAnalysis.put("incorrectAnswerCount", quizAnalysis.get("incorrectAnswerCount") + quiz.getIncorrectAnswerCount());
+        }
+        return quizAnalysis;
     }
 }

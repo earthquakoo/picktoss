@@ -39,8 +39,8 @@ public class Document extends AuditBase {
     @Column(name = "status", nullable = false)
     private DocumentStatus status;
 
-    @Column(name = "quiz_generation_status", nullable = false)
-    private boolean quizGenerationStatus;
+    @Column(name = "is_today_quiz_included", nullable = false)
+    private boolean isTodayQuizIncluded;
 
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
@@ -59,19 +59,16 @@ public class Document extends AuditBase {
     private List<Quiz> quizzes = new ArrayList<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, int order, DocumentStatus status, boolean quizGenerationStatus, Category category) {
-        Document document = Document.builder()
+    public static Document createDocument(String name, String s3Key, int order, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Category category) {
+        return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
                 .order(order)
-                .status(status)
+                .status(documentStatus)
                 .activated(true)
-                .quizGenerationStatus(quizGenerationStatus)
+                .isTodayQuizIncluded(isTodayQuizIncluded)
                 .category(category)
                 .build();
-
-//        document.setCategory(category);
-        return document;
     }
 
     // 연관관계 메서드
