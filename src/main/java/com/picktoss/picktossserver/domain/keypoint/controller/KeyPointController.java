@@ -44,12 +44,13 @@ public class KeyPointController {
     @Operation(summary = "Get keypoint by document id")
     @GetMapping("/documents/{document_id}/key-point")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetKeyPointsResponse> getKeyPoints(@PathVariable("document_id") Long documentId) {
+    public ResponseEntity<GetKeyPointsResponse> getKeyPoints(
+            @PathVariable("document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetKeyPointsResponse.GetKeyPointsDto> keyPoints = keyPointFacade.findKeyPoints(documentId, memberId);
-        return ResponseEntity.ok().body(new GetKeyPointsResponse(keyPoints));
+        GetKeyPointsResponse keyPoints = keyPointFacade.findKeyPoints(documentId, memberId);
+        return ResponseEntity.ok().body(keyPoints);
     }
 
     @Operation(summary = "Get bookmarked keypoint")

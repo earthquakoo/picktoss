@@ -163,7 +163,7 @@ public class CategoryService {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
-            return ;
+            throw new CustomException(CATEGORY_NOT_FOUND);
         }
 
         Category category = optionalCategory.get();
@@ -171,6 +171,24 @@ public class CategoryService {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
         category.updateCategoryEmoji(emoji);
+    }
+
+    @Transactional
+    public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji, CategoryTag categoryTag) {
+        Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
+
+        if (optionalCategory.isEmpty()) {
+            throw new CustomException(CATEGORY_NOT_FOUND);
+        }
+
+        Category category = optionalCategory.get();
+        if (!Objects.equals(category.getMember().getId(), memberId)) {
+            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
+
+        category.updateCategoryEmoji(emoji);
+        category.updateCategoryName(name);
+        category.updateCategoryTag(categoryTag);
     }
 
     @Transactional

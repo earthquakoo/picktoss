@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDoc
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetKeyPointsResponse;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.repository.KeyPointRepository;
+import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,32 +54,23 @@ public class KeyPointService {
         return documentDtos;
     }
 
-    public List<GetKeyPointsResponse.GetKeyPointsDto> findKeyPoints(Long documentId, Long memberId) {
+    public GetKeyPointsResponse findKeyPoints(Long documentId, Long memberId, DocumentStatus documentStatus) {
         List<KeyPoint> keyPoints = keyPointRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
 
         List<GetKeyPointsResponse.GetKeyPointsDto> keyPointsDtos = new ArrayList<>();
 
         for (KeyPoint keyPoint : keyPoints) {
-            Document document = keyPoint.getDocument();
-
-            GetKeyPointsResponse.GetKeyPointsDocumentDto documentDto = GetKeyPointsResponse.GetKeyPointsDocumentDto.builder()
-                    .id(document.getId())
-                    .name(document.getName())
-                    .documentStatus(document.getStatus())
-                    .build();
-
             GetKeyPointsResponse.GetKeyPointsDto keyPointsDto = GetKeyPointsResponse.GetKeyPointsDto.builder()
                     .id(keyPoint.getId())
                     .question(keyPoint.getQuestion())
                     .answer(keyPoint.getAnswer())
                     .bookmark(keyPoint.isBookmark())
                     .updatedAt(keyPoint.getUpdatedAt())
-                    .document(documentDto)
                     .build();
 
             keyPointsDtos.add(keyPointsDto);
         }
-        return keyPointsDtos;
+        return new GetKeyPointsResponse(documentStatus, keyPointsDtos);
     }
 
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {

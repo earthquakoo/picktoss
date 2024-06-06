@@ -100,6 +100,18 @@ public class CategoryController {
         categoryFacade.updateCategoryEmoji(memberId, categoryId, request.getEmoji());
     }
 
+    @Operation(summary = "update category info")
+    @PatchMapping("/categories/info/{category_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCategoryInfo(
+            @PathVariable(name = "id") Long categoryId,
+            @Valid @RequestBody UpdateCategoryInfoRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        categoryFacade.updateCategoryInfo(memberId, categoryId, request.getName(), request.getEmoji(), request.getCategoryTag());
+    }
+
     @Operation(summary = "Update categories order")
     @PatchMapping("/categories/reorder")
     @ResponseStatus(HttpStatus.NO_CONTENT)

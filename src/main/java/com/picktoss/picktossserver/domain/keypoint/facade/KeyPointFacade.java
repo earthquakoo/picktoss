@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.keypoint.facade;
 
 
+import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDocumentKeyPointsResponse;
@@ -26,8 +27,9 @@ public class KeyPointFacade {
         return keyPointService.findAllCategoryKeyPoints(documents);
     }
 
-    public List<GetKeyPointsResponse.GetKeyPointsDto> findKeyPoints(Long documentId, Long memberId) {
-        return keyPointService.findKeyPoints(documentId, memberId);
+    public GetKeyPointsResponse findKeyPoints(Long documentId, Long memberId) {
+        Document document = documentService.findByDocumentIdAndMemberId(documentId, memberId);
+        return keyPointService.findKeyPoints(documentId, memberId, document.getStatus());
     }
 
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {

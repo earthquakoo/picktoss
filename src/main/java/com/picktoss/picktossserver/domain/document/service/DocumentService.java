@@ -378,4 +378,9 @@ public class DocumentService {
     public List<Document> findAllByMemberId(Long memberId) {
         return documentRepository.findAllByMemberId(memberId);
     }
+
+    public Document findByDocumentIdAndMemberId(Long documentId, Long memberId) {
+        return documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+    }
 }
