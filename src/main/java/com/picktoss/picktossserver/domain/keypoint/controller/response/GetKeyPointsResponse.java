@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GetKeyPointsResponse {
 
+    private DocumentStatus documentStatus;
     private List<GetKeyPointsDto> keyPoints;
 
     @Getter
@@ -22,15 +23,6 @@ public class GetKeyPointsResponse {
         private String question;
         private String answer;
         private boolean bookmark;
-        private GetKeyPointsDocumentDto document;
         private LocalDateTime updatedAt;
-    }
-
-    @Getter
-    @Builder
-    public static class GetKeyPointsDocumentDto {
-        private Long id;
-        private String name;
-        private DocumentStatus documentStatus;
     }
 }
