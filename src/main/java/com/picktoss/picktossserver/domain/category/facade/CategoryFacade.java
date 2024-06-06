@@ -58,6 +58,11 @@ public class CategoryFacade {
     }
 
     @Transactional
+    public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji, CategoryTag categoryTag) {
+        categoryService.updateCategoryInfo(memberId, categoryId, name, emoji, categoryTag);
+    }
+
+    @Transactional
     public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
         categoryService.updateCategoriesOrder(categoryId, preDragCategoryOrder, afterDragCategoryOrder, memberId);
     }
