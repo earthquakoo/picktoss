@@ -101,7 +101,7 @@ public class CategoryController {
     }
 
     @Operation(summary = "update category info")
-    @PatchMapping("/categories/info/{category_id}")
+    @PatchMapping("/categories/info/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCategoryInfo(
             @PathVariable(name = "id") Long categoryId,
