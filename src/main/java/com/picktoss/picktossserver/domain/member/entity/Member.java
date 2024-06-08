@@ -29,6 +29,7 @@ public class Member extends AuditBase {
     @Column(name = "client_id", nullable = false)
     private String clientId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "social_platform", nullable = false)
     private SocialPlatform socialPlatform;
 
