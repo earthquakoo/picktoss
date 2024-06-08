@@ -59,6 +59,8 @@ public enum ErrorInfo {
      * KeyPoint
      */
     KEY_POINT_NOT_FOUND(400, "KEY_POINT_NOT_FOUND", "keypoint not found."),
+    DEFAULT_FILE_NOT_FOUND(400, "DEFAULT_FILE_NOT_FOUND", "Default keypoint set not found."),
+
 
 
     /**

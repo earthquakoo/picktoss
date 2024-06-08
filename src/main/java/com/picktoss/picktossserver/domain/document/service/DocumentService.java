@@ -15,6 +15,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +24,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.DEFAULT_DOCUMENT_S3KEY;
 import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
 
 @Service
@@ -34,6 +34,9 @@ public class DocumentService {
     private final S3Provider s3Provider;
     private final SqsProvider sqsProvider;
     private final DocumentRepository documentRepository;
+
+    @Value("${picktoss.default_document_s3_key}")
+    private String defaultDocumentS3Key;
 
     @Transactional
     public Long createDocument(String documentName, MultipartFile file, Category category, Long memberId) {
@@ -69,7 +72,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public void createDefaultDocument(Long memberId, Category category) {
+    public Document createDefaultDocument(Long memberId, Category category) {
         Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
         if (lastOrder == null) {
             lastOrder = 0;
@@ -77,9 +80,11 @@ public class DocumentService {
 
         int order = lastOrder;
 
-        Document document = Document.createDocument("예시 문서", DEFAULT_DOCUMENT_S3KEY, order + 1, DEFAULT_DOCUMENT, false, category);
+        Document document = Document.createDocument("예시 문서", defaultDocumentS3Key, order + 1, DEFAULT_DOCUMENT, false, category);
 
         documentRepository.save(document);
+
+        return document;
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
@@ -111,7 +116,7 @@ public class DocumentService {
                 .id(document.getId())
                 .documentName(document.getName())
                 .status(document.getStatus())
-                .isTodayQuizIncluded(true)
+                .isTodayQuizIncluded(document.isTodayQuizIncluded())
                 .category(categoryDto)
                 .keyPoints(keyPointDtos)
                 .content(content)
@@ -144,7 +149,7 @@ public class DocumentService {
                     .id(document.getId())
                     .name(document.getName())
                     .status(status)
-                    .isTodayQuizIncluded(true)
+                    .isTodayQuizIncluded(document.isTodayQuizIncluded())
                     .createdAt(document.getCreatedAt())
                     .build();
 
@@ -350,11 +355,6 @@ public class DocumentService {
         return possessDocumentCount;
     }
 
-    // 생성한 모든 문서
-    public int findUploadedDocumentCount(Long memberId) {
-        List<Document> documents = documentRepository.findAllByMemberIdAndActivatedIs(memberId);
-        return documents.size();
-    }
 
     //현재 구독 사이클에 업로드한 문서 개수
     public int findUploadedDocumentCountForCurrentSubscription(Long memberId, Subscription subscription) {

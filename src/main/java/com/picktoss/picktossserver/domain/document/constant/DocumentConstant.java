@@ -22,7 +22,4 @@ public final class DocumentConstant {
     public static final int PRO_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT = 20;
     public static final int FREE_PLAN_MONTHLY_DOCUMENT_COUNT = 5;
     public static final int PRO_PLAN_MONTHLY_DOCUMENT_COUNT = 20;
-
-    // Default document s3Key
-    public static final String DEFAULT_DOCUMENT_S3KEY = "61bfa68f-6166-47d7-b652-ab4c953b19a8";
 }

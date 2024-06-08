@@ -19,10 +19,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Where(clause = "activated = true")
-@SQLDelete(sql = "UPDATE document " +
-        "SET activated = false " +
-        "WHERE id = ?")
 public class Document extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,9 +41,6 @@ public class Document extends AuditBase {
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
 
-    @Column(name = "activated", nullable = false)
-    private boolean activated;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -65,7 +58,6 @@ public class Document extends AuditBase {
                 .s3Key(s3Key)
                 .order(order)
                 .status(documentStatus)
-                .activated(true)
                 .isTodayQuizIncluded(isTodayQuizIncluded)
                 .category(category)
                 .build();
