@@ -140,14 +140,6 @@ public class AuthService {
         }
     }
 
-    public void login(String accessToken, SocialPlatform socialPlatform) {
-        String userInfoJson = getUserInfo(accessToken, socialPlatform);
-        if (socialPlatform == SocialPlatform.KAKAO) {
-            KakaoMemberDto kakaoMemberDto = transJsonToKakaoMemberDto(userInfoJson);
-
-        }
-    }
-
     /**
      * 이메일 인증코드 발송
      */

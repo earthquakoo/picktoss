@@ -46,6 +46,7 @@ springdoc:
 
 picktoss:
   server_url: ${PICKTOSS_SERVER_URL}
+  default_document_s3_key: ${PICKTOSS_DEFAULT_S3_KEY}
 
 jwt:
   secret: ${PICKTOSS_JWT_SECRET_KEY}
