@@ -7,8 +7,10 @@ import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.service.EventService;
+import com.picktoss.picktossserver.domain.keypoint.service.KeyPointService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
@@ -34,6 +36,7 @@ public class AuthFacade {
     private final JwtTokenProvider jwtTokenProvider;
     private final CategoryService categoryService;
     private final DocumentService documentService;
+    private final KeyPointService keyPointService;
 
     @Transactional
     public JwtTokenDto login(String accessToken, SocialPlatform socialPlatform) {
@@ -56,6 +59,7 @@ public class AuthFacade {
             Member member = Member.builder()
                     .name(googleMemberDto.getName())
                     .clientId(googleMemberDto.getId())
+                    .socialPlatform(SocialPlatform.GOOGLE)
                     .email(googleMemberDto.getEmail())
                     .isQuizNotificationEnabled(true)
                     .aiPickCount(0)
@@ -65,7 +69,8 @@ public class AuthFacade {
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
             Category category = categoryService.createDefaultCategory(memberId, member);
-            documentService.createDefaultDocument(memberId, category);
+            Document document = documentService.createDefaultDocument(memberId, category);
+            keyPointService.createDefaultKeyPoint(document);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();
@@ -80,6 +85,7 @@ public class AuthFacade {
             Member member = Member.builder()
                     .name(nickname)
                     .clientId(kakaoMemberDto.getId())
+                    .socialPlatform(SocialPlatform.KAKAO)
                     .isQuizNotificationEnabled(false)
                     .aiPickCount(0)
                     .build();
@@ -88,7 +94,8 @@ public class AuthFacade {
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
             Category category = categoryService.createDefaultCategory(memberId, member);
-            documentService.createDefaultDocument(memberId, category);
+            Document document = documentService.createDefaultDocument(memberId, category);
+            keyPointService.createDefaultKeyPoint(document);
             return jwtTokenProvider.generateToken(member.getId());
         }
         Long memberId = optionalMember.get().getId();

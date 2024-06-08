@@ -9,13 +9,26 @@ import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.repository.KeyPointRepository;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.json.JSONParser;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileCopyUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertStoreException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.DEFAULT_FILE_NOT_FOUND;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.KEY_POINT_NOT_FOUND;
 
 @Service
@@ -24,6 +37,52 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.KEY_POINT_NOT
 public class KeyPointService {
 
     private final KeyPointRepository keyPointRepository;
+
+    private static final String defaultKeyPoints = "defaultkeypoints/default_keypoint.json";
+
+    @Transactional
+    public void createDefaultKeyPoint(Document document) {
+        List<KeyPoint> keyPoints = new ArrayList<>();
+
+        try {
+            ClassPathResource classPathResource = new ClassPathResource(defaultKeyPoints);
+            InputStream inputStream = classPathResource.getInputStream();
+
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+
+            String jsonString = stringBuilder.toString();
+
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONArray jArray = jsonObject.getJSONArray("keyPoints");
+
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject obj = jArray.getJSONObject(i);
+                String question = obj.getString("question");
+                String answer = obj.getString("answer");
+
+                KeyPoint keyPoint = KeyPoint.builder()
+                        .question(question)
+                        .answer(answer)
+                        .bookmark(false)
+                        .document(document)
+                        .build();
+
+                keyPoints.add(keyPoint);
+            }
+
+        } catch (IOException e) {
+            throw new CustomException(DEFAULT_FILE_NOT_FOUND);
+        }
+
+        keyPointRepository.saveAll(keyPoints);
+    }
 
     public List<GetAllDocumentKeyPointsResponse.GetAllDocumentDto> findAllCategoryKeyPoints(List<Document> documents) {
         List<GetAllDocumentKeyPointsResponse.GetAllDocumentDto> documentDtos = new ArrayList<>();

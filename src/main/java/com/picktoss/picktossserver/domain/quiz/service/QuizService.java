@@ -293,7 +293,7 @@ public class QuizService {
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
-        List<QuizSetQuiz> quizSetQuizzes;
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
         if (categoryId == 0) {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberId(memberId);
         } else {

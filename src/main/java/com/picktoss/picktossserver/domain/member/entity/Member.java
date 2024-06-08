@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
+import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,9 @@ public class Member extends AuditBase {
 
     @Column(name = "client_id", nullable = false)
     private String clientId;
+
+    @Column(name = "social_platform", nullable = false)
+    private SocialPlatform socialPlatform;
 
     @Column(name = "name", nullable = false)
     private String name;

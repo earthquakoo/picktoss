@@ -4,9 +4,11 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.event.service.EventService;
+import com.picktoss.picktossserver.domain.keypoint.service.KeyPointService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -36,6 +38,7 @@ public class MemberFacade {
     private final QuizService quizService;
     private final EventService eventService;
     private final CategoryService categoryService;
+    private final KeyPointService keyPointService;
 
     @Transactional
     public JwtTokenDto createMember(MemberInfoDto memberInfoDto) {
@@ -47,7 +50,8 @@ public class MemberFacade {
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
             Category category = categoryService.createDefaultCategory(memberId, member);
-            documentService.createDefaultDocument(memberId, category);
+            Document document = documentService.createDefaultDocument(memberId, category);
+            keyPointService.createDefaultKeyPoint(document);
             return jwtTokenProvider.generateToken(memberId);
         }
         Long memberId = optionalMember.get().getId();
