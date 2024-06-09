@@ -91,7 +91,7 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         Optional<Member> optionalMember = memberRepository.findById(memberId);
         if (optionalMember.isEmpty()) {
-            return;
+            throw new CustomException(MEMBER_NOT_FOUND);
         }
 
         Member member = optionalMember.get();

@@ -66,24 +66,15 @@ public class DocumentService {
         }
 
         Document document = optionalDocument.get();
-        document.updateDocumentStatus(PROCESSING);
+        document.updateDocumentStatusProcessingByGenerateAiPick();
 
         sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
     @Transactional
-    public Document createDefaultDocument(Long memberId, Category category) {
-        Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
-        if (lastOrder == null) {
-            lastOrder = 0;
-        }
-
-        int order = lastOrder;
-
-        Document document = Document.createDocument("예시 문서", defaultDocumentS3Key, order + 1, DEFAULT_DOCUMENT, false, category);
-
+    public Document createDefaultDocument(Category category) {
+        Document document = Document.createDefaultDocument(defaultDocumentS3Key, category);
         documentRepository.save(document);
-
         return document;
     }
 
@@ -112,10 +103,12 @@ public class DocumentService {
                 .name(document.getCategory().getName())
                 .build();
 
+        DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
+
         return GetSingleDocumentResponse.builder()
                 .id(document.getId())
                 .documentName(document.getName())
-                .status(document.getStatus())
+                .status(documentStatus)
                 .isTodayQuizIncluded(document.isTodayQuizIncluded())
                 .category(categoryDto)
                 .keyPoints(keyPointDtos)
@@ -134,21 +127,12 @@ public class DocumentService {
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
-            DocumentStatus status = UNPROCESSED;
-            if (document.getStatus() == PARTIAL_SUCCESS ||
-                    document.getStatus() == PROCESSED ||
-                    document.getStatus() == COMPLETELY_FAILED) {
-                status = PROCESSED;
-            } else if (document.getStatus() == PROCESSING) {
-                status = PROCESSING;
-            } else if (document.getStatus() == DEFAULT_DOCUMENT) {
-                status = DEFAULT_DOCUMENT;
-            }
+            DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
 
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
                     .id(document.getId())
                     .name(document.getName())
-                    .status(status)
+                    .status(documentStatus)
                     .isTodayQuizIncluded(document.isTodayQuizIncluded())
                     .createdAt(document.getCreatedAt())
                     .build();
@@ -162,7 +146,7 @@ public class DocumentService {
     public void deleteDocument(Long memberId, Long documentId) {
         Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
         if (optionalDocument.isEmpty()) {
-            return ;
+            throw new CustomException(DOCUMENT_NOT_FOUND);
         }
 
         Document document = optionalDocument.get();
@@ -316,7 +300,7 @@ public class DocumentService {
         String s3Key = s3Provider.uploadFile(file);
         document.updateDocumentS3Key(s3Key);
         document.updateDocumentName(name);
-        document.updateDocumentStatus(KEYPOINT_UPDATE_POSSIBLE);
+        document.updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument();
     }
 
     @Transactional
@@ -383,4 +367,6 @@ public class DocumentService {
         return documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
     }
+
+
 }

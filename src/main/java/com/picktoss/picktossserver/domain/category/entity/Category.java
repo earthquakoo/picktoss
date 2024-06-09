@@ -56,6 +56,16 @@ public class Category extends AuditBase {
         return category;
     }
 
+    public static Category createDefaultCategory(Member member) {
+        return Category.builder()
+                .name("기본 폴더")
+                .tag(CategoryTag.DEFAULT)
+                .order(1)
+                .emoji(null)
+                .member(member)
+                .build();
+    }
+
     // 연관관계 메서드
     public void setMember(Member member) {
         this.member = member;

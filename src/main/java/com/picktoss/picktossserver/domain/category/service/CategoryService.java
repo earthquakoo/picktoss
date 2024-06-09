@@ -99,14 +99,7 @@ public class CategoryService {
 
     @Transactional
     public Category createDefaultCategory(Long memberId, Member member) {
-        Integer lastOrder = categoryRepository.findLastOrderByMemberId(memberId);
-        if (lastOrder == null) {
-            lastOrder = 0;
-        }
-
-        int order = lastOrder;
-
-        Category category = Category.createCategory(member, "기본 폴더", DEFAULT, order + 1, null);
+        Category category = Category.createDefaultCategory(member);
         categoryRepository.save(category);
         return category;
     }
@@ -116,7 +109,7 @@ public class CategoryService {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
-            return ;
+            throw new CustomException(CATEGORY_NOT_FOUND);
         }
 
         Category category = optionalCategory.get();
@@ -133,7 +126,7 @@ public class CategoryService {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
-            return ;
+            throw new CustomException(CATEGORY_NOT_FOUND);
         }
 
         Category category = optionalCategory.get();
@@ -148,7 +141,7 @@ public class CategoryService {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 
         if (optionalCategory.isEmpty()) {
-            return ;
+            throw new CustomException(CATEGORY_NOT_FOUND);
         }
 
         Category category = optionalCategory.get();
