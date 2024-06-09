@@ -13,6 +13,9 @@ import org.hibernate.annotations.Where;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.PROCESSED;
+
 @Entity
 @Getter
 @Table(name = "document")
@@ -63,6 +66,17 @@ public class Document extends AuditBase {
                 .build();
     }
 
+    public static Document createDefaultDocument(String s3Key, Category category) {
+        return Document.builder()
+                .name("예시 문서")
+                .s3Key(s3Key)
+                .order(1)
+                .status(DocumentStatus.DEFAULT_DOCUMENT)
+                .isTodayQuizIncluded(false)
+                .category(category)
+                .build();
+    }
+
     // 연관관계 메서드
     public void setCategory(Category category) {
         this.category = category;
@@ -94,7 +108,22 @@ public class Document extends AuditBase {
         this.name = name;
     }
 
-    public void updateDocumentStatus(DocumentStatus documentStatus) {
-        this.status = documentStatus;
+    public void updateDocumentStatusProcessingByGenerateAiPick() {
+        this.status = DocumentStatus.PROCESSING;
+    }
+
+    public void updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument() {
+        this.status = DocumentStatus.KEYPOINT_UPDATE_POSSIBLE;
+    }
+
+    public DocumentStatus updateDocumentStatusClientResponse(DocumentStatus documentStatus) {
+        if (documentStatus == PARTIAL_SUCCESS ||
+                documentStatus == PROCESSED ||
+                documentStatus == COMPLETELY_FAILED) {
+            documentStatus = PROCESSED;
+        } else {
+            return documentStatus;
+        }
+        return documentStatus;
     }
 }

@@ -61,7 +61,7 @@ public class Quiz extends AuditBase {
         this.bookmark = bookmark;
     }
 
-    public void updateQuizLatest() {
+    public void updateQuizLatestByDocumentReUpload() {
         this.latest = false;
     }
 

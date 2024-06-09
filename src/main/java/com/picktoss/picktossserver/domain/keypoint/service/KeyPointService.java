@@ -100,10 +100,12 @@ public class KeyPointService {
                 keyPointDtos.add(keyPointDto);
             }
 
+            DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
+
             GetAllDocumentKeyPointsResponse.GetAllDocumentDto documentDto = GetAllDocumentKeyPointsResponse.GetAllDocumentDto.builder()
                     .id(document.getId())
                     .documentName(document.getName())
-                    .status(document.getStatus())
+                    .status(documentStatus)
                     .createdAt(document.getCreatedAt())
                     .keyPoints(keyPointDtos)
                     .build();
