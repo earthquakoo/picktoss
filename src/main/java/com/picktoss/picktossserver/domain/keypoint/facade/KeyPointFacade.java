@@ -8,6 +8,7 @@ import com.picktoss.picktossserver.domain.keypoint.controller.response.GetAllDoc
 import com.picktoss.picktossserver.domain.keypoint.controller.response.GetKeyPointsResponse;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.keypoint.service.KeyPointService;
+import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,8 @@ public class KeyPointFacade {
 
     public GetKeyPointsResponse findKeyPoints(Long documentId, Long memberId) {
         Document document = documentService.findByDocumentIdAndMemberId(documentId, memberId);
-        return keyPointService.findKeyPoints(documentId, memberId, document.getStatus());
+        DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
+        return keyPointService.findKeyPoints(documentId, memberId, documentStatus);
     }
 
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {

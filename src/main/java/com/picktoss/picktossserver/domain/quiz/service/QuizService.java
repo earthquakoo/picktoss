@@ -180,7 +180,7 @@ public class QuizService {
         List<Quiz> quizzes = quizRepository.findByDocumentIdAndLatestIs(documentId);
 
         for (Quiz quiz : quizzes) {
-            quiz.updateQuizLatest();
+            quiz.updateQuizLatestByDocumentReUpload();
         }
     }
 
@@ -189,7 +189,7 @@ public class QuizService {
         Optional<Quiz> optionQuiz = quizRepository.findById(quizId);
 
         if (optionQuiz.isEmpty()) {
-            return;
+            throw new CustomException(ErrorInfo.QUIZ_NOT_FOUND_ERROR);
         }
 
         Quiz quiz = optionQuiz.get();
@@ -230,7 +230,7 @@ public class QuizService {
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
-        List<QuizSetQuiz> quizSetQuizzes;
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
         if (categoryId == 0) {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberId(memberId);
         } else {
