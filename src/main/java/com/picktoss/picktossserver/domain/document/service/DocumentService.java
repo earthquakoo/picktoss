@@ -59,13 +59,9 @@ public class DocumentService {
 
     @Transactional
     public void createAiPick(Long documentId, Long memberId, Subscription subscription) {
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
-        }
-
-        Document document = optionalDocument.get();
         document.updateDocumentStatusProcessingByGenerateAiPick();
 
         sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
@@ -144,12 +140,9 @@ public class DocumentService {
 
     @Transactional
     public void deleteDocument(Long memberId, Long documentId) {
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
-        }
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        Document document = optionalDocument.get();
         if (!Objects.equals(document.getCategory().getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
@@ -191,13 +184,9 @@ public class DocumentService {
 
     @Transactional
     public void moveDocumentToCategory(Long documentId, Long memberId, Category category) {
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
-        }
-
-        Document document = optionalDocument.get();
         document.moveDocumentToCategory(category);
 
         Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
@@ -233,7 +222,6 @@ public class DocumentService {
 
                 documentDtos.add(documentDto);
             }
-
         }
         return documentDtos;
     }
@@ -288,42 +276,30 @@ public class DocumentService {
 
     @Transactional
     public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
-        }
-
-        Document document = optionalDocument.get();
         s3Provider.deleteFile(document.getS3Key());
 
         String s3Key = s3Provider.uploadFile(file);
-        document.updateDocumentS3Key(s3Key);
+        document.updateDocumentS3KeyByUpdatedContent(s3Key);
         document.updateDocumentName(name);
         document.updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument();
     }
 
     @Transactional
     public void updateDocumentName(Long documentId, Long memberId, String documentName) {
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
-        }
-
-        Document document = optionalDocument.get();
         document.updateDocumentName(documentName);
     }
 
     @Transactional
     public void reUploadDocument(Long documentId, Long memberId, Subscription subscription) {
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        if (optionalDocument.isEmpty()) {
-            throw new CustomException(DOCUMENT_NOT_FOUND);
-        }
-
-        Document document = optionalDocument.get();
         sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
@@ -367,6 +343,4 @@ public class DocumentService {
         return documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
     }
-
-
 }
