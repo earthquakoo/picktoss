@@ -100,7 +100,7 @@ public class Document extends AuditBase {
         this.category = category;
     }
 
-    public void updateDocumentS3Key(String s3Key) {
+    public void updateDocumentS3KeyByUpdatedContent(String s3Key) {
         this.s3Key = s3Key;
     }
 

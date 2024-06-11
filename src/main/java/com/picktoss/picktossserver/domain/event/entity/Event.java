@@ -9,6 +9,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+import static com.picktoss.picktossserver.domain.event.constant.EventConstant.FIVE_DAYS_CONTINUOUS_POINT;
+import static com.picktoss.picktossserver.domain.event.constant.EventConstant.ONE_DAYS_POINT;
+
 @Entity
 @Getter
 @Table(name = "event")
@@ -51,17 +54,26 @@ public class Event{
 
     // Business Logics
 
-    public void addPoint(int point) {
-        this.point += point;
+    public void addPointBySolvingTodayQuizFiveContinuousDays() {
+        this.point += FIVE_DAYS_CONTINUOUS_POINT;
     }
 
-    public void usePoint(int point) {
+    public void addPointBySolvingTodayQuizOneContinuousDays() {
+        this.point += ONE_DAYS_POINT;
+    }
+
+    public void addOnePointWithIncorrectlyGeneratedQuiz() {
+        this.point += 1;
+    }
+
+    public void usePointByGenerateQuiz(int point) {
         this.point -= point;
     }
 
     public void initContinuousSolvedQuizDateCount() {
         this.continuousSolvedQuizDateCount = 0;
     }
+
     public void addContinuousSolvedQuizDateCount() {
         this.continuousSolvedQuizDateCount += 1;
     }
@@ -70,7 +82,7 @@ public class Event{
         this.maxContinuousSolvedQuizDateCount = continuousSolvedQuizDateCount;
     }
 
-    public void updateUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void changeUpdateAtByCurrentTime() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

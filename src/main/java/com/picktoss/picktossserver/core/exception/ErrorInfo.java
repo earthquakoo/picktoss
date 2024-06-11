@@ -73,6 +73,7 @@ public enum ErrorInfo {
      * Quiz
      */
     QUIZ_NOT_FOUND_ERROR(400, "QUIZ_NOT_FOUND", "Quiz set not found."),
+    QUIZ_NOT_IN_DOCUMENT(400, "QUIZ_NOT_IN_DOCUMENT", "Quiz does not exist in this document."),
     QUIZ_SET_NOT_FOUND_ERROR(400, "QUIZ_SET_NOT_FOUND", "Quiz set not found.");
 
 

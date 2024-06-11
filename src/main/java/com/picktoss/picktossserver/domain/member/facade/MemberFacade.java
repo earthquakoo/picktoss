@@ -49,7 +49,7 @@ public class MemberFacade {
             Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            Category category = categoryService.createDefaultCategory(memberId, member);
+            Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
             return jwtTokenProvider.generateToken(memberId);
@@ -68,7 +68,7 @@ public class MemberFacade {
         boolean isContinuousQuizDate = quizService.checkContinuousQuizDatesCount(memberId);
         if (!isContinuousQuizDate) {
             event.initContinuousSolvedQuizDateCount();
-            event.updateUpdatedAt(LocalDateTime.now());
+            event.changeUpdateAtByCurrentTime();
         }
 
         int continuousQuizDatesCount = event.getContinuousSolvedQuizDateCount();

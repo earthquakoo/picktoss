@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "4. Key Point")
+@Tag(name = "5. Key Point")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 
-@Tag(name = "6. Quiz")
+@Tag(name = "7. Quiz")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -141,6 +141,19 @@ public class QuizController {
 
         GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
         return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "Delete incorrect quiz")
+    @DeleteMapping("/incorrect-quiz/{document_id}/{quiz_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteIncorrectQuiz(
+            @PathVariable("document_id") Long documentId,
+            @PathVariable("quiz_id") Long quizId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.deleteIncorrectQuiz(quizId, documentId, memberId);
+
     }
 
 }
