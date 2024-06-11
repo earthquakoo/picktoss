@@ -52,7 +52,7 @@ public class QuizFacade {
 
         String quizSetId = quizService.createQuizzes(documents, point, quizType, member);
 
-        event.usePoint(point);
+        event.usePointByGenerateQuiz(point);
         return quizSetId;
     }
 
@@ -83,5 +83,12 @@ public class QuizFacade {
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
         return quizService.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
+    }
+
+    @Transactional
+    public void deleteIncorrectQuiz(Long quizId, Long documentId, Long memberId) {
+        quizService.deleteIncorrectQuiz(quizId, documentId);
+        Event event = eventService.findEventByMemberId(memberId);
+        event.addOnePointWithIncorrectlyGeneratedQuiz();
     }
 }

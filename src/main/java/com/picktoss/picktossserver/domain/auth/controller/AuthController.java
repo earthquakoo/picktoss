@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 @Tag(name = "1. Auth")
@@ -45,7 +46,7 @@ public class AuthController {
 
     @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
-    public void googleLogin(
+    public String googleLogin(
             @RequestParam("code") String code
     ) {
         String idToken = authService.getOauthAccessToken(code);
@@ -55,6 +56,7 @@ public class AuthController {
         MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
         JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
+        return jwtTokenDto.getAccessToken();
     }
 
     @Operation(summary = "login")

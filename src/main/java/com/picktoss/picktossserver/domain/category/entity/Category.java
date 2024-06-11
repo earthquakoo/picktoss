@@ -89,7 +89,4 @@ public class Category extends AuditBase {
         this.emoji = emoji;
     }
 
-    public void sortCategory() {
-
-    }
 }

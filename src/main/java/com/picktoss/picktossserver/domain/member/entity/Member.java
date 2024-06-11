@@ -63,7 +63,7 @@ public class Member extends AuditBase {
     public void useAiPick() {
         this.aiPickCount += 1;
     }
-
+    
     public void updateMemberName(String name) {
         this.name = name;
     }

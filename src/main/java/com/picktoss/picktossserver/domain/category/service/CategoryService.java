@@ -40,6 +40,7 @@ public class CategoryService {
                         .id(document.getId())
                         .name(document.getName())
                         .order(document.getOrder())
+                        .documentStatus(document.getStatus())
                         .build();
 
                 documentDtos.add(documentDto);
@@ -60,13 +61,8 @@ public class CategoryService {
     }
 
     public GetSingleCategoryResponse findSingleCategory(Long categoryId, Long memberId) {
-        Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
-
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
         return GetSingleCategoryResponse.builder()
                 .id(category.getId())
@@ -98,7 +94,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category createDefaultCategory(Long memberId, Member member) {
+    public Category createDefaultCategory(Member member) {
         Category category = Category.createDefaultCategory(member);
         categoryRepository.save(category);
         return category;
@@ -106,13 +102,9 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategory(Long memberId, Long categoryId) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
         if (!Objects.equals(category.getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
@@ -123,13 +115,9 @@ public class CategoryService {
 
     @Transactional
     public void updateCategoryName(Long memberId, Long categoryId, String categoryName) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
         if (!Objects.equals(category.getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
@@ -138,13 +126,9 @@ public class CategoryService {
 
     @Transactional
     public void updateCategoryTag(Long memberId, Long categoryId, CategoryTag tag) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
         if (!Objects.equals(category.getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
@@ -153,13 +137,9 @@ public class CategoryService {
 
     @Transactional
     public void updateCategoryEmoji(Long memberId, Long categoryId, String emoji) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
         if (!Objects.equals(category.getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
@@ -168,13 +148,9 @@ public class CategoryService {
 
     @Transactional
     public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji, CategoryTag categoryTag) {
-        Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
         if (!Objects.equals(category.getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
@@ -186,12 +162,8 @@ public class CategoryService {
 
     @Transactional
     public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
-        Optional<Category> optionalCategory = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId);
-        if (optionalCategory.isEmpty()) {
-            throw new CustomException(CATEGORY_NOT_FOUND);
-        }
-
-        Category category = optionalCategory.get();
+        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
         if (preDragCategoryOrder > afterDragCategoryOrder) {
             categoryRepository.updatePlusOrderByPreOrderGreaterThanAfterOrder(memberId, afterDragCategoryOrder, preDragCategoryOrder);

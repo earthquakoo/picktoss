@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "5. Member")
+@Tag(name = "6. Member")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")

@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    @Query("SELECT c FROM Category c WHERE c.member.id = :memberId ORDER BY c.order ASC")
+    @Query("SELECT c FROM Category c " +
+            "JOIN FETCH c.documents " +
+            "WHERE c.member.id = :memberId " +
+            "ORDER BY c.order ASC")
     List<Category> findAllByMemberId(@Param("memberId") Long memberId);
 
     @Query("SELECT c FROM Category c WHERE c.id = :categoryId AND c.member.id = :memberId")

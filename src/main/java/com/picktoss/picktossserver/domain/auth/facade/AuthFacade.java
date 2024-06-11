@@ -68,7 +68,7 @@ public class AuthFacade {
             Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            Category category = categoryService.createDefaultCategory(memberId, member);
+            Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
             return jwtTokenProvider.generateToken(member.getId());
@@ -93,7 +93,7 @@ public class AuthFacade {
             Long memberId = memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
-            Category category = categoryService.createDefaultCategory(memberId, member);
+            Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
             return jwtTokenProvider.generateToken(member.getId());

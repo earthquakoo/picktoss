@@ -10,6 +10,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
@@ -18,6 +19,7 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     List<Quiz> findByBookmark();
 
     @Query("SELECT q FROM Quiz q " +
+            "JOIN FETCH q.options " +
             "JOIN q.document d " +
             "JOIN d.category c " +
             "WHERE d.id = :documentId " +
@@ -40,4 +42,12 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "WHERE q.document.id = :documentId " +
             "AND q.latest = true")
     List<Quiz> findByDocumentIdAndLatestIs(@Param("documentId") Long documentId);
+
+    @Query("SELECT q FROM Quiz q " +
+            "WHERE q.id = :quizId " +
+            "AND q.document.id = :documentId")
+    Optional<Quiz> findByQuizIdAndDocumentId(
+            @Param("quizId") Long quizId,
+            @Param("documentId") Long documentId
+    );
 }

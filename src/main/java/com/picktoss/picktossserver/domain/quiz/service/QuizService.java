@@ -25,6 +25,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_FOUND_ERROR;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_IN_DOCUMENT;
+
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +98,8 @@ public class QuizService {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
+        System.out.println("todayStartTime = " + todayStartTime);
+        System.out.println("todayEndTime = " + todayEndTime);
 
         List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIs(memberId);
         List<QuizSet> todayQuizSets = new ArrayList<>();
@@ -141,6 +146,11 @@ public class QuizService {
 
         for (Long documentId : documents) {
             List<Quiz> quizzes = quizRepository.findByDocumentIdAndQuizType(documentId, quizType);
+
+            if (quizzes.isEmpty()) {
+                throw new CustomException(QUIZ_NOT_IN_DOCUMENT);
+            }
+
             for (int i = 0; i < quizzesPerDocument; i++) {
                 Quiz quiz = quizzes.get(i);
                 quiz.addDeliveredCount();
@@ -153,6 +163,11 @@ public class QuizService {
         // 나머지 퀴즈가 있는 경우 해당 문서에 추가 생성
         for (int i = 0; i < remainingQuizzes; i++) {
             List<Quiz> quizzes = quizRepository.findByDocumentIdAndQuizType(documents.get(i), quizType);
+
+            if (quizzes.isEmpty()) {
+                throw new CustomException(QUIZ_NOT_IN_DOCUMENT);
+            }
+
             Quiz quiz = quizzes.get(i);
             quiz.addDeliveredCount();
 
@@ -351,6 +366,14 @@ public class QuizService {
                 totalElapsedTimeMs,
                 quizzesDtos
         );
+    }
+
+    @Transactional
+    public void deleteIncorrectQuiz(Long quizId, Long documentId) {
+        Quiz quiz = quizRepository.findByQuizIdAndDocumentId(quizId, documentId)
+                .orElseThrow(() -> new CustomException(QUIZ_NOT_FOUND_ERROR));
+
+        quizRepository.delete(quiz);
     }
 
     public boolean checkContinuousQuizDatesCount(Long memberId) {

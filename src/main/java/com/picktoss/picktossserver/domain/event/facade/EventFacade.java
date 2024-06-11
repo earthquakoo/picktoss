@@ -15,9 +15,5 @@ public class EventFacade {
     private final EventService eventService;
     private final MemberService memberService;
 
-//    @Transactional
-//    public void attendanceCheck(Long memberId) {
-//        Member member = memberService.findMemberById(memberId);
-//        int point = eventService.attendanceCheck(member);
-//    }
+
 }

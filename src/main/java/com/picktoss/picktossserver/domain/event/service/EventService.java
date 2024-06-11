@@ -38,13 +38,9 @@ public class EventService {
 
     @Transactional
     public void checkContinuousQuizSolvedDate(Long memberId) {
-        Optional<Event> optionalEvent = eventRepository.findByMemberId(memberId);
+        Event event = eventRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new CustomException(EVENT_NOT_FOUND));
 
-        if (optionalEvent.isEmpty()) {
-            throw new CustomException(EVENT_NOT_FOUND);
-        }
-
-        Event event = optionalEvent.get();
         LocalDate now = LocalDate.now();
         LocalDateTime midnight = LocalDateTime.of(now, LocalTime.MIDNIGHT);
         if (LocalDateTime.now().isAfter(midnight) && event.getUpdatedAt().isBefore(midnight)) {
@@ -52,20 +48,20 @@ public class EventService {
 
             if (!lastUpdatedDate.plusDays(1).equals(now)) {
                 event.initContinuousSolvedQuizDateCount();
-                event.updateUpdatedAt(LocalDateTime.now());
+                event.changeUpdateAtByCurrentTime();
             }
 
             event.addContinuousSolvedQuizDateCount();
-            event.updateUpdatedAt(LocalDateTime.now());
+            event.changeUpdateAtByCurrentTime();
 
             if (event.getContinuousSolvedQuizDateCount() >= event.getMaxContinuousSolvedQuizDateCount()) {
                 event.updateMaxContinuousSolvedQuizDateCount(event.getContinuousSolvedQuizDateCount());
             }
 
             if ((event.getContinuousSolvedQuizDateCount() % 5) == 0) {
-                event.addPoint(FIVE_DAYS_CONTINUOUS_POINT);
+                event.addPointBySolvingTodayQuizFiveContinuousDays();
             } else {
-                event.addPoint(ONE_DAYS_POINT);
+                event.addPointBySolvingTodayQuizOneContinuousDays();
             }
         }
     }
