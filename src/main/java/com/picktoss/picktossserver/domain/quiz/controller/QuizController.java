@@ -106,11 +106,12 @@ public class QuizController {
     @Operation(summary = "Update quiz result")
     @PatchMapping("/quiz/result")
     @ResponseStatus(HttpStatus.OK)
-    public void updateQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
+    public ResponseEntity<UpdateQuizResultResponse> updateQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        quizFacade.updateQuizResultList(request.getQuizzes(), request.getQuizSetId(), memberId);
+        Integer reward = quizFacade.updateQuizResult(request.getQuizzes(), request.getQuizSetId(), memberId);
+        return ResponseEntity.ok().body(new UpdateQuizResultResponse(reward));
     }
 
     @Operation(summary = "Get quiz answer rate analysis by week")

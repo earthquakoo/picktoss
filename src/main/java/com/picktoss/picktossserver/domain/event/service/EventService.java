@@ -37,7 +37,7 @@ public class EventService {
     }
 
     @Transactional
-    public void checkContinuousQuizSolvedDate(Long memberId) {
+    public Integer checkContinuousQuizSolvedDate(Long memberId) {
         Event event = eventRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new CustomException(EVENT_NOT_FOUND));
 
@@ -60,10 +60,13 @@ public class EventService {
 
             if ((event.getContinuousSolvedQuizDateCount() % 5) == 0) {
                 event.addPointBySolvingTodayQuizFiveContinuousDays();
+                return FIVE_DAYS_CONTINUOUS_POINT;
             } else {
                 event.addPointBySolvingTodayQuizOneContinuousDays();
+                return ONE_DAYS_POINT;
             }
         }
+        return null;
     }
 
     public Event findEventByMemberId(Long memberId) {

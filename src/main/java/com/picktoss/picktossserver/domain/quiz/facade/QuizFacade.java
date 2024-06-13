@@ -70,11 +70,12 @@ public class QuizFacade {
     }
 
     @Transactional
-    public void updateQuizResultList(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
+    public Integer updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
         boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
         if (isTodayQuizSet) {
-            eventService.checkContinuousQuizSolvedDate(memberId);
+            return eventService.checkContinuousQuizSolvedDate(memberId);
         }
+        return null;
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
