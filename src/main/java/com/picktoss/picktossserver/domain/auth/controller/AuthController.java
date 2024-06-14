@@ -64,8 +64,8 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
-        JwtTokenDto jwtTokenDto = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
-        return ResponseEntity.ok().body(new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration()));
+        LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/auth/verification")

@@ -21,8 +21,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     );
 
     @Query("SELECT d FROM Document d " +
-            "JOIN FETCH d.keyPoints " +
-            "JOIN FETCH d.category c " +
+            "JOIN d.category c " +
             "WHERE d.id = :documentId " +
             "AND c.member.id = :memberId")
     Optional<Document> findByDocumentIdAndMemberId(

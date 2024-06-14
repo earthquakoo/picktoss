@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
+import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
@@ -39,7 +40,7 @@ public class AuthFacade {
     private final KeyPointService keyPointService;
 
     @Transactional
-    public JwtTokenDto login(String accessToken, SocialPlatform socialPlatform) {
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
         String userInfoJson = getUserInfo(accessToken, socialPlatform);
         if (socialPlatform == SocialPlatform.KAKAO) {
             String nickname = authService.generateUniqueName();
@@ -52,7 +53,7 @@ public class AuthFacade {
     }
 
     @Transactional
-    public JwtTokenDto googleMemberCreate(GoogleMemberDto googleMemberDto) {
+    public LoginResponse googleMemberCreate(GoogleMemberDto googleMemberDto) {
         Optional<Member> optionalMember = memberService.findMemberByClientId(googleMemberDto.getId());
 
         if (optionalMember.isEmpty()) {
@@ -65,20 +66,22 @@ public class AuthFacade {
                     .aiPickCount(0)
                     .build();
 
-            Long memberId = memberService.createMember(member);
+            memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
             Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
-            return jwtTokenProvider.generateToken(member.getId());
+            JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member.getId());
+            return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
         Long memberId = optionalMember.get().getId();
-        return jwtTokenProvider.generateToken(memberId);
+        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(memberId);
+        return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
     }
 
     @Transactional
-    public JwtTokenDto kakaoMemberCreate(KakaoMemberDto kakaoMemberDto, String nickname) {
+    public LoginResponse kakaoMemberCreate(KakaoMemberDto kakaoMemberDto, String nickname) {
         Optional<Member> optionalMember = memberService.findMemberByClientId(kakaoMemberDto.getId());
 
         if (optionalMember.isEmpty()) {
@@ -90,16 +93,18 @@ public class AuthFacade {
                     .aiPickCount(0)
                     .build();
 
-            Long memberId = memberService.createMember(member);
+            memberService.createMember(member);
             subscriptionService.createSubscription(member);
             eventService.createEvent(member);
             Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
-            return jwtTokenProvider.generateToken(member.getId());
+            JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member.getId());
+            return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
         Long memberId = optionalMember.get().getId();
-        return jwtTokenProvider.generateToken(memberId);
+        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(memberId);
+        return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
     }
 
     public String getUserInfo(String accessToken, SocialPlatform socialPlatform) {
