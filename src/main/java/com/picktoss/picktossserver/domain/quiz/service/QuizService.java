@@ -25,8 +25,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_FOUND_ERROR;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_IN_DOCUMENT;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 
 @Service
@@ -40,12 +39,14 @@ public class QuizService {
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
         List<Quiz> quizzes = quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
+        QuizSet quizSet = quizSetRepository.findByQuizSetIdAndMemberId(quizSetId, memberId)
+                .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
 
         if (quizzes.isEmpty()) {
             throw new CustomException(ErrorInfo.QUIZ_SET_NOT_FOUND_ERROR);
         }
 
-        boolean isTodayQuizSet = quizzes.getFirst().getQuizSetQuizzes().getFirst().getQuizSet().isTodayQuizSet();
+        boolean isTodayQuizSet = quizSet.isTodayQuizSet();
 
         List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
         for (Quiz quiz : quizzes) {
