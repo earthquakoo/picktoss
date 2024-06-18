@@ -64,7 +64,7 @@ public class DocumentService {
 
         document.updateDocumentStatusProcessingByGenerateAiPick();
 
-        sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        sqsProvider.sendMessage(memberId, document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
     @Transactional
@@ -300,7 +300,7 @@ public class DocumentService {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        sqsProvider.sendMessage(memberId, document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
     //보유한 모든 문서의 개수
