@@ -53,4 +53,14 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             @Param("quizSetId") String quizSetId,
             @Param("memberId") Long memberId
     );
+
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN qsq.quizSet qs " +
+            "JOIN qsq.quiz q " +
+            "WHERE q.id IN :quizIds " +
+            "AND qs.member.id = :memberId")
+    List<QuizSetQuiz> findAllByQuizIdsIn(
+            @Param("quizIds") List<Long> quizIds,
+            @Param("memberId") Long memberId
+    );
 }

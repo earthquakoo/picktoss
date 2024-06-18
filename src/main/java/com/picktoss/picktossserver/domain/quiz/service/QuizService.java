@@ -216,33 +216,31 @@ public class QuizService {
     @Transactional
     public boolean updateQuizResult(
             List<GetQuizResultRequest.GetQuizResultQuizDto> quizDtos, String quizSetId, Long memberId) {
-
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
 
-        Map<Long, GetQuizResultRequest.GetQuizResultQuizDto> quizDtoMap = quizDtos.stream()
-                .collect(Collectors.toMap(GetQuizResultRequest.GetQuizResultQuizDto::getId, Function.identity()));
+        QuizSet quizSet = quizSetRepository.findByQuizSetIdAndMemberId(quizSetId, memberId)
+                .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
+
+        Map<Long, GetQuizResultRequest.GetQuizResultQuizDto> quizDtoMap = new HashMap<>();
+        for (GetQuizResultRequest.GetQuizResultQuizDto quizDto : quizDtos) {
+            quizDtoMap.put(quizDto.getId(), quizDto);
+        }
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-            Long quizId = quizSetQuiz.getId();
-
-            if (quizDtoMap.containsKey(quizId)) {
-                GetQuizResultRequest.GetQuizResultQuizDto quizDto = quizDtoMap.get(quizId);
-                Quiz quiz = quizSetQuiz.getQuiz();
+            Quiz quiz = quizSetQuiz.getQuiz();
+            if (quizDtoMap.containsKey(quiz.getId())) {
+                GetQuizResultRequest.GetQuizResultQuizDto quizDto = quizDtoMap.get(quiz.getId());
 
                 if (!quizDto.isAnswer()) {
                     quiz.addIncorrectAnswerCount();
                 }
-
                 quizSetQuiz.updateIsAnswer(quizDto.isAnswer());
                 quizSetQuiz.updateElapsedTime(quizDto.getElapsedTime());
-
-                QuizSet quizSet = quizSetQuiz.getQuizSet();
-                quizSet.updateSolved();
             }
         }
-        boolean isTodayQuizSet = quizSetQuizzes.getFirst().getQuizSet().isTodayQuizSet();
+        quizSet.updateSolved();
 
-        return isTodayQuizSet;
+        return quizSet.isTodayQuizSet();
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
