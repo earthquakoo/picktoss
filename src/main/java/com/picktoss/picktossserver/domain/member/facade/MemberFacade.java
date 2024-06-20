@@ -76,7 +76,7 @@ public class MemberFacade {
         int point = event.getPoint();
 
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
-        int availableAiPickCount = AVAILABLE_AI_PICK_COUNT + subscription.getAvailableAiPickCount() - member.getAiPickCount();
+        int availableAiPickCount = member.getAiPickCount() + subscription.getAvailableAiPickCount();
 
         return memberService.findMemberInfo(
                 member,

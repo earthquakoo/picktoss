@@ -99,8 +99,6 @@ public class QuizService {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
-        System.out.println("todayStartTime = " + todayStartTime);
-        System.out.println("todayEndTime = " + todayEndTime);
 
         List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIs(memberId);
         List<QuizSet> todayQuizSets = new ArrayList<>();
