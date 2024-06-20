@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
 import static com.picktoss.picktossserver.global.enums.CategoryTag.DEFAULT;
 
 @Service
@@ -63,7 +64,7 @@ public class AuthFacade {
                     .socialPlatform(SocialPlatform.GOOGLE)
                     .email(googleMemberDto.getEmail())
                     .isQuizNotificationEnabled(true)
-                    .aiPickCount(0)
+                    .aiPickCount(AVAILABLE_AI_PICK_COUNT)
                     .build();
 
             memberService.createMember(member);
@@ -90,7 +91,7 @@ public class AuthFacade {
                     .clientId(kakaoMemberDto.getId())
                     .socialPlatform(SocialPlatform.KAKAO)
                     .isQuizNotificationEnabled(false)
-                    .aiPickCount(0)
+                    .aiPickCount(AVAILABLE_AI_PICK_COUNT)
                     .build();
 
             memberService.createMember(member);
