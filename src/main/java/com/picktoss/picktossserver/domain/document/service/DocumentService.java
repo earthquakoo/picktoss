@@ -11,6 +11,7 @@ import com.picktoss.picktossserver.domain.document.controller.response.SearchDoc
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
@@ -24,6 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
 import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
 
 @Service
@@ -58,13 +60,29 @@ public class DocumentService {
     }
 
     @Transactional
-    public void createAiPick(Long documentId, Long memberId, Subscription subscription) {
+    public boolean createAiPick(Long documentId, Long memberId, Subscription subscription, Member member) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        document.updateDocumentStatusProcessingByGenerateAiPick();
+        int aiPickCount = member.getAiPickCount();
+        boolean isFirstUseAiPick = false;
 
+        if (aiPickCount == AVAILABLE_AI_PICK_COUNT) {
+            isFirstUseAiPick = true;
+        }
+
+        if (aiPickCount < 1) {
+            if (subscription.getAvailableAiPickCount() < 1) {
+                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
+            }
+            subscription.minusAvailableAiPickCount();
+        } else {
+            member.useAiPick();
+        }
+
+        document.updateDocumentStatusProcessingByGenerateAiPick();
         sqsProvider.sendMessage(memberId, document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        return isFirstUseAiPick;
     }
 
     @Transactional
@@ -296,9 +314,20 @@ public class DocumentService {
     }
 
     @Transactional
-    public void reUploadDocument(Long documentId, Long memberId, Subscription subscription) {
+    public void reUploadDocument(Long documentId, Long memberId, Subscription subscription, Member member) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+
+        int aiPickCount = member.getAiPickCount();
+
+        if (aiPickCount < 1) {
+            if (subscription.getAvailableAiPickCount() < 1) {
+                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
+            }
+            subscription.minusAvailableAiPickCount();
+        } else {
+            member.useAiPick();
+        }
 
         sqsProvider.sendMessage(memberId, document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }

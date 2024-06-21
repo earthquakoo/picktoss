@@ -61,7 +61,7 @@ public class Member extends AuditBase {
     private List<QuizSet> quizSets = new ArrayList<>();
 
     public void useAiPick() {
-        this.aiPickCount += 1;
+        this.aiPickCount -= 1;
     }
     
     public void updateMemberName(String name) {

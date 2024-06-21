@@ -49,22 +49,10 @@ public class DocumentFacade {
     }
 
     @Transactional
-    public void createAiPick(Long documentId, Long memberId) {
+    public boolean createAiPick(Long documentId, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-
-        int aiPickCount = member.getAiPickCount();
-
-        if (aiPickCount < 1) {
-            if (subscription.getAvailableAiPickCount() < 1) {
-                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
-            }
-            subscription.minusAvailableAiPickCount();
-        } else {
-            member.useAiPick();
-        }
-
-        documentService.createAiPick(documentId, memberId, subscription);
+        return documentService.createAiPick(documentId, memberId, subscription, member);
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
@@ -114,17 +102,7 @@ public class DocumentFacade {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
 
-        int aiPickCount = member.getAiPickCount();
-
-        if (aiPickCount < 1) {
-            if (subscription.getAvailableAiPickCount() < 1) {
-                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
-            }
-            subscription.minusAvailableAiPickCount();
-        } else {
-            member.useAiPick();
-        }
         quizService.updateQuizLatest(documentId);
-        documentService.reUploadDocument(documentId, memberId, subscription);
+        documentService.reUploadDocument(documentId, memberId, subscription, member);
     }
 }
