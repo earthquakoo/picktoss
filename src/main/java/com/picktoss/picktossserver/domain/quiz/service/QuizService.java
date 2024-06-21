@@ -249,8 +249,8 @@ public class QuizService {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
         }
 
-        HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new HashMap<>();
-        HashMap<LocalDate, Integer> totalQuizCountByDate = new HashMap<>();
+        HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new LinkedHashMap<>();
+        HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
 
         HashMap<String, Integer> quizAnalysis = quizAnalysis(quizSetQuizzes);
         Integer totalQuizCount = quizAnalysis.get("totalQuizCount");
@@ -261,7 +261,7 @@ public class QuizService {
 
         LocalDate startDate = LocalDate.now().minusWeeks(weeks);
 
-        for (int i = 0; i <= 7; i++) {
+        for (int i = 1; i <= 7; i++) {
             LocalDate date = startDate.plusDays(i);
             incorrectAnswerCountByDate.put(date, 0);
             totalQuizCountByDate.put(date, 0);
@@ -312,8 +312,8 @@ public class QuizService {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
         }
 
-        HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new HashMap<>();
-        HashMap<LocalDate, Integer> totalQuizCountByDate = new HashMap<>();
+        HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new LinkedHashMap<>();
+        HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
 
         HashMap<String, Integer> quizAnalysis = quizAnalysis(quizSetQuizzes);
         Integer totalQuizCount = quizAnalysis.get("totalQuizCount");

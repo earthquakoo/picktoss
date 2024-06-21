@@ -46,12 +46,13 @@ public class DocumentController {
     @Operation(summary = "Create AI Pick")
     @PostMapping("/documents/{document_id}/ai-pick")
     @ResponseStatus(HttpStatus.OK)
-    public void createAiPick(
+    public ResponseEntity<CreateAiPickResponse> createAiPick(
             @PathVariable(name = "document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.createAiPick(documentId, memberId);
+        boolean isFirstUseAiPick = documentFacade.createAiPick(documentId, memberId);
+        return ResponseEntity.ok().body(new CreateAiPickResponse(isFirstUseAiPick));
     }
 
     @Operation(summary = "Get document by id",
