@@ -50,4 +50,15 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             @Param("quizId") Long quizId,
             @Param("documentId") Long documentId
     );
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Query("SELECT q FROM Quiz q " +
+            "JOIN FETCH q.options " +
+            "JOIN q.document d " +
+            "JOIN d.category c " +
+            "WHERE c.member.id = :memberId " +
+            "ORDER BY q.deliveredCount ASC")
+    List<Quiz> findAllByMemberIdForTest(
+            @Param("memberId") Long memberId
+    );
 }

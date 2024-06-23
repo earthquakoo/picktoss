@@ -75,4 +75,9 @@ public class Member extends AuditBase {
     public void updateQuizNotification(boolean isQuizNotificationEnabled) {
         this.isQuizNotificationEnabled = isQuizNotificationEnabled;
     }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    public void changeAiPickCountForTest(int aiPickCount) {
+        this.aiPickCount = aiPickCount;
+    }
 }

@@ -134,7 +134,6 @@ public class QuizService {
 
     @Transactional
     public String createQuizzes(List<Long> documents, int point, QuizType quizType, Member member) {
-        List<Quiz> quizSets = new ArrayList<>();
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
         String quizSetId = createQuizSetId();
@@ -155,7 +154,6 @@ public class QuizService {
                 quiz.addDeliveredCount();
 
                 QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
-                quizSets.add(quiz);
                 quizSetQuizzes.add(quizSetQuiz);
             }
         }
@@ -171,7 +169,6 @@ public class QuizService {
             quiz.addDeliveredCount();
 
             QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
-            quizSets.add(quiz);
             quizSetQuizzes.add(quizSetQuiz);
         }
 
@@ -421,5 +418,29 @@ public class QuizService {
             quizAnalysis.put("incorrectAnswerCount", quizAnalysis.get("incorrectAnswerCount") + quiz.getIncorrectAnswerCount());
         }
         return quizAnalysis;
+    }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public String createTodayQuizForTest(Member member) {
+        List<Quiz> quizzes = quizRepository.findAllByMemberIdForTest(member.getId());
+
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+
+        String quizSetId = createQuizSetId();
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+
+        for (int i = 0; i <= 9; i++) {
+            Quiz quiz = quizzes.get(i);
+            quiz.addDeliveredCount();
+
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+        }
+
+        quizSetRepository.save(quizSet);
+        quizSetQuizRepository.saveAll(quizSetQuizzes);
+
+        return quizSetId;
     }
 }

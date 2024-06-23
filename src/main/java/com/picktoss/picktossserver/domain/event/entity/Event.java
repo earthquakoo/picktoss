@@ -85,4 +85,10 @@ public class Event{
     public void changeUpdateAtByCurrentTime() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    public void changePointForTest(int point) {
+        this.point = point;
+
+    }
 }

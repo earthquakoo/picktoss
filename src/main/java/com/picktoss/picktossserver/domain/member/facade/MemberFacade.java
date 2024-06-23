@@ -110,4 +110,10 @@ public class MemberFacade {
         }
         return possibleUploadedDocumentCount;
     }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public void changeAiPickCountForTest(Long memberId, int aiPickCount) {
+        memberService.changeAiPickCountForTest(memberId, aiPickCount);
+    }
 }
