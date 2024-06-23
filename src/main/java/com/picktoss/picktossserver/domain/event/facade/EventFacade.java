@@ -13,7 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class EventFacade {
 
     private final EventService eventService;
-    private final MemberService memberService;
 
-
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public void changePointForTest(Long memberId, int point) {
+        eventService.changePointForTest(memberId, point);
+    }
 }

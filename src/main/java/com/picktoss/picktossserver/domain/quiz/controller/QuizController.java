@@ -154,7 +154,18 @@ public class QuizController {
         Long memberId = jwtUserInfo.getMemberId();
 
         quizFacade.deleteIncorrectQuiz(quizId, documentId, memberId);
-
     }
 
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Tag(name = "Client test 전용 API")
+    @Operation(summary = "오늘의 퀴즈 생성 API(테스트 혹은 예외처리를 위한 API로서 실제 사용 X)")
+    @PostMapping("/test/create-today-quiz")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<CreateQuizzesResponse> createTodayQuizForTest() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        String quizSetId = quizFacade.createTodayQuizForTest(memberId);
+        return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
+    }
 }

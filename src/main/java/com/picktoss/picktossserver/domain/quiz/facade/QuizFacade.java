@@ -92,4 +92,11 @@ public class QuizFacade {
         Event event = eventService.findEventByMemberId(memberId);
         event.addOnePointWithIncorrectlyGeneratedQuiz();
     }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public String createTodayQuizForTest(Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        return quizService.createTodayQuizForTest(member);
+    }
 }
