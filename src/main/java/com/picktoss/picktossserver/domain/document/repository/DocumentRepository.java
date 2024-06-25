@@ -30,7 +30,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     );
 
     @Query("SELECT d FROM Document d " +
-            "LEFT JOIN d.category c " +
+            "JOIN d.category c " +
             "WHERE c.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberId(@Param("memberId") Long memberId);
@@ -70,8 +70,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "JOIN d.category c " +
             "WHERE c.id = :categoryId " +
             "AND c.member.id = :memberId " +
-            "ORDER BY d.updatedAt ASC")
-    List<Document> findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(
+            "ORDER BY d.updatedAt DESC")
+    List<Document> findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(
             @Param("categoryId") Long categoryId,
             @Param("memberId") Long memberId
     );

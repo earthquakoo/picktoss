@@ -19,7 +19,6 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     List<Quiz> findByBookmark();
 
     @Query("SELECT q FROM Quiz q " +
-            "JOIN FETCH q.options " +
             "JOIN q.document d " +
             "JOIN d.category c " +
             "WHERE d.id = :documentId " +

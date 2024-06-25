@@ -133,7 +133,7 @@ public class DocumentService {
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
         List<Document> documents = switch (documentSortOption) {
-            case "updatedAt" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
+            case "updatedAt" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(categoryId, memberId);
             case "name" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
             case "createdAt" -> documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
             default -> throw new CustomException(DOCUMENT_SORT_OPTION_ERROR);
@@ -149,6 +149,7 @@ public class DocumentService {
                     .status(documentStatus)
                     .isTodayQuizIncluded(document.isTodayQuizIncluded())
                     .createdAt(document.getCreatedAt())
+                    .updatedAt(document.getUpdatedAt())
                     .build();
 
             documentDtos.add(documentDto);
