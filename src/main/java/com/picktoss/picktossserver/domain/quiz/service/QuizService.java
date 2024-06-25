@@ -108,6 +108,7 @@ public class QuizService {
         for (QuizSet qs : quizSets) {
             if (qs.getCreatedAt().isAfter(todayStartTime) && qs.getCreatedAt().isBefore(todayEndTime)) {
                 todayQuizSets.add(qs);
+                System.out.println("qs.getCreatedAt() = " + qs.getCreatedAt());
                 System.out.println("qs.getId() = " + qs.getId());
             }
         }
