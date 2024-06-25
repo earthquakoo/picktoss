@@ -19,4 +19,9 @@ public class PicktossserverApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PicktossserverApplication.class, args);
 	}
+
+	@PostConstruct
+	public void setTimeZone(){
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
+	}
 }
