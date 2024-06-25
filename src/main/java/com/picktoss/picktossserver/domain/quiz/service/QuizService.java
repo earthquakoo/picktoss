@@ -99,12 +99,16 @@ public class QuizService {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
+        System.out.println("now = " + now);
+        System.out.println("todayStartTime = " + todayStartTime);
+        System.out.println("todayEndTime = " + todayEndTime);
 
         List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIs(memberId);
         List<QuizSet> todayQuizSets = new ArrayList<>();
         for (QuizSet qs : quizSets) {
             if (qs.getCreatedAt().isAfter(todayStartTime) && qs.getCreatedAt().isBefore(todayEndTime)) {
                 todayQuizSets.add(qs);
+                System.out.println("qs.getId() = " + qs.getId());
             }
         }
 
@@ -118,6 +122,8 @@ public class QuizService {
                 .sorted(Comparator.comparing(QuizSet::getCreatedAt).reversed())
                 .toList()
                 .getFirst();
+
+        System.out.println("todayQuizSet = " + todayQuizSet.getId());
 
         if (todayQuizSet.isSolved()) {
             return GetQuizSetTodayResponse.builder()
