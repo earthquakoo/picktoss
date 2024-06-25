@@ -87,10 +87,13 @@ public class QuizFacade {
     }
 
     @Transactional
-    public void deleteIncorrectQuiz(Long quizId, Long documentId, Long memberId) {
+    public void deleteIncorrectQuiz(Long quizId, String quizSetId, Long documentId, Long memberId) {
         quizService.deleteIncorrectQuiz(quizId, documentId);
-        Event event = eventService.findEventByMemberId(memberId);
-        event.addOnePointWithIncorrectlyGeneratedQuiz();
+        boolean isTodayQuizSet = quizService.checkTodayQuizSet(quizSetId, memberId);
+        if (!isTodayQuizSet) {
+            Event event = eventService.findEventByMemberId(memberId);
+            event.addOnePointWithIncorrectlyGeneratedQuiz();
+        }
     }
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)

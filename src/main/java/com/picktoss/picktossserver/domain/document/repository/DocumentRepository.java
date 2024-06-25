@@ -35,6 +35,12 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberId(@Param("memberId") Long memberId);
 
+    @Query("SELECT d FROM Document d " +
+            "JOIN d.category c " +
+            "WHERE c.member.id = :memberId " +
+            "ORDER BY d.id ASC")
+    List<Document> findMostIncorrectDocuments(@Param("memberId") Long memberId);
+
     @Query("SELECT MAX(d.order) FROM Document d " +
             "JOIN d.category c " +
             "WHERE c.id = :categoryId " +
