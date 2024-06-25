@@ -37,6 +37,15 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN d.category c " +
+            "WHERE d.id IN :documentIds " +
+            "AND c.member.id = :memberId")
+    List<Document> findByMemberIdAndDocumentIdIn(
+            @Param("documentIds") List<Long> documentIds,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT d FROM Document d " +
+            "JOIN d.category c " +
             "WHERE c.member.id = :memberId " +
             "ORDER BY d.id ASC")
     List<Document> findMostIncorrectDocuments(@Param("memberId") Long memberId);

@@ -4,10 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
-import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
@@ -85,6 +82,10 @@ public class DocumentFacade {
 
     public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
         return documentService.findMostIncorrectDocuments(memberId);
+    }
+
+    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId) {
+        return documentService.findQuizCountByDocument(documentIds, memberId);
     }
 
     @Transactional
