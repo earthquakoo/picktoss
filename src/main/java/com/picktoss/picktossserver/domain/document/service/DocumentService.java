@@ -246,12 +246,17 @@ public class DocumentService {
     }
 
     public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
-        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        List<Document> documents = documentRepository.findMostIncorrectDocuments(memberId);
 
-        HashMap<Document, Integer> documentIncorrectAnswerCounts = new HashMap<>();
+        HashMap<Document, Integer> documentIncorrectAnswerCounts = new LinkedHashMap<>();
 
         for (Document document : documents) {
             List<Quiz> quizzes = document.getQuizzes();
+
+            if (quizzes.isEmpty()) {
+                continue;
+            }
+
             int totalIncorrectAnswerCount = 0;
 
             for (Quiz quiz : quizzes) {

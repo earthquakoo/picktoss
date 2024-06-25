@@ -96,7 +96,7 @@ public class QuizService {
                     .type(QuizSetResponseType.NOT_READY)
                     .build();
         }
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
 
@@ -368,6 +368,13 @@ public class QuizService {
                 .orElseThrow(() -> new CustomException(QUIZ_NOT_FOUND_ERROR));
 
         quizRepository.delete(quiz);
+    }
+
+    public boolean checkTodayQuizSet(String quizSetId, Long memberId) {
+        QuizSet quizSet = quizSetRepository.findByQuizSetIdAndMemberId(quizSetId, memberId)
+                .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
+
+        return quizSet.isTodayQuizSet();
     }
 
     public boolean checkContinuousQuizDatesCount(Long memberId) {

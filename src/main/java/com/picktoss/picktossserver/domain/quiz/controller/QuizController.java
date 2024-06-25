@@ -145,15 +145,16 @@ public class QuizController {
     }
 
     @Operation(summary = "Delete incorrect quiz")
-    @DeleteMapping("/incorrect-quiz/{document_id}/{quiz_id}")
+    @DeleteMapping("/incorrect-quiz/{document_id}/{quiz_set_id}/{quiz_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteIncorrectQuiz(
             @PathVariable("document_id") Long documentId,
+            @PathVariable("quiz_set_id") String quizSetId,
             @PathVariable("quiz_id") Long quizId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        quizFacade.deleteIncorrectQuiz(quizId, documentId, memberId);
+        quizFacade.deleteIncorrectQuiz(quizId, quizSetId, documentId, memberId);
     }
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
