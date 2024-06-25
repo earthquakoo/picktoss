@@ -298,6 +298,10 @@ public class DocumentService {
         return new GetMostIncorrectDocumentsResponse(documentsDtos);
     }
 
+    public void findQuizCountByDocument(List<Document> documents, Long memberId) {
+
+    }
+
     @Transactional
     public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
