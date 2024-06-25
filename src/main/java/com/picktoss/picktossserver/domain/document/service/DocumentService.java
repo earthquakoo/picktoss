@@ -4,10 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
@@ -298,8 +295,17 @@ public class DocumentService {
         return new GetMostIncorrectDocumentsResponse(documentsDtos);
     }
 
-    public void findQuizCountByDocument(List<Document> documents, Long memberId) {
+    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId) {
+        List<Document> documents = documentRepository.findByMemberIdAndDocumentIdIn(documentIds, memberId);
+        int quizCount = 0;
+        for (Document document : documents) {
+            List<Quiz> quizzes = document.getQuizzes();
+            quizCount += quizzes.size();
+        }
 
+        return GetQuizCountByDocumentResponse.builder()
+                .quizCount(quizCount)
+                .build();
     }
 
     @Transactional
