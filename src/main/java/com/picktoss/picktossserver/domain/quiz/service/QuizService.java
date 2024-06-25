@@ -96,7 +96,7 @@ public class QuizService {
                     .type(QuizSetResponseType.NOT_READY)
                     .build();
         }
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
 

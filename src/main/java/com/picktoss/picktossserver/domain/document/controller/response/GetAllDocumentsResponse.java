@@ -22,5 +22,6 @@ public class GetAllDocumentsResponse {
         private DocumentStatus status;
         private boolean isTodayQuizIncluded;
         private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
     }
 }
