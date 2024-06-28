@@ -11,20 +11,24 @@ import java.util.Optional;
 
 public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> {
 
-    @Query("SELECT qsq.quiz FROM QuizSetQuiz qsq " +
-            "JOIN qsq.quizSet qs " +
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN FETCH qsq.quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
+            "JOIN FETCH qsq.quizSet qs " +
             "WHERE qs.id = :quizSetId " +
             "AND qs.member.id = :memberId")
-    List<Quiz> findAllQuizzesByQuizSetIdAndMemberId(
+    List<QuizSetQuiz> findAllQuizzesByQuizSetIdAndMemberId(
             @Param("quizSetId") String quizSetId,
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT qsq FROM QuizSetQuiz qsq " +
-            "JOIN qsq.quizSet qs " +
-            "JOIN qsq.quiz q " +
-            "JOIN q.document d " +
-            "JOIN d.category c " +
+            "JOIN FETCH qsq.quizSet qs " +
+            "JOIN FETCH qsq.quiz q " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true")
     List<QuizSetQuiz> findAllByMemberId(
@@ -32,10 +36,10 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
     );
 
     @Query("SELECT qsq FROM QuizSetQuiz qsq " +
-            "JOIN qsq.quizSet qs " +
-            "JOIN qsq.quiz q " +
-            "JOIN q.document d " +
-            "JOIN d.category c " +
+            "JOIN FETCH qsq.quizSet qs " +
+            "JOIN FETCH qsq.quiz q " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
             "WHERE qs.member.id = :memberId " +
             "AND c.id = :categoryId " +
             "AND qs.solved = true " +
@@ -45,22 +49,14 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             @Param("categoryId") Long categoryId
     );
 
-    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
-            "JOIN qsq.quizSet qs " +
+    @Query("SELECT DISTINCT qsq FROM QuizSetQuiz qsq " +
+            "JOIN FETCH qsq.quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH qsq.quizSet qs " +
             "WHERE qs.id = :quizSetId " +
             "AND qs.member.id = :memberId")
     List<QuizSetQuiz> findAllByQuizSetIdAndMemberId(
             @Param("quizSetId") String quizSetId,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
-            "JOIN qsq.quizSet qs " +
-            "JOIN qsq.quiz q " +
-            "WHERE q.id IN :quizIds " +
-            "AND qs.member.id = :memberId")
-    List<QuizSetQuiz> findAllByQuizIdsIn(
-            @Param("quizIds") List<Long> quizIds,
             @Param("memberId") Long memberId
     );
 }

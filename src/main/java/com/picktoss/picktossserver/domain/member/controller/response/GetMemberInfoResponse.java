@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.member.controller.response;
 
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +13,7 @@ public class GetMemberInfoResponse {
 
     private String name;
     private String email;
+    private MemberRole role;
     private int point;
     private int continuousQuizDatesCount;
     private int maxContinuousQuizDatesCount;

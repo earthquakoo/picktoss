@@ -11,10 +11,9 @@ import java.util.List;
 public interface KeyPointRepository extends JpaRepository<KeyPoint, Long> {
 
     @Query("SELECT k FROM KeyPoint k " +
-            "JOIN k.document d " +
-            "JOIN d.category c " +
-            "JOIN c.member m " +
-            "WHERE m.id = :memberId AND k.bookmark = true")
+            "JOIN FETCH k.document d " +
+            "JOIN FETCH d.category c " +
+            "WHERE c.member.id = :memberId AND k.bookmark = true")
     List<KeyPoint> findByBookmark(@Param("memberId") Long memberId);
 
     @Query("SELECT k FROM KeyPoint k " +
@@ -27,11 +26,4 @@ public interface KeyPointRepository extends JpaRepository<KeyPoint, Long> {
             @Param("documentId") Long documentId,
             @Param("memberId") Long memberId
     );
-
-//    @Query("SELECT k FROM KeyPoint k " +
-//            "JOIN k.document d " +
-//            "JOIN d.category c " +
-//            "JOIN c.member m " +
-//            "WHERE m.id = :memberId AND k.bookmark = true")
-//    List<KeyPoint> findBookmarkedByMemberId(@Param("memberId") Long memberId);
 }

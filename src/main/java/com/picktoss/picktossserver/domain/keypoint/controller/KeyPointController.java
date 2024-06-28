@@ -33,7 +33,7 @@ public class KeyPointController {
     @Operation(summary = "Get all category keypoint by document")
     @GetMapping("/categories/{category_id}/documents/key-point")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllDocumentKeyPointsResponse> getAllCategoryQuestions(@PathVariable("category_id") Long categoryId) {
+    public ResponseEntity<GetAllDocumentKeyPointsResponse> getAllKeyPointsByCategory(@PathVariable("category_id") Long categoryId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 

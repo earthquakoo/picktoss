@@ -163,6 +163,10 @@ public class DocumentService {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
 
+        if (!document.getS3Key().equals(defaultDocumentS3Key)) {
+            s3Provider.deleteFile(document.getS3Key());
+        }
+
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
         for (Document d : documents) {
             if (d.getOrder() > document.getOrder()) {
@@ -313,7 +317,9 @@ public class DocumentService {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        s3Provider.deleteFile(document.getS3Key());
+        if (!document.getS3Key().equals(defaultDocumentS3Key)) {
+            s3Provider.deleteFile(document.getS3Key());
+        }
 
         String s3Key = s3Provider.uploadFile(file);
         document.updateDocumentS3KeyByUpdatedContent(s3Key);
@@ -330,10 +336,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public void reUploadDocument(Long documentId, Long memberId, Subscription subscription, Member member) {
-        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
-                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
-
+    public void reUploadDocument(Document document, Subscription subscription, Member member) {
         int aiPickCount = member.getAiPickCount();
 
         if (aiPickCount < 1) {
@@ -345,7 +348,7 @@ public class DocumentService {
             member.useAiPick();
         }
 
-        sqsProvider.sendMessage(memberId, document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        sqsProvider.sendMessage(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
     //보유한 모든 문서의 개수

@@ -12,6 +12,7 @@ import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultR
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
+import com.picktoss.picktossserver.global.enums.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,12 @@ public class QuizFacade {
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
         List<Document> documents = documentService.findAllByMemberId(memberId);
-        return quizService.findQuestionSetToday(memberId, documents);
+        if (documents.isEmpty()) {
+            return GetQuizSetTodayResponse.builder()
+                    .type(QuizSetResponseType.NOT_READY)
+                    .build();
+        }
+        return quizService.findQuestionSetToday(memberId);
     }
 
     @Transactional

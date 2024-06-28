@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,9 +28,12 @@ public class EventController {
     @Operation(summary = "별 개수 변경 API(테스트 혹은 예외처리를 위한 API로서 실제 사용 X)")
     @PatchMapping("/test/change-point")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void changePointForTest(
-            @Valid @RequestBody ChangePointRequest request
+            @Valid @RequestBody ChangePointRequest request,
+            Authentication authentication
             ) {
+        System.out.println("authentication = " + authentication);
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 

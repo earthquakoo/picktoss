@@ -4,10 +4,14 @@ import com.picktoss.picktossserver.core.jwt.JwtAccessDeniedHandler;
 import com.picktoss.picktossserver.core.jwt.JwtAuthenticationEntryPoint;
 import com.picktoss.picktossserver.core.jwt.JwtFilter;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -25,6 +29,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -55,7 +60,8 @@ public class SecurityConfig {
                                 "/api/v1/health-check",
                                 "/api/v1/login",
                                 "/api/v1/backend/login"
-                        ).permitAll()
+                        )
+                        .permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling((it) -> {
@@ -77,7 +83,6 @@ public class SecurityConfig {
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
-
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

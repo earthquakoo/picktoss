@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "6. Member")
@@ -61,6 +62,7 @@ public class MemberController {
     @Operation(summary = "AI PICK 횟수 변경 API(테스트 혹은 예외처리를 위한 API로서 실제 사용 X)")
     @PatchMapping("/test/change-ai-pick")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void changeAiPickCountForTest(@Valid @RequestBody ChangeAiPickCountForTestRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
