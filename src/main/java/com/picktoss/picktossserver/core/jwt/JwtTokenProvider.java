@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.core.jwt;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -30,13 +31,14 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public JwtTokenDto generateToken(Long memberId) {
+    public JwtTokenDto generateToken(Member member) {
         Date accessTokenExpiration = getTokenExpiration(accessTokenExpirationTimeMs);
 
         String accessToken = Jwts.builder()
-                .setSubject(memberId.toString())
+                .setSubject(member.getId().toString())
                 .setExpiration(accessTokenExpiration)
                 .signWith(key, SignatureAlgorithm.HS256)
+                .claim("role", member.getRole().name())
                 .compact();
 
         return JwtTokenDto.builder()
@@ -58,7 +60,10 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token);
 
-            return new JwtUserInfo(Long.parseLong(parsedToken.getBody().getSubject()));
+            Long memberId = Long.parseLong(parsedToken.getBody().getSubject());
+            String role = parsedToken.getBody().get("role", String.class);
+
+            return new JwtUserInfo(memberId, role);
         } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
             throw new CustomException(INVALID_JWT_TOKEN);
         } catch (ExpiredJwtException e) {

@@ -15,12 +15,16 @@ import java.util.Optional;
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     @Query("SELECT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
             "WHERE q.bookmark = true")
     List<Quiz> findByBookmark();
 
-    @Query("SELECT q FROM Quiz q " +
-            "JOIN q.document d " +
-            "JOIN d.category c " +
+    @Query("SELECT DISTINCT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
             "WHERE d.id = :documentId " +
             "AND c.member.id = :memberId")
     List<Quiz> findAllByDocumentIdAndMemberId(
@@ -29,7 +33,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     );
 
     @Query("SELECT q FROM Quiz q " +
-            "WHERE q.document.id = :documentId " +
+            "JOIN FETCH q.document d " +
+            "WHERE d.id = :documentId " +
             "AND q.quizType = :quizType " +
             "ORDER BY q.deliveredCount ASC")
     List<Quiz> findByDocumentIdAndQuizType(

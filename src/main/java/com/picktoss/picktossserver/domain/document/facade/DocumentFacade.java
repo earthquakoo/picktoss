@@ -5,9 +5,12 @@ import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.document.controller.response.*;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
+import com.picktoss.picktossserver.domain.keypoint.service.KeyPointService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
+import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
@@ -32,6 +35,7 @@ public class DocumentFacade {
     private final MemberService memberService;
     private final SubscriptionService subscriptionService;
     private final QuizService quizService;
+    private final KeyPointService keyPointService;
 
     @Transactional
     public Long createDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
@@ -102,8 +106,10 @@ public class DocumentFacade {
     public void reUploadDocument(Long documentId, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         Subscription subscription = subscriptionService.findCurrentSubscription(memberId, member);
-
-        quizService.updateQuizLatest(documentId);
-        documentService.reUploadDocument(documentId, memberId, subscription, member);
+        Document document = documentService.findByDocumentIdAndMemberId(documentId, memberId);
+        quizService.updateQuizLatest(document);
+        keyPointService.deleteKeyPointByDocumentReUpload(document);
+        documentService.reUploadDocument(document, subscription, member);
+        document.updateDocumentStatusProcessingByGenerateAiPick();
     }
 }

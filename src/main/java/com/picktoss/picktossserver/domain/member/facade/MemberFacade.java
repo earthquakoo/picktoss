@@ -52,10 +52,10 @@ public class MemberFacade {
             Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
-            return jwtTokenProvider.generateToken(memberId);
+            return jwtTokenProvider.generateToken(member);
         }
-        Long memberId = optionalMember.get().getId();
-        return jwtTokenProvider.generateToken(memberId);
+        Member member = optionalMember.get();
+        return jwtTokenProvider.generateToken(member);
     }
 
     @Transactional

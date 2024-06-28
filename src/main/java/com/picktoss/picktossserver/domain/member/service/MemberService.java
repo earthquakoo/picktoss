@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.member.controller.response.GetMemberIn
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,7 @@ public class MemberService {
         return GetMemberInfoResponse.builder()
                 .name(member.getName())
                 .email(email)
+                .role(member.getRole())
                 .point(point)
                 .continuousQuizDatesCount(continuousQuizDatesCount)
                 .maxContinuousQuizDatesCount(maxContinuousQuizDatesCount)

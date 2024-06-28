@@ -16,6 +16,7 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
 import com.picktoss.picktossserver.global.enums.CategoryTag;
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,7 @@ public class AuthFacade {
                     .email(googleMemberDto.getEmail())
                     .isQuizNotificationEnabled(true)
                     .aiPickCount(AVAILABLE_AI_PICK_COUNT)
+                    .role(MemberRole.ROLE_USER)
                     .build();
 
             memberService.createMember(member);
@@ -73,11 +75,11 @@ public class AuthFacade {
             Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
-            JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member.getId());
+            JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
             return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
-        Long memberId = optionalMember.get().getId();
-        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(memberId);
+        Member member = optionalMember.get();
+        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
         return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
     }
 
@@ -92,6 +94,7 @@ public class AuthFacade {
                     .socialPlatform(SocialPlatform.KAKAO)
                     .isQuizNotificationEnabled(false)
                     .aiPickCount(AVAILABLE_AI_PICK_COUNT)
+                    .role(MemberRole.ROLE_USER)
                     .build();
 
             memberService.createMember(member);
@@ -100,11 +103,11 @@ public class AuthFacade {
             Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
-            JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member.getId());
+            JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
             return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
-        Long memberId = optionalMember.get().getId();
-        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(memberId);
+        Member member = optionalMember.get();
+        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
         return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
     }
 

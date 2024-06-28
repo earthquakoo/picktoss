@@ -38,19 +38,18 @@ public class QuizService {
     private final QuizSetQuizRepository quizSetQuizRepository;
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
-        List<Quiz> quizzes = quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
-        QuizSet quizSet = quizSetRepository.findByQuizSetIdAndMemberId(quizSetId, memberId)
-                .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
 
-        if (quizzes.isEmpty()) {
+        if (quizSetQuizzes.isEmpty()) {
             throw new CustomException(ErrorInfo.QUIZ_SET_NOT_FOUND_ERROR);
         }
 
+        QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
         boolean isTodayQuizSet = quizSet.isTodayQuizSet();
 
         List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
-        for (Quiz quiz : quizzes) {
-
+        for (QuizSetQuiz quizzes : quizSetQuizzes) {
+            Quiz quiz = quizzes.getQuiz();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                 List<Option> options = quiz.getOptions();
@@ -90,26 +89,16 @@ public class QuizService {
         return new GetQuizSetResponse(quizDtos, isTodayQuizSet);
     }
 
-    public GetQuizSetTodayResponse findQuestionSetToday(Long memberId, List<Document> documents) {
-        if (documents.isEmpty()) {
-            return GetQuizSetTodayResponse.builder()
-                    .type(QuizSetResponseType.NOT_READY)
-                    .build();
-        }
+    public GetQuizSetTodayResponse findQuestionSetToday(Long memberId) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
-        System.out.println("now = " + now);
-        System.out.println("todayStartTime = " + todayStartTime);
-        System.out.println("todayEndTime = " + todayEndTime);
 
         List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIs(memberId);
         List<QuizSet> todayQuizSets = new ArrayList<>();
         for (QuizSet qs : quizSets) {
             if (qs.getCreatedAt().isAfter(todayStartTime) && qs.getCreatedAt().isBefore(todayEndTime)) {
                 todayQuizSets.add(qs);
-                System.out.println("qs.getCreatedAt() = " + qs.getCreatedAt());
-                System.out.println("qs.getId() = " + qs.getId());
             }
         }
 
@@ -123,8 +112,6 @@ public class QuizService {
                 .sorted(Comparator.comparing(QuizSet::getCreatedAt).reversed())
                 .toList()
                 .getFirst();
-
-        System.out.println("todayQuizSet = " + todayQuizSet.getId());
 
         if (todayQuizSet.isSolved()) {
             return GetQuizSetTodayResponse.builder()
@@ -194,9 +181,8 @@ public class QuizService {
     }
 
     @Transactional
-    public void updateQuizLatest(Long documentId) {
-        List<Quiz> quizzes = quizRepository.findByDocumentIdAndLatestIs(documentId);
-
+    public void updateQuizLatest(Document document) {
+        List<Quiz> quizzes = document.getQuizzes();
         for (Quiz quiz : quizzes) {
             quiz.updateQuizLatestByDocumentReUpload();
         }
