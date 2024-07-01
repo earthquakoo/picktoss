@@ -28,6 +28,6 @@ public class FeedbackController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        feedbackFacade.createFeedback(request.getContent(), memberId);
+        feedbackFacade.createFeedback(request.getContent(), request.getType(), memberId);
     }
 }

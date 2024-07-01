@@ -11,6 +11,7 @@ import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateBookmark
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
+import com.picktoss.picktossserver.global.enums.QuizType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -67,15 +68,16 @@ public class QuizController {
     }
 
     @Operation(summary = "Get all generated quizzes by document")
-    @GetMapping("/documents/{document_id}/quizzes")
+    @GetMapping("/documents/{document_id}/{quiz_type}/quizzes")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<QuizResponseDto> getGeneratedQuizzes(
-            @PathVariable("document_id") Long documentId
-    ) {
+            @PathVariable("document_id") Long documentId,
+            @PathVariable("quiz_type") QuizType quizType
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.findAllGeneratedQuizzes(documentId, memberId);
+        List<Quiz> quizzes = quizFacade.findAllGeneratedQuizzes(documentId, quizType, memberId);
         QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
         return ResponseEntity.ok().body(quizResponseDto);
     }

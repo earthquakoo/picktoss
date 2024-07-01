@@ -19,7 +19,7 @@ import static com.picktoss.picktossserver.domain.event.constant.EventConstant.ON
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class Event{
+public class Event extends AuditBase{
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,21 +34,16 @@ public class Event{
     @Column(name = "max_continuous_solved_quiz_date_count", nullable = false)
     private int maxContinuousSolvedQuizDateCount;
 
-    @Column(name = "updated_at", nullable = false)
-//    @LastModifiedDate
-    private LocalDateTime updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Event createEvent(int point, Member member, LocalDateTime updatedAt) {
+    public static Event createEvent(int point, Member member) {
         return Event.builder()
                 .point(point)
                 .continuousSolvedQuizDateCount(0)
                 .maxContinuousSolvedQuizDateCount(0)
                 .member(member)
-                .updatedAt(updatedAt)
                 .build();
     }
 
@@ -82,13 +77,8 @@ public class Event{
         this.maxContinuousSolvedQuizDateCount = continuousSolvedQuizDateCount;
     }
 
-    public void changeUpdateAtByCurrentTime() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     public void changePointForTest(int point) {
         this.point = point;
-
     }
 }
