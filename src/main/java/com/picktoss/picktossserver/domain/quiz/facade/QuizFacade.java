@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.POINT_NOT_ENOUGH;
+import static com.picktoss.picktossserver.domain.event.constant.EventConstant.FIVE_DAYS_CONTINUOUS_POINT;
+import static com.picktoss.picktossserver.domain.event.constant.EventConstant.ONE_DAYS_POINT;
 
 @Service
 @RequiredArgsConstructor
@@ -62,8 +64,8 @@ public class QuizFacade {
         return quizSetId;
     }
 
-    public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {
-        return quizService.findAllGeneratedQuizzes(documentId, memberId);
+    public List<Quiz> findAllGeneratedQuizzes(Long documentId, QuizType quizType, Long memberId) {
+        return quizService.findAllGeneratedQuizzes(documentId, quizType, memberId);
     }
 
     public List<Quiz> findBookmarkQuiz() {
@@ -79,7 +81,21 @@ public class QuizFacade {
     public Integer updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
         boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
         if (isTodayQuizSet) {
-            return eventService.checkContinuousQuizSolvedDate(memberId);
+            Event event = eventService.findEventByMemberId(memberId);
+            quizService.checkContinuousQuizDatesCount(memberId, event);
+            event.addContinuousSolvedQuizDateCount();
+
+            if (event.getContinuousSolvedQuizDateCount() >= event.getMaxContinuousSolvedQuizDateCount()) {
+                event.updateMaxContinuousSolvedQuizDateCount(event.getContinuousSolvedQuizDateCount());
+            }
+
+            if ((event.getContinuousSolvedQuizDateCount() % 5) == 0) {
+                event.addPointBySolvingTodayQuizFiveContinuousDays();
+                return FIVE_DAYS_CONTINUOUS_POINT;
+            } else {
+                event.addPointBySolvingTodayQuizOneContinuousDays();
+                return ONE_DAYS_POINT;
+            }
         }
         return null;
     }

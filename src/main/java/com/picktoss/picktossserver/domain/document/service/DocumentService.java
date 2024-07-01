@@ -300,7 +300,7 @@ public class DocumentService {
     }
 
     public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId) {
-        List<Document> documents = documentRepository.findByMemberIdAndDocumentIdIn(documentIds, memberId);
+        List<Document> documents = documentRepository.findByMemberIdAndDocumentIdsIn(documentIds, memberId);
         int quizCount = 0;
         for (Document document : documents) {
             List<Quiz> quizzes = document.getQuizzes();

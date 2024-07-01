@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.feedback.entity;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.global.enums.FeedbackType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,13 +20,18 @@ public class Feedback {
     @Column(name = "content")
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private FeedbackType type;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Feedback createFeedback(String content, Member member) {
+    public static Feedback createFeedback(String content, FeedbackType type, Member member) {
         return Feedback.builder()
                 .content(content)
+                .type(type)
                 .member(member)
                 .build();
     }

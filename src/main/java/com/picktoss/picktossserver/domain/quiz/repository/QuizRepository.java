@@ -26,26 +26,23 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "JOIN FETCH q.document d " +
             "JOIN FETCH d.category c " +
             "WHERE d.id = :documentId " +
+            "AND q.quizType = :quizType " +
             "AND c.member.id = :memberId")
     List<Quiz> findAllByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
+            @Param("quizType") QuizType quizType,
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT q FROM Quiz q " +
             "JOIN FETCH q.document d " +
-            "WHERE d.id = :documentId " +
-            "AND q.quizType = :quizType " +
+            "WHERE q.quizType = :quizType " +
+            "AND d.id IN :documentIds " +
             "ORDER BY q.deliveredCount ASC")
-    List<Quiz> findByDocumentIdAndQuizType(
-            @Param("documentId") Long documentId,
-            @Param("quizType") QuizType quizType
+    List<Quiz> findByQuizTypeAndDocumentIdsIn(
+            @Param("quizType") QuizType quizType,
+            @Param("documentIds") List<Long> documentIds
     );
-
-    @Query("SELECT q FROM Quiz q " +
-            "WHERE q.document.id = :documentId " +
-            "AND q.latest = true")
-    List<Quiz> findByDocumentIdAndLatestIs(@Param("documentId") Long documentId);
 
     @Query("SELECT q FROM Quiz q " +
             "WHERE q.id = :quizId " +

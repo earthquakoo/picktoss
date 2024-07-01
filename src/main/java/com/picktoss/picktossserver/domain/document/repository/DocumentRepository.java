@@ -42,7 +42,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "JOIN FETCH d.category c " +
             "WHERE d.id IN :documentIds " +
             "AND c.member.id = :memberId")
-    List<Document> findByMemberIdAndDocumentIdIn(
+    List<Document> findByMemberIdAndDocumentIdsIn(
             @Param("documentIds") List<Long> documentIds,
             @Param("memberId") Long memberId
     );

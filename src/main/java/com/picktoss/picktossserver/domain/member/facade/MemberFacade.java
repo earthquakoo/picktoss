@@ -65,12 +65,7 @@ public class MemberFacade {
 
         Event event = eventService.findEventByMemberId(memberId);
 
-        boolean isContinuousQuizDate = quizService.checkContinuousQuizDatesCount(memberId);
-        if (!isContinuousQuizDate) {
-            event.initContinuousSolvedQuizDateCount();
-            event.changeUpdateAtByCurrentTime();
-        }
-
+        quizService.checkContinuousQuizDatesCount(memberId, event);
         int continuousQuizDatesCount = event.getContinuousSolvedQuizDateCount();
         int maxContinuousQuizDatesCount = event.getMaxContinuousSolvedQuizDateCount();
         int point = event.getPoint();
