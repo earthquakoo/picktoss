@@ -30,16 +30,4 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
     List<QuizSet> findByMemberIdAndTodayQuizSetIsOrderByCreatedAt(
             @Param("memberId") Long memberId
     );
-
-    @Query("SELECT qs FROM QuizSet qs " +
-            "WHERE qs.member.id = :memberId " +
-            "AND qs.createdAt >= :yesterdayStartTime " +
-            "AND qs.createdAt <= :yesterdayEndTime " +
-            "AND qs.isTodayQuizSet = true " +
-            "ORDER BY qs.createdAt DESC")
-    List<QuizSet> findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndTodayQuizSetIs(
-            @Param("memberId") Long memberId,
-            @Param("yesterdayStartTime") LocalDateTime yesterdayStartTime,
-            @Param("yesterdayEndTime") LocalDateTime yesterdayEndTime
-    );
 }

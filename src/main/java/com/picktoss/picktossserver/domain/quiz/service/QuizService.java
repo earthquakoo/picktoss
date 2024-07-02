@@ -396,26 +396,26 @@ public class QuizService {
 
     @Transactional
     public void checkContinuousQuizDatesCount(Long memberId, Event event) {
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-        LocalDateTime yesterdayStartTime = LocalDateTime.of(yesterday.toLocalDate(), LocalTime.MIN);
-        LocalDateTime yesterdayEndTime = LocalDateTime.of(yesterday.toLocalDate(), LocalTime.MAX);
+        List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIsOrderByCreatedAt(memberId);
 
-        // 원래 Optional<QuizSet> 으로 가져와야하는데 admin 으로 오늘의 퀴즈를 여러번 생성할 경우 오류를 방지하기 위해서 일단은 List<QuizSet> 으로 받음
-        List<QuizSet> quizSets = quizSetRepository.findByCreatedAtGreaterThanEqualAndCreatedAtLessThanAndTodayQuizSetIs(memberId, yesterdayStartTime, yesterdayEndTime);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime yesterdayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
+        LocalDateTime yesterdayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
 
-//        if (optionalQuizSet.isEmpty()) {
-//            event.initContinuousSolvedQuizDateCount();
-//            return ;
-//        }
-//
-//        QuizSet yesterdayQuizSet = optionalQuizSet.get();
-
-        if (quizSets.isEmpty()) {
-            event.initContinuousSolvedQuizDateCount();
-            return ;
+        List<QuizSet> yesterdayQuizSets = new ArrayList<>();
+        for (QuizSet qs : quizSets) {
+            if (qs.getCreatedAt().isAfter(yesterdayStartTime.minusDays(1)) && qs.getCreatedAt().isBefore(yesterdayEndTime.minusDays(1))) {
+                yesterdayQuizSets.add(qs);
+            }
         }
 
-        QuizSet yesterdayQuizSet = quizSets.getFirst();
+        if (yesterdayQuizSets.isEmpty()) {
+            return ;
+        }
+        QuizSet yesterdayQuizSet = yesterdayQuizSets.stream()
+                .sorted(Comparator.comparing(QuizSet::getCreatedAt).reversed())
+                .toList()
+                .getFirst();
 
         if (!yesterdayQuizSet.isSolved()) {
             event.initContinuousSolvedQuizDateCount();
