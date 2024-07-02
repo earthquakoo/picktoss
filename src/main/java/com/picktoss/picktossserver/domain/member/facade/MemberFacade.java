@@ -94,18 +94,6 @@ public class MemberFacade {
         memberService.updateQuizNotification(memberId, isQuizNotification);
     }
 
-    private static int getPossibleUploadedDocumentCount(Subscription subscription, int uploadedDocumentCount, int uploadedDocumentCountForCurrentSubscription) {
-        int possibleUploadedDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT - uploadedDocumentCount;
-
-        if (subscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
-            if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT &&
-                    uploadedDocumentCountForCurrentSubscription <= FREE_PLAN_MONTHLY_DOCUMENT_COUNT) {
-                possibleUploadedDocumentCount = FREE_PLAN_MONTHLY_DOCUMENT_COUNT - uploadedDocumentCountForCurrentSubscription;
-            }
-        }
-        return possibleUploadedDocumentCount;
-    }
-
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Transactional
     public void changeAiPickCountForTest(Long memberId, int aiPickCount) {

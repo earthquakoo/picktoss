@@ -62,11 +62,7 @@ public class DocumentService {
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         int aiPickCount = member.getAiPickCount();
-        boolean isFirstUseAiPick = false;
-
-        if (aiPickCount == AVAILABLE_AI_PICK_COUNT) {
-            isFirstUseAiPick = true;
-        }
+        boolean isFirstUseAiPick = (aiPickCount == AVAILABLE_AI_PICK_COUNT);
 
         if (aiPickCount < 1) {
             if (subscription.getAvailableAiPickCount() < 1) {
