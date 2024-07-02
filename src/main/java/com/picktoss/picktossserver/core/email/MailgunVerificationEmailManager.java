@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.core.email;
 
+import com.picktoss.picktossserver.core.s3.S3Provider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -53,13 +54,22 @@ public class MailgunVerificationEmailManager implements EmailManager {
         }
     }
 
-    public void sendVerificationCode(String recipientEmail, String verificationCode) {
+    public void sendVerificationCode(String recipientEmail, String verificationCode, String emailIconImageUrl, String logoBlackIconImageUrl) {
         try {
+            String[] verificationCodeList = verificationCode.split("");
             ClassPathResource classPathResource = new ClassPathResource(verificationHtmlPath);
             try (InputStream inputStream = classPathResource.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 String content = reader.lines().collect(Collectors.joining("\n"));
-                content = content.replace("__VERIFICATION_CODE__", verificationCode);
+                content = content.replace("__VERIFICATION_CODE_1__", verificationCodeList[0]);
+                content = content.replace("__VERIFICATION_CODE_2__", verificationCodeList[1]);
+                content = content.replace("__VERIFICATION_CODE_3__", verificationCodeList[2]);
+                content = content.replace("__VERIFICATION_CODE_4__", verificationCodeList[3]);
+                content = content.replace("__VERIFICATION_CODE_5__", verificationCodeList[4]);
+                content = content.replace("__VERIFICATION_CODE_6__", verificationCodeList[5]);
+                content = content.replace("__EMAIL_ICON_SRC__", emailIconImageUrl + "?cache_buster=1");
+                content = content.replace("__LOGO_BLACK_ICON_SRC__", logoBlackIconImageUrl + "?cache_buster=1");
+                System.out.println("content = " + content);
                 sendEmail(recipientEmail, "[Picktoss] Please verify your email", content);
             }
         } catch (IOException e) {

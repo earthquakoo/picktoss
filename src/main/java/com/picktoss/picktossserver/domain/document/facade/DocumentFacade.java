@@ -88,10 +88,6 @@ public class DocumentFacade {
         return documentService.findMostIncorrectDocuments(memberId);
     }
 
-    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId) {
-        return documentService.findQuizCountByDocument(documentIds, memberId);
-    }
-
     @Transactional
     public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
         documentService.updateDocumentContent(documentId, memberId, name, file);

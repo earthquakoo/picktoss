@@ -379,6 +379,11 @@ public class QuizService {
         );
     }
 
+    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId, QuizType type) {
+        List<Quiz> quizzes = quizRepository.findByQuizTypeAndDocumentIdsIn(type, documentIds);
+        return new GetQuizCountByDocumentResponse(quizzes.size());
+    }
+
     @Transactional
     public void deleteIncorrectQuiz(Long quizId, Long documentId) {
         Quiz quiz = quizRepository.findByQuizIdAndDocumentId(quizId, documentId)

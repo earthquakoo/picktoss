@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.email.MailgunVerificationEmailManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
@@ -37,6 +38,7 @@ public class AuthService {
 
     private final MailgunVerificationEmailManager mailgunVerificationEmailManager;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final S3Provider s3Provider;
 
     @Value("${oauth.google.client_id}")
     private String oauthClientId;
@@ -53,6 +55,8 @@ public class AuthService {
     private static final String defaultNickname = "Picktoss#";
     private static final String chars = "0123456789";
     private static final int randomCodeLen = 6;
+    private static final String emailIconImageS3Key = "email-icon.svg";
+    private static final String logoBlackIconImageS3Key = "logo-black-icon.svg";
 
 
     public String getRedirectUri() {
@@ -147,7 +151,11 @@ public class AuthService {
     public void sendVerificationCode(String email) {
         // Send verification code
         String verificationCode = generateVerificationCode();
-        mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode);
+        String emailIconImageUrl = s3Provider.findImageUrl(AuthService.emailIconImageS3Key);
+        System.out.println("emailIconImageUrl = " + emailIconImageUrl);
+        String logoBlackIconImageUrl = s3Provider.findImageUrl(AuthService.logoBlackIconImageS3Key);
+        System.out.println("logoBlackIconImageUrl = " + logoBlackIconImageUrl);
+        mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode, emailIconImageUrl, logoBlackIconImageUrl);
 
         // Upsert register verification entry (always make is_verified to False)
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);

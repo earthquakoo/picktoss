@@ -85,18 +85,6 @@ public class DocumentController {
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
-    @Operation(summary = "Get number of quizzes in the document")
-    @PostMapping("/documents/quiz-count")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizCountByDocumentResponse> getQuizCountByDocument(
-            @Valid @RequestBody GetQuizCountByDocumentRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        GetQuizCountByDocumentResponse response = documentFacade.findQuizCountByDocument(request.getDocumentIds(), memberId);
-        return ResponseEntity.ok().body(response);
-    }
-
     @Operation(summary = "Get most incorrect top 5 document")
     @GetMapping("/documents/top-five")
     @ResponseStatus(HttpStatus.OK)
