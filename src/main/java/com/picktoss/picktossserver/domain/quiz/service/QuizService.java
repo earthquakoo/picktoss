@@ -455,13 +455,14 @@ public class QuizService {
     @Transactional
     public String createTodayQuizForTest(Member member) {
         List<Quiz> quizzes = quizRepository.findAllByMemberIdForTest(member.getId());
+        Collections.shuffle(quizzes);
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
         String quizSetId = createQuizSetId();
         QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
 
-        for (int i = 0; i <= 9; i++) {
+        for (int i = 0; i <= quizzes.size(); i++) {
             Quiz quiz = quizzes.get(i);
             quiz.addDeliveredCount();
 
