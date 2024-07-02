@@ -108,6 +108,10 @@ public class QuizFacade {
         return quizService.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
     }
 
+    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId, QuizType type) {
+        return quizService.findQuizCountByDocument(documentIds, memberId, type);
+    }
+
     @Transactional
     public void deleteIncorrectQuiz(Long quizId, String quizSetId, Long documentId, Long memberId) {
         quizService.deleteIncorrectQuiz(quizId, documentId);

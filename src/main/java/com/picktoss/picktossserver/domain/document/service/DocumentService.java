@@ -295,19 +295,6 @@ public class DocumentService {
         return new GetMostIncorrectDocumentsResponse(documentsDtos);
     }
 
-    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId) {
-        List<Document> documents = documentRepository.findByMemberIdAndDocumentIdsIn(documentIds, memberId);
-        int quizCount = 0;
-        for (Document document : documents) {
-            List<Quiz> quizzes = document.getQuizzes();
-            quizCount += quizzes.size();
-        }
-
-        return GetQuizCountByDocumentResponse.builder()
-                .quizCount(quizCount)
-                .build();
-    }
-
     @Transactional
     public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)

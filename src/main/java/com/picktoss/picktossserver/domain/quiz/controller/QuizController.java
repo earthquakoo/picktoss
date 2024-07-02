@@ -4,10 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
-import com.picktoss.picktossserver.domain.quiz.controller.request.CheckQuizAnswerRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.CreateQuizzesRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateBookmarkQuizRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.*;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
@@ -146,6 +143,20 @@ public class QuizController {
         GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
         return ResponseEntity.ok().body(response);
     }
+
+    @Operation(summary = "Get number of quizzes in the document")
+    @PostMapping("/documents/quiz-count")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetQuizCountByDocumentResponse> getQuizCountByDocument(
+            @Valid @RequestBody GetQuizCountByDocumentRequest request
+            ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetQuizCountByDocumentResponse response = quizFacade.findQuizCountByDocument(request.getDocumentIds(), memberId, request.getType());
+        return ResponseEntity.ok().body(response);
+    }
+
 
     @Operation(summary = "Delete incorrect quiz")
     @DeleteMapping("/incorrect-quiz/{document_id}/{quiz_set_id}/{quiz_id}")
