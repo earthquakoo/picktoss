@@ -462,7 +462,7 @@ public class QuizService {
         String quizSetId = createQuizSetId();
         QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
 
-        for (int i = 0; i <= quizzes.size(); i++) {
+        for (int i = 0; i < 9; i++) {
             Quiz quiz = quizzes.get(i);
             quiz.addDeliveredCount();
 
