@@ -115,17 +115,17 @@ public class QuizController {
     }
 
     @Operation(summary = "Get quiz answer rate analysis by week")
-    @GetMapping("/categories/quiz-answer-rate-week")
+    @GetMapping("/categories/{category_id}/quiz-answer-rate-week")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByWeek(
-            @Valid @RequestBody GetQuizAnswerRateAnalysisRequest request,
+            @PathVariable("category_id") Long categoryId,
             @RequestParam(required = false, defaultValue = "1", value = "week") String week
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
         Integer weeks = Integer.valueOf(week);
 
-        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, request.getCategoryId(), weeks);
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
         return ResponseEntity.ok().body(response);
     }
 
@@ -133,14 +133,14 @@ public class QuizController {
     @GetMapping("/categories/quiz-answer-rate-month/{year}/{month}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByMonth(
-            @Valid @RequestBody GetQuizAnswerRateAnalysisRequest request,
+            @PathVariable("category_id") Long categoryId,
             @PathVariable("year") int year,
             @PathVariable("month") int month
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, request.getCategoryId(), year, month);
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
         return ResponseEntity.ok().body(response);
     }
 
