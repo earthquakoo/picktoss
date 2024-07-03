@@ -257,7 +257,7 @@ public class QuizService {
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
-        if (categoryId == null) {
+        if (categoryId == 0) {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberId(memberId);
         } else {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
@@ -320,7 +320,7 @@ public class QuizService {
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
-        if (categoryId == null) {
+        if (categoryId == 0) {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberId(memberId);
         } else {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryId(memberId, categoryId);
