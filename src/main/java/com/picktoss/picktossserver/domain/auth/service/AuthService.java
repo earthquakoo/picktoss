@@ -55,8 +55,8 @@ public class AuthService {
     private static final String defaultNickname = "Picktoss#";
     private static final String chars = "0123456789";
     private static final int randomCodeLen = 6;
-    private static final String emailIconImageS3Key = "email-icon.svg";
-    private static final String logoBlackIconImageS3Key = "logo-black-icon.svg";
+    private static final String emailIconImageS3Key = "email-icon.png";
+    private static final String logoBlackIconImageS3Key = "logo-black-icon.png";
 
 
     public String getRedirectUri() {
@@ -152,9 +152,7 @@ public class AuthService {
         // Send verification code
         String verificationCode = generateVerificationCode();
         String emailIconImageUrl = s3Provider.findImageUrl(AuthService.emailIconImageS3Key);
-        System.out.println("emailIconImageUrl = " + emailIconImageUrl);
         String logoBlackIconImageUrl = s3Provider.findImageUrl(AuthService.logoBlackIconImageS3Key);
-        System.out.println("logoBlackIconImageUrl = " + logoBlackIconImageUrl);
         mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode, emailIconImageUrl, logoBlackIconImageUrl);
 
         // Upsert register verification entry (always make is_verified to False)

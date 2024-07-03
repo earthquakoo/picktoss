@@ -115,32 +115,32 @@ public class QuizController {
     }
 
     @Operation(summary = "Get quiz answer rate analysis by week")
-    @GetMapping("/categories/{category_id}/quiz-answer-rate-week")
+    @GetMapping("/categories/quiz-answer-rate-week")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByWeek(
-            @PathVariable("category_id") Long categoryId,
+            @Valid @RequestBody GetQuizAnswerRateAnalysisRequest request,
             @RequestParam(required = false, defaultValue = "1", value = "week") String week
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
         Integer weeks = Integer.valueOf(week);
 
-        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, categoryId, weeks);
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByWeek(memberId, request.getCategoryId(), weeks);
         return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "Get quiz answer rate analysis by month")
-    @GetMapping("/categories/{category_id}/quiz-answer-rate-month/{year}/{month}")
+    @GetMapping("/categories/quiz-answer-rate-month/{year}/{month}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByMonth(
-            @PathVariable("category_id") Long categoryId,
+            @Valid @RequestBody GetQuizAnswerRateAnalysisRequest request,
             @PathVariable("year") int year,
             @PathVariable("month") int month
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysisByMonth(memberId, request.getCategoryId(), year, month);
         return ResponseEntity.ok().body(response);
     }
 
