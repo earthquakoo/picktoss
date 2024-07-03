@@ -130,7 +130,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Get quiz answer rate analysis by month")
-    @GetMapping("/categories/quiz-answer-rate-month/{year}/{month}")
+    @GetMapping("/categories/{category_id}/quiz-answer-rate-month/{year}/{month}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysisByMonth(
             @PathVariable("category_id") Long categoryId,
