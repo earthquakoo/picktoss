@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.member.controller.response.GetMemberIn
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,7 @@ public class MemberService {
         return GetMemberInfoResponse.builder()
                 .name(member.getName())
                 .email(email)
+                .role(member.getRole())
                 .point(point)
                 .continuousQuizDatesCount(continuousQuizDatesCount)
                 .maxContinuousQuizDatesCount(maxContinuousQuizDatesCount)
@@ -89,36 +91,34 @@ public class MemberService {
 
     @Transactional
     public void deleteMember(Long memberId) {
-        Optional<Member> optionalMember = memberRepository.findById(memberId);
-        if (optionalMember.isEmpty()) {
-            throw new CustomException(MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        Member member = optionalMember.get();
         memberRepository.delete(member);
     }
 
     @Transactional
     public void updateMemberName(Long memberId, String name) {
-        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        if (optionalMember.isEmpty()) {
-            throw new CustomException(MEMBER_NOT_FOUND);
-        }
-
-        Member member = optionalMember.get();
         member.updateMemberName(name);
     }
 
     @Transactional
     public void updateQuizNotification(Long memberId, boolean isQuizNotification) {
-        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        if (optionalMember.isEmpty()) {
-            throw new CustomException(MEMBER_NOT_FOUND);
-        }
-
-        Member member = optionalMember.get();
         member.updateQuizNotification(isQuizNotification);
+    }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public void changeAiPickCountForTest(Long memberId, int aiPickCount) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        member.changeAiPickCountForTest(aiPickCount);
     }
 }

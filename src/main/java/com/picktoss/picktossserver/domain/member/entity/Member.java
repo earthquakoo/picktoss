@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,6 +46,10 @@ public class Member extends AuditBase {
     @Column(name = "ai_pick_count", nullable = false)
     private int aiPickCount;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private MemberRole role;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
 
@@ -61,7 +66,7 @@ public class Member extends AuditBase {
     private List<QuizSet> quizSets = new ArrayList<>();
 
     public void useAiPick() {
-        this.aiPickCount += 1;
+        this.aiPickCount -= 1;
     }
     
     public void updateMemberName(String name) {
@@ -74,5 +79,10 @@ public class Member extends AuditBase {
 
     public void updateQuizNotification(boolean isQuizNotificationEnabled) {
         this.isQuizNotificationEnabled = isQuizNotificationEnabled;
+    }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    public void changeAiPickCountForTest(int aiPickCount) {
+        this.aiPickCount = aiPickCount;
     }
 }

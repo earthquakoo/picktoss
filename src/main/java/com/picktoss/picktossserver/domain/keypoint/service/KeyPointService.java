@@ -115,8 +115,8 @@ public class KeyPointService {
         return documentDtos;
     }
 
-    public GetKeyPointsResponse findKeyPoints(Long documentId, Long memberId, DocumentStatus documentStatus) {
-        List<KeyPoint> keyPoints = keyPointRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
+    public GetKeyPointsResponse findKeyPoints(Document document, DocumentStatus documentStatus) {
+        List<KeyPoint> keyPoints = document.getKeyPoints();
 
         List<GetKeyPointsResponse.GetKeyPointsDto> keyPointsDtos = new ArrayList<>();
 
@@ -167,5 +167,11 @@ public class KeyPointService {
 
         KeyPoint keyPoint = optionalKeyPoint.get();
         keyPoint.updateBookmark(bookmark);
+    }
+
+    @Transactional
+    public void deleteKeyPointByDocumentReUpload(Document document) {
+        List<KeyPoint> keyPoints = document.getKeyPoints();
+        keyPointRepository.deleteAllInBatch(keyPoints);
     }
 }

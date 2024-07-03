@@ -52,10 +52,10 @@ public class MemberFacade {
             Category category = categoryService.createDefaultCategory(member);
             Document document = documentService.createDefaultDocument(category);
             keyPointService.createDefaultKeyPoint(document);
-            return jwtTokenProvider.generateToken(memberId);
+            return jwtTokenProvider.generateToken(member);
         }
-        Long memberId = optionalMember.get().getId();
-        return jwtTokenProvider.generateToken(memberId);
+        Member member = optionalMember.get();
+        return jwtTokenProvider.generateToken(member);
     }
 
     @Transactional
@@ -65,18 +65,13 @@ public class MemberFacade {
 
         Event event = eventService.findEventByMemberId(memberId);
 
-        boolean isContinuousQuizDate = quizService.checkContinuousQuizDatesCount(memberId);
-        if (!isContinuousQuizDate) {
-            event.initContinuousSolvedQuizDateCount();
-            event.changeUpdateAtByCurrentTime();
-        }
-
+        quizService.checkContinuousQuizDatesCount(memberId, event);
         int continuousQuizDatesCount = event.getContinuousSolvedQuizDateCount();
         int maxContinuousQuizDatesCount = event.getMaxContinuousSolvedQuizDateCount();
         int point = event.getPoint();
 
         int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
-        int availableAiPickCount = AVAILABLE_AI_PICK_COUNT + subscription.getAvailableAiPickCount() - member.getAiPickCount();
+        int availableAiPickCount = member.getAiPickCount() + subscription.getAvailableAiPickCount();
 
         return memberService.findMemberInfo(
                 member,
@@ -99,15 +94,9 @@ public class MemberFacade {
         memberService.updateQuizNotification(memberId, isQuizNotification);
     }
 
-    private static int getPossibleUploadedDocumentCount(Subscription subscription, int uploadedDocumentCount, int uploadedDocumentCountForCurrentSubscription) {
-        int possibleUploadedDocumentCount = FREE_PLAN_DEFAULT_DOCUMENT_COUNT - uploadedDocumentCount;
-
-        if (subscription.getSubscriptionPlanType() == SubscriptionPlanType.FREE) {
-            if (uploadedDocumentCount >= FREE_PLAN_DEFAULT_DOCUMENT_COUNT &&
-                    uploadedDocumentCountForCurrentSubscription <= FREE_PLAN_MONTHLY_DOCUMENT_COUNT) {
-                possibleUploadedDocumentCount = FREE_PLAN_MONTHLY_DOCUMENT_COUNT - uploadedDocumentCountForCurrentSubscription;
-            }
-        }
-        return possibleUploadedDocumentCount;
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public void changeAiPickCountForTest(Long memberId, int aiPickCount) {
+        memberService.changeAiPickCountForTest(memberId, aiPickCount);
     }
 }

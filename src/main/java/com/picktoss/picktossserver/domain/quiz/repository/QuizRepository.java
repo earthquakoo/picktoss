@@ -15,33 +15,34 @@ import java.util.Optional;
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     @Query("SELECT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
             "WHERE q.bookmark = true")
     List<Quiz> findByBookmark();
 
-    @Query("SELECT q FROM Quiz q " +
-            "JOIN FETCH q.options " +
-            "JOIN q.document d " +
-            "JOIN d.category c " +
+    @Query("SELECT DISTINCT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
             "WHERE d.id = :documentId " +
+            "AND q.quizType = :quizType " +
             "AND c.member.id = :memberId")
     List<Quiz> findAllByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
+            @Param("quizType") QuizType quizType,
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT q FROM Quiz q " +
-            "WHERE q.document.id = :documentId " +
-            "AND q.quizType = :quizType " +
+            "JOIN FETCH q.document d " +
+            "WHERE q.quizType = :quizType " +
+            "AND d.id IN :documentIds " +
             "ORDER BY q.deliveredCount ASC")
-    List<Quiz> findByDocumentIdAndQuizType(
-            @Param("documentId") Long documentId,
-            @Param("quizType") QuizType quizType
+    List<Quiz> findByQuizTypeAndDocumentIdsIn(
+            @Param("quizType") QuizType quizType,
+            @Param("documentIds") List<Long> documentIds
     );
-
-    @Query("SELECT q FROM Quiz q " +
-            "WHERE q.document.id = :documentId " +
-            "AND q.latest = true")
-    List<Quiz> findByDocumentIdAndLatestIs(@Param("documentId") Long documentId);
 
     @Query("SELECT q FROM Quiz q " +
             "WHERE q.id = :quizId " +
@@ -49,5 +50,16 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     Optional<Quiz> findByQuizIdAndDocumentId(
             @Param("quizId") Long quizId,
             @Param("documentId") Long documentId
+    );
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Query("SELECT q FROM Quiz q " +
+            "JOIN FETCH q.options " +
+            "JOIN q.document d " +
+            "JOIN d.category c " +
+            "WHERE c.member.id = :memberId " +
+            "ORDER BY q.deliveredCount ASC")
+    List<Quiz> findAllByMemberIdForTest(
+            @Param("memberId") Long memberId
     );
 }

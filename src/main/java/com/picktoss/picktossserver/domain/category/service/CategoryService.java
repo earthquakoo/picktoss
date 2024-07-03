@@ -31,6 +31,7 @@ public class CategoryService {
     public List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> findAllCategories(Long memberId) {
         List<Category> categories = categoryRepository.findAllByMemberId(memberId);
         List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> categoryDtos = new ArrayList<>();
+
         for (Category category : categories) {
             List<Document> documents = category.getDocuments();
 

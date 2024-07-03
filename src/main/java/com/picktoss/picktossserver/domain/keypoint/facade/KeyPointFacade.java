@@ -31,7 +31,7 @@ public class KeyPointFacade {
     public GetKeyPointsResponse findKeyPoints(Long documentId, Long memberId) {
         Document document = documentService.findByDocumentIdAndMemberId(documentId, memberId);
         DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
-        return keyPointService.findKeyPoints(documentId, memberId, documentStatus);
+        return keyPointService.findKeyPoints(document, documentStatus);
     }
 
     public List<KeyPoint> findBookmarkedKeyPoint(Long memberId) {

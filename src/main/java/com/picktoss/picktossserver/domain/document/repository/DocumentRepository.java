@@ -10,7 +10,8 @@ import java.util.Optional;
 
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
-    @Query("SELECT d FROM Document d " +
+    @Query("SELECT DISTINCT d FROM Document d " +
+            "LEFT JOIN FETCH d.keyPoints " +
             "JOIN d.category c " +
             "WHERE c.id = :categoryId " +
             "AND c.member.id = :memberId " +
@@ -20,8 +21,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             @Param("memberId") Long memberId
     );
 
-    @Query("SELECT d FROM Document d " +
-            "JOIN FETCH d.keyPoints " +
+    @Query("SELECT DISTINCT d FROM Document d " +
+            "LEFT JOIN FETCH d.keyPoints " +
             "JOIN FETCH d.category c " +
             "WHERE d.id = :documentId " +
             "AND c.member.id = :memberId")
@@ -31,10 +32,27 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     );
 
     @Query("SELECT d FROM Document d " +
-            "LEFT JOIN d.category c " +
+            "JOIN FETCH d.category c " +
             "WHERE c.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT DISTINCT d FROM Document d " +
+            "LEFT JOIN FETCH d.quizzes " +
+            "JOIN FETCH d.category c " +
+            "WHERE d.id IN :documentIds " +
+            "AND c.member.id = :memberId")
+    List<Document> findByMemberIdAndDocumentIdsIn(
+            @Param("documentIds") List<Long> documentIds,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT DISTINCT d FROM Document d " +
+            "JOIN FETCH d.category c " +
+            "LEFT JOIN FETCH d.quizzes " +
+            "WHERE c.member.id = :memberId " +
+            "ORDER BY d.id ASC")
+    List<Document> findMostIncorrectDocuments(@Param("memberId") Long memberId);
 
     @Query("SELECT MAX(d.order) FROM Document d " +
             "JOIN d.category c " +
@@ -71,8 +89,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "JOIN d.category c " +
             "WHERE c.id = :categoryId " +
             "AND c.member.id = :memberId " +
-            "ORDER BY d.updatedAt ASC")
-    List<Document> findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(
+            "ORDER BY d.updatedAt DESC")
+    List<Document> findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(
             @Param("categoryId") Long categoryId,
             @Param("memberId") Long memberId
     );

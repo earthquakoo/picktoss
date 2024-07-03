@@ -12,6 +12,7 @@ import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultR
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
+import com.picktoss.picktossserver.global.enums.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.POINT_NOT_ENOUGH;
+import static com.picktoss.picktossserver.domain.event.constant.EventConstant.FIVE_DAYS_CONTINUOUS_POINT;
+import static com.picktoss.picktossserver.domain.event.constant.EventConstant.ONE_DAYS_POINT;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +41,12 @@ public class QuizFacade {
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
         List<Document> documents = documentService.findAllByMemberId(memberId);
-        return quizService.findQuestionSetToday(memberId, documents);
+        if (documents.isEmpty()) {
+            return GetQuizSetTodayResponse.builder()
+                    .type(QuizSetResponseType.NOT_READY)
+                    .build();
+        }
+        return quizService.findQuestionSetToday(memberId);
     }
 
     @Transactional
@@ -56,8 +64,8 @@ public class QuizFacade {
         return quizSetId;
     }
 
-    public List<Quiz> findAllGeneratedQuizzes(Long documentId, Long memberId) {
-        return quizService.findAllGeneratedQuizzes(documentId, memberId);
+    public List<Quiz> findAllGeneratedQuizzes(Long documentId, QuizType quizType, Long memberId) {
+        return quizService.findAllGeneratedQuizzes(documentId, quizType, memberId);
     }
 
     public List<Quiz> findBookmarkQuiz() {
@@ -70,11 +78,26 @@ public class QuizFacade {
     }
 
     @Transactional
-    public void updateQuizResultList(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
+    public Integer updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
         boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
         if (isTodayQuizSet) {
-            eventService.checkContinuousQuizSolvedDate(memberId);
+            Event event = eventService.findEventByMemberId(memberId);
+            quizService.checkContinuousQuizDatesCount(memberId, event);
+            event.addContinuousSolvedQuizDateCount();
+
+            if (event.getContinuousSolvedQuizDateCount() >= event.getMaxContinuousSolvedQuizDateCount()) {
+                event.updateMaxContinuousSolvedQuizDateCount(event.getContinuousSolvedQuizDateCount());
+            }
+
+            if ((event.getContinuousSolvedQuizDateCount() % 5) == 0) {
+                event.addPointBySolvingTodayQuizFiveContinuousDays();
+                return FIVE_DAYS_CONTINUOUS_POINT;
+            } else {
+                event.addPointBySolvingTodayQuizOneContinuousDays();
+                return ONE_DAYS_POINT;
+            }
         }
+        return null;
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
@@ -85,10 +108,24 @@ public class QuizFacade {
         return quizService.findQuizAnswerRateAnalysisByMonth(memberId, categoryId, year, month);
     }
 
+    public GetQuizCountByDocumentResponse findQuizCountByDocument(List<Long> documentIds, Long memberId, QuizType type) {
+        return quizService.findQuizCountByDocument(documentIds, memberId, type);
+    }
+
     @Transactional
-    public void deleteIncorrectQuiz(Long quizId, Long documentId, Long memberId) {
+    public void deleteIncorrectQuiz(Long quizId, String quizSetId, Long documentId, Long memberId) {
         quizService.deleteIncorrectQuiz(quizId, documentId);
-        Event event = eventService.findEventByMemberId(memberId);
-        event.addOnePointWithIncorrectlyGeneratedQuiz();
+        boolean isTodayQuizSet = quizService.checkTodayQuizSet(quizSetId, memberId);
+        if (!isTodayQuizSet) {
+            Event event = eventService.findEventByMemberId(memberId);
+            event.addOnePointWithIncorrectlyGeneratedQuiz();
+        }
+    }
+
+    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Transactional
+    public String createTodayQuizForTest(Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        return quizService.createTodayQuizForTest(member);
     }
 }

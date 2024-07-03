@@ -4,13 +4,11 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
@@ -24,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
 import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
 
 @Service
@@ -58,13 +57,25 @@ public class DocumentService {
     }
 
     @Transactional
-    public void createAiPick(Long documentId, Long memberId, Subscription subscription) {
+    public boolean createAiPick(Long documentId, Long memberId, Subscription subscription, Member member) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        document.updateDocumentStatusProcessingByGenerateAiPick();
+        int aiPickCount = member.getAiPickCount();
+        boolean isFirstUseAiPick = (aiPickCount == AVAILABLE_AI_PICK_COUNT);
 
-        sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        if (aiPickCount < 1) {
+            if (subscription.getAvailableAiPickCount() < 1) {
+                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
+            }
+            subscription.minusAvailableAiPickCount();
+        } else {
+            member.useAiPick();
+        }
+
+        document.updateDocumentStatusProcessingByGenerateAiPick();
+        sqsProvider.sendMessage(memberId, document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        return isFirstUseAiPick;
     }
 
     @Transactional
@@ -115,7 +126,7 @@ public class DocumentService {
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
         List<Document> documents = switch (documentSortOption) {
-            case "updatedAt" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtAsc(categoryId, memberId);
+            case "updatedAt" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(categoryId, memberId);
             case "name" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
             case "createdAt" -> documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
             default -> throw new CustomException(DOCUMENT_SORT_OPTION_ERROR);
@@ -131,6 +142,7 @@ public class DocumentService {
                     .status(documentStatus)
                     .isTodayQuizIncluded(document.isTodayQuizIncluded())
                     .createdAt(document.getCreatedAt())
+                    .updatedAt(document.getUpdatedAt())
                     .build();
 
             documentDtos.add(documentDto);
@@ -145,6 +157,10 @@ public class DocumentService {
 
         if (!Objects.equals(document.getCategory().getMember().getId(), memberId)) {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
+        }
+
+        if (!document.getS3Key().equals(defaultDocumentS3Key)) {
+            s3Provider.deleteFile(document.getS3Key());
         }
 
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
@@ -227,12 +243,17 @@ public class DocumentService {
     }
 
     public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
-        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        List<Document> documents = documentRepository.findMostIncorrectDocuments(memberId);
 
-        HashMap<Document, Integer> documentIncorrectAnswerCounts = new HashMap<>();
+        HashMap<Document, Integer> documentIncorrectAnswerCounts = new LinkedHashMap<>();
 
         for (Document document : documents) {
             List<Quiz> quizzes = document.getQuizzes();
+
+            if (quizzes.isEmpty()) {
+                continue;
+            }
+
             int totalIncorrectAnswerCount = 0;
 
             for (Quiz quiz : quizzes) {
@@ -279,7 +300,9 @@ public class DocumentService {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        s3Provider.deleteFile(document.getS3Key());
+        if (!document.getS3Key().equals(defaultDocumentS3Key)) {
+            s3Provider.deleteFile(document.getS3Key());
+        }
 
         String s3Key = s3Provider.uploadFile(file);
         document.updateDocumentS3KeyByUpdatedContent(s3Key);
@@ -296,11 +319,19 @@ public class DocumentService {
     }
 
     @Transactional
-    public void reUploadDocument(Long documentId, Long memberId, Subscription subscription) {
-        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
-                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+    public void reUploadDocument(Document document, Subscription subscription, Member member) {
+        int aiPickCount = member.getAiPickCount();
 
-        sqsProvider.sendMessage(document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
+        if (aiPickCount < 1) {
+            if (subscription.getAvailableAiPickCount() < 1) {
+                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
+            }
+            subscription.minusAvailableAiPickCount();
+        } else {
+            member.useAiPick();
+        }
+
+        sqsProvider.sendMessage(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
     //보유한 모든 문서의 개수

@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.member.controller.dto;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.global.enums.MemberRole;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class MemberInfoDto {
                 .socialPlatform(SocialPlatform.GOOGLE)
                 .name(name)
                 .email(email)
+                .role(MemberRole.ROLE_USER)
                 .isQuizNotificationEnabled(true)
                 .aiPickCount(0)
                 .build();

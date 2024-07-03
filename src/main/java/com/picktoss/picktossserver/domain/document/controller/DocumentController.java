@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,12 +45,13 @@ public class DocumentController {
     @Operation(summary = "Create AI Pick")
     @PostMapping("/documents/{document_id}/ai-pick")
     @ResponseStatus(HttpStatus.OK)
-    public void createAiPick(
+    public ResponseEntity<CreateAiPickResponse> createAiPick(
             @PathVariable(name = "document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.createAiPick(documentId, memberId);
+        boolean isFirstUseAiPick = documentFacade.createAiPick(documentId, memberId);
+        return ResponseEntity.ok().body(new CreateAiPickResponse(isFirstUseAiPick));
     }
 
     @Operation(summary = "Get document by id",
@@ -85,17 +85,6 @@ public class DocumentController {
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
-    @Operation(summary = "Get document search result")
-    @PostMapping("/documents/search")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<SearchDocumentResponse> searchDocumentName(@Valid @RequestBody SearchDocumentNameRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        List<SearchDocumentResponse.SearchDocumentDto> documents = documentFacade.searchDocument(request.getWord(), memberId);
-        return ResponseEntity.ok().body(new SearchDocumentResponse(documents));
-    }
-
     @Operation(summary = "Get most incorrect top 5 document")
     @GetMapping("/documents/top-five")
     @ResponseStatus(HttpStatus.OK)
@@ -105,6 +94,17 @@ public class DocumentController {
 
         GetMostIncorrectDocumentsResponse response = documentFacade.findMostIncorrectDocuments(memberId);
         return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "Get document search result")
+    @PostMapping("/documents/search")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<SearchDocumentResponse> searchDocumentName(@Valid @RequestBody SearchDocumentNameRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<SearchDocumentResponse.SearchDocumentDto> documents = documentFacade.searchDocument(request.getWord(), memberId);
+        return ResponseEntity.ok().body(new SearchDocumentResponse(documents));
     }
 
     @Operation(summary = "Delete document by id")

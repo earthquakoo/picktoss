@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     jwtUserInfo,
                     null,
-                    List.of(new SimpleGrantedAuthority("user"))
+                    List.of(new SimpleGrantedAuthority(jwtUserInfo.getRole()))
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
