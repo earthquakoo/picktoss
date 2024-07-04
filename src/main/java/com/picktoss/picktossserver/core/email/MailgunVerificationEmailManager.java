@@ -67,8 +67,6 @@ public class MailgunVerificationEmailManager implements EmailManager {
                 content = content.replace("__VERIFICATION_CODE_4__", verificationCodeList[3]);
                 content = content.replace("__VERIFICATION_CODE_5__", verificationCodeList[4]);
                 content = content.replace("__VERIFICATION_CODE_6__", verificationCodeList[5]);
-                content = content.replace("__EMAIL_ICON_SRC__", emailIconImageUrl + "?cache_buster=1");
-                content = content.replace("__LOGO_BLACK_ICON_SRC__", logoBlackIconImageUrl + "?cache_buster=1");
                 System.out.println("content = " + content);
                 sendEmail(recipientEmail, "[Picktoss] Please verify your email", content);
             }
