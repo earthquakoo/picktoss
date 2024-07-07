@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Tag(name = "7. Quiz")
@@ -51,6 +50,17 @@ public class QuizController {
         GetQuizSetTodayResponse quizSetToday = quizFacade.findQuizSetToday(memberId);
 
         return ResponseEntity.ok().body(quizSetToday);
+    }
+
+    @Operation(summary = "Get example quiz set")
+    @GetMapping("/example-quizzes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetExampleQuizSetResponse> getExampleQuizSet() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetExampleQuizSetResponse response = quizFacade.findExampleQuizSet();
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "Create quiz")
