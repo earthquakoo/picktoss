@@ -7,7 +7,6 @@ import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.event.service.EventService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
-import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -18,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.POINT_NOT_ENOUGH;
@@ -47,6 +45,10 @@ public class QuizFacade {
                     .build();
         }
         return quizService.findQuestionSetToday(memberId);
+    }
+
+    public GetExampleQuizSetResponse findExampleQuizSet() {
+        return quizService.findExampleQuizSet();
     }
 
     @Transactional

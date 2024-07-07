@@ -18,12 +18,19 @@ import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.global.enums.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
@@ -37,6 +44,8 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizSetRepository quizSetRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
+
+    private static final String exampleQuizzes = "defaultQuiz/example_quiz_set.json";
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllQuizzesByQuizSetIdAndMemberId(quizSetId, memberId);
@@ -125,6 +134,55 @@ public class QuizService {
                 .quizSetId(todayQuizSet.getId())
                 .type(QuizSetResponseType.READY)
                 .build();
+    }
+
+    public GetExampleQuizSetResponse findExampleQuizSet() {
+        List<GetExampleQuizSetResponse.CreateExampleQuizDto> quizzes = new ArrayList<>();
+
+        try {
+            ClassPathResource classPathResource = new ClassPathResource(exampleQuizzes);
+            InputStream inputStream = classPathResource.getInputStream();
+
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+
+            String jsonString = stringBuilder.toString();
+            JSONObject jsonObject = new JSONObject(jsonString);
+
+            JSONArray jArray = jsonObject.getJSONArray("quizzes");
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject obj = jArray.getJSONObject(i);
+                String question = obj.getString("question");
+                String answer = obj.getString("answer");
+                String explanation = obj.getString("explanation");
+
+                JSONArray optionsArray = obj.getJSONArray("options");
+                List<String> options = new ArrayList<>();
+                for (int j = 0; j < optionsArray.length(); j++) {
+                    String option = optionsArray.getString(j);
+                    options.add(option);
+                }
+                GetExampleQuizSetResponse.CreateExampleQuizDto quizDto = GetExampleQuizSetResponse.CreateExampleQuizDto.builder()
+                        .question(question)
+                        .answer(answer)
+                        .explanation(explanation)
+                        .options(options)
+                        .build();
+
+                quizzes.add(quizDto);
+            }
+
+        } catch (IOException e) {
+            throw new CustomException(DEFAULT_FILE_NOT_FOUND);
+        }
+
+        return new GetExampleQuizSetResponse(quizzes);
     }
 
     @Transactional
