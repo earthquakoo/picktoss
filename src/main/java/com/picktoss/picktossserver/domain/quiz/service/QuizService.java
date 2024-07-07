@@ -451,7 +451,9 @@ public class QuizService {
                 int elapsedTimeMs = quizSetQuiz.getElapsedTimeMs();
                 quizAnalysis.put("totalElapsedTimeMs", quizAnalysis.get("totalElapsedTimeMs") + elapsedTimeMs);
             }
-            quizAnalysis.put("incorrectAnswerCount", quizAnalysis.get("incorrectAnswerCount") + quiz.getIncorrectAnswerCount());
+            if (!quizSetQuiz.getIsAnswer()) {
+                quizAnalysis.put("incorrectAnswerCount", quizAnalysis.get("incorrectAnswerCount") + 1);
+            }
         }
         return quizAnalysis;
     }
