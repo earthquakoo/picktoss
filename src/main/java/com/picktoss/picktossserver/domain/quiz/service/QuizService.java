@@ -473,6 +473,7 @@ public class QuizService {
         }
 
         if (yesterdayQuizSets.isEmpty()) {
+            event.initContinuousSolvedQuizDateCount();
             return ;
         }
         QuizSet yesterdayQuizSet = yesterdayQuizSets.stream()
