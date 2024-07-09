@@ -24,7 +24,7 @@ import java.util.List;
 @Tag(name = "5. Key Point")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 public class KeyPointController {
 
     private final KeyPointFacade keyPointFacade;

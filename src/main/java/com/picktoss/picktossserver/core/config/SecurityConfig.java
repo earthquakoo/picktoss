@@ -53,13 +53,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
                                 "/",
-                                "/api/v1/oauth/url",
-                                "/api/v1/callback",
+                                "/api/v2/oauth/url",
+                                "/api/v2/callback",
                                 "swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/v1/health-check",
-                                "/api/v1/login",
-                                "/api/v1/backend/login"
+                                "/api/v2/health-check",
+                                "/api/v2/login",
+                                "/api/v2/backend/login",
+                                "/api/v2/example-quizzes"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

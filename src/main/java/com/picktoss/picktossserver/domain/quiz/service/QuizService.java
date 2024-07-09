@@ -462,20 +462,30 @@ public class QuizService {
         List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIsOrderByCreatedAt(memberId);
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime yesterdayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
-        LocalDateTime yesterdayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
+        LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
+        LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
 
+        List<QuizSet> todayQuizSets = new ArrayList<>();
         List<QuizSet> yesterdayQuizSets = new ArrayList<>();
         for (QuizSet qs : quizSets) {
-            if (qs.getCreatedAt().isAfter(yesterdayStartTime.minusDays(1)) && qs.getCreatedAt().isBefore(yesterdayEndTime.minusDays(1))) {
+            if (qs.getCreatedAt().isAfter(todayStartTime) && qs.getCreatedAt().isBefore(todayEndTime)) {
+                todayQuizSets.add(qs);
+            }
+
+            if (qs.getCreatedAt().isAfter(todayStartTime.minusDays(1)) && qs.getCreatedAt().isBefore(todayEndTime.minusDays(1))) {
                 yesterdayQuizSets.add(qs);
             }
         }
 
-        if (yesterdayQuizSets.isEmpty()) {
+        if (todayQuizSets.isEmpty()) {
             event.initContinuousSolvedQuizDateCount();
             return ;
         }
+
+        if (yesterdayQuizSets.isEmpty()) {
+            return ;
+        }
+
         QuizSet yesterdayQuizSet = yesterdayQuizSets.stream()
                 .sorted(Comparator.comparing(QuizSet::getCreatedAt).reversed())
                 .toList()
