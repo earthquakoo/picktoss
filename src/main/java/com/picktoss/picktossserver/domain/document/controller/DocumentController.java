@@ -22,7 +22,7 @@ import java.util.List;
 @Tag(name = "3. Document")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 public class DocumentController {
 
     private final JwtTokenProvider jwtTokenProvider;

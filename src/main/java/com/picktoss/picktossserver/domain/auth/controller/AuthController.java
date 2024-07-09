@@ -28,7 +28,7 @@ import java.util.HashMap;
 @Tag(name = "1. Auth")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 public class AuthController {
 
     private final MemberFacade memberFacade;
