@@ -21,7 +21,7 @@ import java.util.List;
 @Tag(name = "2. Category")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 public class CategoryController {
 
     private final CategoryFacade categoryFacade;

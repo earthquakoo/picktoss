@@ -23,7 +23,7 @@ import java.util.List;
 @Tag(name = "7. Quiz")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 public class QuizController {
 
     private final JwtTokenProvider jwtTokenProvider;

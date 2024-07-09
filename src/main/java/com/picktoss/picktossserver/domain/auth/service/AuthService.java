@@ -151,9 +151,7 @@ public class AuthService {
     public void sendVerificationCode(String email) {
         // Send verification code
         String verificationCode = generateVerificationCode();
-        String emailIconImageUrl = s3Provider.findImageUrl(AuthService.emailIconImageS3Key);
-        String logoBlackIconImageUrl = s3Provider.findImageUrl(AuthService.logoBlackIconImageS3Key);
-        mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode, emailIconImageUrl, logoBlackIconImageUrl);
+        mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode);
 
         // Upsert register verification entry (always make is_verified to False)
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);

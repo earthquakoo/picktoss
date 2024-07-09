@@ -54,19 +54,13 @@ public class MailgunVerificationEmailManager implements EmailManager {
         }
     }
 
-    public void sendVerificationCode(String recipientEmail, String verificationCode, String emailIconImageUrl, String logoBlackIconImageUrl) {
+    public void sendVerificationCode(String recipientEmail, String verificationCode) {
         try {
-            String[] verificationCodeList = verificationCode.split("");
             ClassPathResource classPathResource = new ClassPathResource(verificationHtmlPath);
             try (InputStream inputStream = classPathResource.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 String content = reader.lines().collect(Collectors.joining("\n"));
-                content = content.replace("__VERIFICATION_CODE_1__", verificationCodeList[0]);
-                content = content.replace("__VERIFICATION_CODE_2__", verificationCodeList[1]);
-                content = content.replace("__VERIFICATION_CODE_3__", verificationCodeList[2]);
-                content = content.replace("__VERIFICATION_CODE_4__", verificationCodeList[3]);
-                content = content.replace("__VERIFICATION_CODE_5__", verificationCodeList[4]);
-                content = content.replace("__VERIFICATION_CODE_6__", verificationCodeList[5]);
+                content = content.replace("__VERIFICATION_CODE__", verificationCode);
                 sendEmail(recipientEmail, "[Picktoss] Please verify your email", content);
             }
         } catch (IOException e) {
