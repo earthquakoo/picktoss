@@ -161,6 +161,7 @@ public class QuizService {
                 String question = obj.getString("question");
                 String answer = obj.getString("answer");
                 String explanation = obj.getString("explanation");
+                QuizType quizType = QuizType.valueOf(obj.getString("quiz_type"));
 
                 JSONArray optionsArray = obj.getJSONArray("options");
                 List<String> options = new ArrayList<>();
@@ -172,6 +173,7 @@ public class QuizService {
                         .question(question)
                         .answer(answer)
                         .explanation(explanation)
+                        .quizType(quizType)
                         .options(options)
                         .build();
 

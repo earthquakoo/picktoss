@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.response;
 
+import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +20,6 @@ public class GetExampleQuizSetResponse {
         private String answer;
         private String explanation;
         private List<String> options;
+        private QuizType quizType;
     }
 }
