@@ -41,7 +41,7 @@ public class MailgunVerificationEmailManager implements EmailManager {
         String encodedSubject = UriUtils.encode(subject, StandardCharsets.UTF_8);
 
         String body = String.format("from=%s&to=%s&subject=%s&html=%s",
-                "picktoss <postmaster@picktoss.com>",
+                "picktoss <support@picktoss.com>",
                 recipientEmail,
                 encodedSubject,
                 encodedContent);

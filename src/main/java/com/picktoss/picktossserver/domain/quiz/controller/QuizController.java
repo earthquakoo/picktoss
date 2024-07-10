@@ -56,8 +56,6 @@ public class QuizController {
     @GetMapping("/example-quizzes")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetExampleQuizSetResponse> getExampleQuizSet() {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
 
         GetExampleQuizSetResponse response = quizFacade.findExampleQuizSet();
         return ResponseEntity.ok().body(response);
