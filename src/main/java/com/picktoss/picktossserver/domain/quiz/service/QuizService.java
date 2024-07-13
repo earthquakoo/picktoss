@@ -484,6 +484,11 @@ public class QuizService {
             return ;
         }
 
+        QuizSet todayQuizSet = todayQuizSets.stream()
+                .sorted(Comparator.comparing(QuizSet::getCreatedAt).reversed())
+                .toList()
+                .getFirst();
+
         if (yesterdayQuizSets.isEmpty()) {
             return ;
         }
@@ -494,7 +499,9 @@ public class QuizService {
                 .getFirst();
 
         if (!yesterdayQuizSet.isSolved()) {
-            event.initContinuousSolvedQuizDateCount();
+            if (!todayQuizSet.isSolved()) {
+                event.initContinuousSolvedQuizDateCount();
+            }
         }
     }
 
