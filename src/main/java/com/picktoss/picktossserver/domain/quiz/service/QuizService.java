@@ -344,13 +344,11 @@ public class QuizService {
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
 
-            if (!date.isBefore(startDate) &&
-                    !date.isAfter(startDate.plusDays(7))) {
-
-                totalQuizCountByDate.put(date, totalQuizCountByDate.get(date) + 1);
+            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
 
                 if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && !quizSetQuiz.getIsAnswer()) {
-                    incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.get(date) + 1);
+                    incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.getOrDefault(date, 0) + 1);
                 }
             }
         }
@@ -361,8 +359,8 @@ public class QuizService {
             if (!incorrectAnswerCountByDate.isEmpty() && !totalQuizCountByDate.isEmpty()) {
                 GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto quizzesDto = GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto.builder()
                         .date(date)
-                        .totalQuizCount(totalQuizCountByDate.get(date))
-                        .incorrectAnswerCount(incorrectAnswerCountByDate.get(date))
+                        .totalQuizCount(totalQuizCountByDate.getOrDefault(date, 0))
+                        .incorrectAnswerCount(incorrectAnswerCountByDate.getOrDefault(date, 0))
                         .build();
 
                 quizzesDtos.add(quizzesDto);
@@ -375,7 +373,7 @@ public class QuizService {
                 incorrectAnswerCount,
                 totalElapsedTimeMs,
                 quizzesDtos
-                );
+        );
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByMonth(Long memberId, Long categoryId, int year, int month) {
@@ -409,10 +407,10 @@ public class QuizService {
             LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
 
             if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
-                totalQuizCountByDate.put(date, totalQuizCountByDate.get(date) + 1);
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
 
                 if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && !quizSetQuiz.getIsAnswer()) {
-                    incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.get(date) + 1);
+                    incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.getOrDefault(date, 0) + 1);
                 }
             }
         }
