@@ -59,6 +59,7 @@ public class MemberService {
         String email = Optional.ofNullable(member.getEmail()).orElse("");
 
         return GetMemberInfoResponse.builder()
+                .id(member.getId())
                 .name(member.getName())
                 .email(email)
                 .role(member.getRole())

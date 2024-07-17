@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class GetMemberInfoResponse {
 
+    private Long id;
     private String name;
     private String email;
     private MemberRole role;
