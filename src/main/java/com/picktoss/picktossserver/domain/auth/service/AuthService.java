@@ -15,12 +15,12 @@ import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepos
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.security.SecureRandom;
@@ -58,10 +58,6 @@ public class AuthService {
     private static final String emailIconImageS3Key = "email-icon.png";
     private static final String logoBlackIconImageS3Key = "logo-black-icon.png";
 
-    private static final String notionOauthClientId = "";
-    private static final String notionOauthClientSecret = "";
-    private static final String notionRedirectUri = "";
-
 
     public String getRedirectUri() {
         RestTemplate restTemplate = new RestTemplate();
@@ -91,30 +87,6 @@ public class AuthService {
             return responseEntity.getBody().getIdToken().split("\\.")[1];
         }
         return null;
-    }
-
-    public String getNotionRedirectUri() {
-        return "";
-    }
-
-    public String getNotionOauthAccessToken(String accessCode) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(notionOauthClientId, notionOauthClientSecret); // Basic 인증 헤더 설정
-
-        LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-
-        params.add("code", accessCode);
-        params.add("redirect_uri", notionRedirectUri);
-        params.add("grant_type", "authorization_code");
-
-        String notionTokenRequestUrl = "https://api.notion.com/v1/oauth/token";
-
-        HttpEntity<LinkedMultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(notionTokenRequestUrl, HttpMethod.POST, requestEntity, String.class);
-        System.out.println("responseEntity = " + responseEntity.getBody());
-        return responseEntity.getBody();
     }
 
     public String getUserInfo(String accessToken, SocialPlatform socialPlatform) {
