@@ -335,7 +335,7 @@ public class QuizService {
 
         LocalDate startDate = LocalDate.now().minusWeeks(weeks).plusDays(1);
 
-        for (int i = 0; i <= 7; i++) {
+        for (int i = 0; i <= 6; i++) {
             LocalDate date = startDate.plusDays(i);
             incorrectAnswerCountByDate.put(date, 0);
             totalQuizCountByDate.put(date, 0);
