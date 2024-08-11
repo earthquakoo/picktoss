@@ -4,13 +4,10 @@ import com.picktoss.picktossserver.core.jwt.JwtAccessDeniedHandler;
 import com.picktoss.picktossserver.core.jwt.JwtAuthenticationEntryPoint;
 import com.picktoss.picktossserver.core.jwt.JwtFilter;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
-import com.picktoss.picktossserver.global.enums.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -60,7 +57,10 @@ public class SecurityConfig {
                                 "/api/v2/health-check",
                                 "/api/v2/login",
                                 "/api/v2/backend/login",
-                                "/api/v2/example-quizzes"
+                                "/api/v2/example-quizzes",
+                                "/api/v2/notion/oauth",
+                                "/api/v2/notion-callback",
+                                "/favicon.ico"
                         )
                         .permitAll()
                         .anyRequest().authenticated()
