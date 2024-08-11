@@ -58,9 +58,9 @@ public class AuthService {
     private static final String emailIconImageS3Key = "email-icon.png";
     private static final String logoBlackIconImageS3Key = "logo-black-icon.png";
 
-    private static final String notionOauthClientId = "22064628-a571-4bd0-9506-914b6659bcd1";
-    private static final String notionOauthClientSecret = "secret_F6BrvWzy4KraedbpVtw7CTKbCcMNXNOqI6CtOOYZvRV";
-    private static final String notionRedirectUri = "http://localhost:8181/api/v2/notion-callback";
+    private static final String notionOauthClientId = "";
+    private static final String notionOauthClientSecret = "";
+    private static final String notionRedirectUri = "";
 
 
     public String getRedirectUri() {
@@ -94,7 +94,7 @@ public class AuthService {
     }
 
     public String getNotionRedirectUri() {
-        return "https://api.notion.com/v1/oauth/authorize?client_id=22064628-a571-4bd0-9506-914b6659bcd1&response_type=code&owner=user&redirect_uri=http%3A%2F%2Flocalhost%3A8181%2Fapi%2Fv2%2Fnotion-callback";
+        return "";
     }
 
     public String getNotionOauthAccessToken(String accessCode) {
