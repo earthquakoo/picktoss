@@ -4,7 +4,6 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
-import com.picktoss.picktossserver.domain.auth.controller.request.OnlyBackendLoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
@@ -14,16 +13,15 @@ import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.io.IOException;
 
 @Tag(name = "1. Auth")
 @RestController
@@ -84,6 +82,21 @@ public class AuthController {
         Long memberId = jwtUserInfo.getMemberId();
 
         authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
+    }
+
+    @GetMapping("/notion/oauth")
+    @ResponseStatus(HttpStatus.OK)
+    public void verifyNotion(HttpServletResponse response) throws IOException {
+        String notionRedirectUri = authService.getNotionRedirectUri();
+        response.sendRedirect(notionRedirectUri);
+    }
+
+    @GetMapping("/notion-callback")
+    @ResponseStatus(HttpStatus.OK)
+    public String notionCallback(
+            @RequestParam("code") String code
+    ) {
+        return authService.getNotionOauthAccessToken(code);
     }
 
     @Operation(summary = "Health check")
