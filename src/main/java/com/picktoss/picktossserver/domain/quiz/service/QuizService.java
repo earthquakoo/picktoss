@@ -333,9 +333,9 @@ public class QuizService {
         Integer incorrectAnswerCount = quizAnalysis.get("incorrectAnswerCount");
         Integer totalElapsedTimeMs = quizAnalysis.get("totalElapsedTimeMs");
 
-        LocalDate startDate = LocalDate.now().minusWeeks(weeks);
+        LocalDate startDate = LocalDate.now().minusWeeks(weeks).plusDays(1);
 
-        for (int i = 1; i <= 7; i++) {
+        for (int i = 0; i <= 7; i++) {
             LocalDate date = startDate.plusDays(i);
             incorrectAnswerCountByDate.put(date, 0);
             totalQuizCountByDate.put(date, 0);
