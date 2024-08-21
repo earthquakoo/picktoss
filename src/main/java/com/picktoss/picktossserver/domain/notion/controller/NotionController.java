@@ -23,7 +23,7 @@ public class NotionController {
     @GetMapping("/notion/oauth")
     @ResponseStatus(HttpStatus.OK)
     public void verifyNotion(HttpServletResponse response) throws IOException {
-        String notionRedirectUri = notionFacade.getNotionRedirectUri();
+        String notionRedirectUri = notionFacade.findNotionRedirectUri();
         response.sendRedirect(notionRedirectUri);
     }
 
@@ -32,7 +32,7 @@ public class NotionController {
     public String notionCallback(
             @RequestParam("code") String code
     ) {
-        return notionFacade.getNotionOauthAccessToken(code);
+        return notionFacade.findNotionOauthAccessToken(code);
     }
 
     @Operation(summary = "Get notion pages")
@@ -42,7 +42,7 @@ public class NotionController {
 //        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
 //        Long memberId = jwtUserInfo.getMemberId();
         String accessToken = "";
-        return notionFacade.getNotionPages(accessToken);
+        return notionFacade.findNotionPages(accessToken);
 
     }
 
@@ -53,6 +53,6 @@ public class NotionController {
 //        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
 //        Long memberId = jwtUserInfo.getMemberId();
         String accessToken = "";
-        return notionFacade.getNotionPage(accessToken);
+        return notionFacade.findNotionPage(accessToken);
     }
 }

@@ -21,7 +21,7 @@ public class NotionService {
 
     private static final String notionRedirectUri = "http://localhost:8181/api/v2/notion/callback";
 
-    public String getNotionRedirectUri() {
+    public String findNotionRedirectUri() {
         return String.format(
                 "https://api.notion.com/v1/oauth/authorize?client_id=%s&response_type=code&owner=user&redirect_uri=%s",
                 notionClientId,
@@ -29,7 +29,7 @@ public class NotionService {
         );
     }
 
-    public String getNotionOauthAccessToken(String accessCode) {
+    public String findNotionOauthAccessToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -49,7 +49,7 @@ public class NotionService {
         return responseEntity.getBody();
     }
 
-    public String getNotionPages(String accessToken) {
+    public String findNotionPages(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
 
         // 헤더 설정
@@ -81,7 +81,7 @@ public class NotionService {
         }
     }
 
-    public String getNotionPage(String accessToken) {
+    public String findNotionPage(String accessToken) {
         String pageId = "646a31a7-d68e-4ab2-ab16-46cd8af36558";
         RestTemplate restTemplate = new RestTemplate();
 

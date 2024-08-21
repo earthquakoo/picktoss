@@ -12,19 +12,19 @@ public class NotionFacade {
 
     private final NotionService notionService;
 
-    public String getNotionRedirectUri() {
-        return notionService.getNotionRedirectUri();
+    public String findNotionRedirectUri() {
+        return notionService.findNotionRedirectUri();
     }
 
-    public String getNotionOauthAccessToken(String accessCode) {
-        return notionService.getNotionOauthAccessToken(accessCode);
+    public String findNotionOauthAccessToken(String accessCode) {
+        return notionService.findNotionOauthAccessToken(accessCode);
     }
 
-    public String getNotionPages(String accessToken) {
-        return notionService.getNotionPages(accessToken);
+    public String findNotionPages(String accessToken) {
+        return notionService.findNotionPages(accessToken);
     }
 
-    public String getNotionPage(String accessToken) {
-        return notionService.getNotionPage(accessToken);
+    public String findNotionPage(String accessToken) {
+        return notionService.findNotionPage(accessToken);
     }
 }
