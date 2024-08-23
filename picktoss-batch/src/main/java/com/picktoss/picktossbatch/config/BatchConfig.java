@@ -24,6 +24,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -69,8 +70,9 @@ public class BatchConfig {
     public Tasklet testTasklet() {
         return new Tasklet() {
             @Override
+            @Transactional
             public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-                List<Outbox> outboxes = outboxService.findAll();
+                List<Outbox> outboxes = outboxService.findAllOutbox();
                 for (Outbox outbox : outboxes) {
                     Document document = outbox.getDocument();
                     Member member = document.getCategory().getMember();

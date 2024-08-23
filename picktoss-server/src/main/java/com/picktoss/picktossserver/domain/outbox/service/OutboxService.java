@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.outbox.service;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.outbox.entity.Outbox;
 import com.picktoss.picktossserver.domain.outbox.repository.OutboxRepository;
@@ -10,8 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.OUTBOX_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +28,7 @@ public class OutboxService {
         return outboxRepository.findAll();
     }
 
-    public Outbox findOutboxByDocumentId(Long documentId) {
-        return outboxRepository.findByDocumentId(documentId)
-                .orElseThrow(() -> new CustomException(OUTBOX_NOT_FOUND));
+    public List<Outbox> findAllOutbox() {
+        return outboxRepository.findAllOutbox();
     }
 }
