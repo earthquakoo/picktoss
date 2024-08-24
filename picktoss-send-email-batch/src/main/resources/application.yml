@@ -1,0 +1,73 @@
+server:
+  port: 8181
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+    batch:
+      jdbc:
+        initialize-schema: always
+      job:
+        name: testJob
+        enabled: false
+
+  datasource:
+    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
+    username: ${PICKTOSS_DB_USER}
+    password: ${PICKTOSS_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6
+
+picktoss:
+  server_url: ${PICKTOSS_SERVER_URL}
+  default_document_s3_key: ${PICKTOSS_DEFAULT_S3_KEY}
+
+jwt:
+  secret: ${PICKTOSS_JWT_SECRET_KEY}
+  access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+  refresh_token_expiration_ms: ${PICKTOSS_JWT_REFRESH_TOKEN_EXPIRE_MINUTES}
+
+mailgun:
+  api_key: ${PICKTOSS_MAILGUN_API_KEY}
+  domain: ${PICKTOSS_MAILGUN_DOMAIN}
+
+email_verification:
+  expire_seconds: ${PICKTOSS_VERIFICATION_EXPIRE_SECONDS}
+
+cors:
+  cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
+  cors_allowed_origin_prod: ${PICKTOSS_CORS_ALLOWED_ORIGIN_PROD}
+
+oauth:
+  google:
+    client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
+    client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
+    redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
+  notion:
+    client_id: ${PICKTOSS_NOTION_CLIENT_ID}
+    client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${PICKTOSS_S3_BUCKET_NAME}
+    credentials:
+      access_key: ${PICKTOSS_AWS_ACCESS_KEY}
+      secret_key: ${PICKTOSS_AWS_SECRET_KEY}
+    region:
+      static: us-east-1
+      auto: false
+    stack:
+      auto: false
+    sqs:
+      queue:
+        name: ${PICKTOSS_AWS_SQS_QUEUE_NAME}
+        url: ${PICKTOSS_AWS_SQS_QUEUE_URL}
