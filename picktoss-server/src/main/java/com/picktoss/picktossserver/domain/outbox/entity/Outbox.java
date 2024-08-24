@@ -40,4 +40,8 @@ public class Outbox {
     public void addTryCountBySendMessage() {
         this.tryCount += 1;
     }
+
+    public void updateOutboxStatusByBatchFailed() {
+        this.status = OutboxStatus.FAILED;
+    }
 }

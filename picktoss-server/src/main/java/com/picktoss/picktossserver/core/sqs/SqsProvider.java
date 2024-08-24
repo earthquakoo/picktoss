@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class SqsProvider {
@@ -30,8 +32,12 @@ public class SqsProvider {
             jsonNode.put("member_id", memberId);
             String messageBody = mapper.writeValueAsString(jsonNode);
 
+            String messageId = UUID.randomUUID().toString();
+
             SendMessageRequest sendMessageRequest = new SendMessageRequest()
                     .withQueueUrl(url)
+                    .withMessageGroupId(messageId)
+                    .withMessageDeduplicationId(messageId)
                     .withMessageBody(messageBody);
 
             amazonSqs.sendMessage(sendMessageRequest);

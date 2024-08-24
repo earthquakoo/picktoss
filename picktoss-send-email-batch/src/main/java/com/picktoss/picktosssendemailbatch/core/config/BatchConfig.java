@@ -1,11 +1,7 @@
-package com.picktoss.picktossbatch.config;
+package com.picktoss.picktosssendemailbatch.core.config;
 
-import com.picktoss.picktossserver.core.sqs.SqsProvider;
-import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.outbox.entity.Outbox;
+import com.picktoss.picktossserver.core.event.publisher.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.domain.outbox.service.OutboxService;
-import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,20 +18,19 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
+@ComponentScan(basePackages = {"com.picktoss.picktossserver"})
 public class BatchConfig {
 
     private final OutboxService outboxService;
     private final SubscriptionService subscriptionService;
-    private final SqsProvider sqsProvider;
+    private final SQSEventMessagePublisher sqsEventMessagePublisher;
 
     private final String JOB_NAME = "testJob";
     private final String STEP_NAME = "testStep";
@@ -58,7 +53,7 @@ public class BatchConfig {
     @JobScope
     public Step testStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder(STEP_NAME, jobRepository)
-                .tasklet(testTasklet(), transactionManager) // tasklet 설정
+                .tasklet(testchunk(), transactionManager) // tasklet 설정
                 .build();
     }
 
@@ -67,20 +62,11 @@ public class BatchConfig {
      */
     @Bean
     @StepScope
-    public Tasklet testTasklet() {
+    public Tasklet testchunk() {
         return new Tasklet() {
             @Override
-            @Transactional
             public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-                List<Outbox> outboxes = outboxService.findAllOutbox();
-                for (Outbox outbox : outboxes) {
-                    Document document = outbox.getDocument();
-                    Member member = document.getCategory().getMember();
-                    Subscription subscription = subscriptionService.findCurrentSubscription(member.getId(), member);
-                    document.updateDocumentStatusProcessingByGenerateAiPick();
-                    outbox.addTryCountBySendMessage();
-                    sqsProvider.sendMessage(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
-                }
+
                 return RepeatStatus.FINISHED; // 작업에 대한 Status 명시
             }
         };

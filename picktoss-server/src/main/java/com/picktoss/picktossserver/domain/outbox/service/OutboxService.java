@@ -24,10 +24,6 @@ public class OutboxService {
         outboxRepository.save(outbox);
     }
 
-    public List<Outbox> findAll() {
-        return outboxRepository.findAll();
-    }
-
     public List<Outbox> findAllOutbox() {
         return outboxRepository.findAllOutbox();
     }

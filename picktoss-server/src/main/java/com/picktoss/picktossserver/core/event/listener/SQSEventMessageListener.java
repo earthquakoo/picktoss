@@ -15,8 +15,14 @@ public class SQSEventMessageListener {
 
     private final SqsProvider sqsProvider;
 
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void testHandler(TransactionEvent event) {
+        log.info("TransactionPhase.BEFORE_COMMIT ---> {}", event);
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void sendMessageHandler(TransactionEvent event) {
+        log.info("TransactionPhase.AFTER_COMMIT ---> {}", event);
         sqsProvider.sendMessage(event.getMemberId(), event.getS3Key(), event.getDocumentId(), event.getSubscriptionPlanType());
     }
 }
