@@ -1,10 +1,5 @@
-tasks.named('bootJar'){
-    enabled = true
-}
-
-tasks.named('jar'){
-    enabled = false
-}
+group = 'com.picktoss.picktoss-batch'
+version = '0.0.2-SNAPSHOT'
 
 dependencies {
     implementation project(':picktoss-server')
