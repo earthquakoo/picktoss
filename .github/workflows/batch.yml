@@ -28,16 +28,16 @@ name: Development CI/CD Pipeline
 
 on:
   push:
-    branches: [ "prod" ]
+    branches: [ "batch" ]
 
 env:
   AWS_REGION: us-east-1                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: picktoss-server-prod          # set this to your Amazon ECR repository name
-  ECS_SERVICE: picktoss-prod-service                 # set this to your Amazon ECS service name
-  ECS_CLUSTER: PicktossProdCluster                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: .aws/task-definition-prod.json # set this to the path to your Amazon ECS task definition
+  ECR_REPOSITORY: picktoss-batch          # set this to your Amazon ECR repository name
+  ECS_SERVICE: picktoss-batch-service                 # set this to your Amazon ECS service name
+  ECS_CLUSTER: PicktossBatchCluster                 # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: .aws/task-definition-batch.json # set this to the path to your Amazon ECS task definition
   # file, e.g. .aws/task-definition-dev.json
-  CONTAINER_NAME: picktoss-server-prod           # set this to the name of the container in the
+  CONTAINER_NAME: picktoss-batch           # set this to the name of the container in the
   # containerDefinitions section of your task definition
 
 permissions:
@@ -62,8 +62,8 @@ jobs:
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Picktoss server Module with Gradle
-        run: ./gradlew :picktoss-server:build
+      - name: Build Batch Module with Gradle
+        run: ./gradlew :picktoss-batch:build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -85,7 +85,7 @@ jobs:
           # Build a docker container and
           # push it to ECR so that it can
           # be deployed to ECS.
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./picktoss-server
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./picktoss-batch
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 

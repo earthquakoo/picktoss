@@ -4,44 +4,40 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.4'
 }
 
-allprojects {
-	group = 'com.picktoss'
-	version = '0.0.1-SNAPSHOT'
-	sourceCompatibility = '21'
-
-	repositories {
-		mavenCentral()
-	}
-
-}
-
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
 }
 
+
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'org.springframework.boot'
 	apply plugin: 'io.spring.dependency-management'
 
-	dependencies { // 롬복은 공통적으로 사용하는 의존성이니 여기서 끌어다 사용
+	sourceCompatibility = '21'
+
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 
 		compileOnly 'org.projectlombok:lombok'
 		annotationProcessor 'org.projectlombok:lombok'
 	}
 
-	tasks.named('bootJar') {
-		enabled = false
-	}
-
-	tasks.named('jar') {
-		enabled = true
-	}
-
 	tasks.named('test') {
 		useJUnitPlatform()
 	}
+}
+
+bootJar {
+	enabled = false
+}
+
+jar {
+	enabled = false
 }
