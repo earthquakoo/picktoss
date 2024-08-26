@@ -39,17 +39,17 @@ public class BatchConfig {
     private final SubscriptionService subscriptionService;
     private final SQSEventMessagePublisher sqsEventMessagePublisher;
 
-    private final String JOB_NAME = "testJob";
-    private final String STEP_NAME = "testStep";
+    private final String JOB_NAME = "transactionOutboxJob";
+    private final String STEP_NAME = "transactionOutboxStep";
 
     /**
      * Job 등록
      */
     @Bean
-    public Job testJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Job transactionOutboxJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new JobBuilder(JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer()) // sequential id
-                .start(testStep(jobRepository, transactionManager)) // step 설정
+                .start(transactionOutboxStep(jobRepository, transactionManager)) // step 설정
                 .build();
     }
 
@@ -58,9 +58,9 @@ public class BatchConfig {
      */
     @Bean
     @JobScope
-    public Step testStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step transactionOutboxStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder(STEP_NAME, jobRepository)
-                .tasklet(testTasklet(), transactionManager) // tasklet 설정
+                .tasklet(transactionOutboxTasklet(), transactionManager) // tasklet 설정
                 .build();
     }
 
@@ -69,7 +69,7 @@ public class BatchConfig {
      */
     @Bean
     @StepScope
-    public Tasklet testTasklet() {
+    public Tasklet transactionOutboxTasklet() {
         return new Tasklet() {
             @Override
             public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
