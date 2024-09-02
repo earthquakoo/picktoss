@@ -35,10 +35,10 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-aws-messaging:2.2.6.RELEASE'
 }
 
-//bootJar {
-//    enabled = true
-//}
-//
+bootJar {
+    enabled = true
+}
+
 //jar {
 //    enabled = true
 //}
