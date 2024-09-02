@@ -1,6 +1,6 @@
 package com.picktoss.picktossbatch.core.config;
 
-import com.picktoss.picktossserver.core.event.event.TransactionEvent;
+import com.picktoss.picktossserver.core.event.event.SQSEvent;
 import com.picktoss.picktossserver.core.event.publisher.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -84,7 +84,7 @@ public class BatchConfig {
                     Subscription subscription = subscriptionService.findCurrentSubscription(member.getId(), member);
                     document.updateDocumentStatusProcessingByGenerateAiPick();
                     outbox.addTryCountBySendMessage();
-                    sqsEventMessagePublisher.sqsEventMessagePublisher(new TransactionEvent(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType()));
+                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSEvent(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType()));
                 }
                 return RepeatStatus.FINISHED;
             }

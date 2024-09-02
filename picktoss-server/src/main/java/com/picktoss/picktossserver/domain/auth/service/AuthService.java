@@ -15,7 +15,6 @@ import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepos
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -55,8 +54,6 @@ public class AuthService {
     private static final String defaultNickname = "Picktoss#";
     private static final String chars = "0123456789";
     private static final int randomCodeLen = 6;
-    private static final String emailIconImageS3Key = "email-icon.png";
-    private static final String logoBlackIconImageS3Key = "logo-black-icon.png";
 
 
     public String getRedirectUri() {
