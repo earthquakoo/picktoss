@@ -29,12 +29,10 @@ public class S3Provider {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String uploadFile(MultipartFile multipartFile){
+    public String uploadFile(MultipartFile multipartFile, String s3Key){
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(multipartFile.getContentType());
-
-        String s3Key = generateS3key();
 
         try (InputStream inputStream = multipartFile.getInputStream()) {
             amazonS3.putObject(bucket, s3Key, inputStream, metadata);

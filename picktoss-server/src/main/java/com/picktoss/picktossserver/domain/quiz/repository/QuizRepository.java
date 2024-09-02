@@ -3,11 +3,8 @@ package com.picktoss.picktossserver.domain.quiz.repository;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +28,17 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     List<Quiz> findAllByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
             @Param("quizType") QuizType quizType,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT DISTINCT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
+            "WHERE c.member.id = :memberId " +
+            "AND q.latest = true " +
+            "ORDER BY q.deliveredCount ASC")
+    List<Quiz> findAllByMemberIdOrderByDeliveredCountASC(
             @Param("memberId") Long memberId
     );
 

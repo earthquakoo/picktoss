@@ -21,7 +21,7 @@ public class BatchScheduler {
     private final Job testJob;
     private final JobLauncher jobLauncher; // 스케줄링을 활용하여 Job 실행
 
-    @Scheduled(cron = "0 */1 * * * *") // 1분마다 실행할 수 있게 함
+    @Scheduled(cron = "0 */5 * * * *") // 1분마다 실행할 수 있게 함
     public void jobRun() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
 
         JobParameters jobParameters = new JobParameters(

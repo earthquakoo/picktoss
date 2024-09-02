@@ -1,16 +1,16 @@
 server:
-  port: 8181
+  port: 8080
 
 spring:
   config:
     activate:
-      on-profile: dev
-    batch:
-      jdbc:
-        initialize-schema: always
-      job:
-        name: transactionOutboxJob
-        enabled: false
+      on-profile: prod
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      name: transactionOutboxJob
+      enabled: false
 
   datasource:
     url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
@@ -20,7 +20,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 
 logging.level:
   org.hibernate.SQL: debug

@@ -256,6 +256,37 @@ public class QuizService {
         return quizSetId;
     }
 
+    @Transactional
+    public String createTodayQuizSet(Member member) {
+        List<Quiz> quizzes = quizRepository.findAllByMemberIdOrderByDeliveredCountASC(member.getId());
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+
+        String quizSetId = createQuizSetId();
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+
+        int quizCount = 0;
+
+        for (Quiz quiz : quizzes) {
+            if (quizCount == 10) {
+                break;
+            }
+            quiz.addDeliveredCount();
+
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+            quizCount += 1;
+        }
+
+        quizSetRepository.save(quizSet);
+        quizSetQuizRepository.saveAll(quizSetQuizzes);
+
+        return quizSetId;
+    }
+
+    public List<Quiz> findAllByMemberIdOrderByDeliveredCountASC(Long memberId) {
+        return quizRepository.findAllByMemberIdOrderByDeliveredCountASC(memberId);
+    }
+
     public List<Quiz> findAllGeneratedQuizzes(Long documentId, QuizType quizType, Long memberId) {
         return quizRepository.findAllByDocumentIdAndMemberId(documentId, quizType, memberId);
     }

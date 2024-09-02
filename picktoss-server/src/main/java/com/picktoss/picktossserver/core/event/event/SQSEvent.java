@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class TransactionEvent {
+public class SQSEvent {
+
     private final Long memberId;
     private final String s3Key;
     private final Long documentId;
