@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.picktoss.picktossserver.core.email.MailgunVerificationEmailManager;
+import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
@@ -35,7 +35,7 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final MailgunVerificationEmailManager mailgunVerificationEmailManager;
+    private final MailgunEmailSenderManager mailgunEmailSenderManager;
     private final EmailVerificationRepository emailVerificationRepository;
     private final S3Provider s3Provider;
 
@@ -148,7 +148,7 @@ public class AuthService {
     public void sendVerificationCode(String email) {
         // Send verification code
         String verificationCode = generateVerificationCode();
-        mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode);
+        mailgunEmailSenderManager.sendVerificationCode(email, verificationCode);
 
         // Upsert register verification entry (always make is_verified to False)
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);

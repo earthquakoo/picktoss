@@ -31,6 +31,7 @@ import java.util.UUID;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.DEFAULT_DOCUMENT;
 
 @Service
 @Transactional(readOnly = true)
@@ -50,7 +51,14 @@ public class DocumentFacade {
 
     @Transactional
     public Long createDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
-        int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
+        List<Document> documents = documentService.findAllByMemberId(memberId);
+        int possessDocumentCount = documents.size();
+        for (Document document : documents) {
+            if (document.getStatus() == DEFAULT_DOCUMENT) {
+                possessDocumentCount -= 1;
+            }
+        }
+
         String s3Key = UUID.randomUUID().toString();
 
         if (possessDocumentCount >= FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT) {
@@ -58,6 +66,15 @@ public class DocumentFacade {
         }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
+//        Set<Document> documentsByCategory = category.getDocuments();
+//        int lastOrder = 1;
+//        for (Document document : documentsByCategory) {
+//            if (lastOrder < document.getOrder()) {
+//                lastOrder = document.getOrder();
+//            }
+//        }
+//        lastOrder += 1;
+
         s3UploadPublisher.s3UploadPublisher(new S3Event(file, s3Key));
         return documentService.createDocument(documentName, category, memberId, s3Key);
     }

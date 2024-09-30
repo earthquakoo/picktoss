@@ -6,18 +6,23 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.enums.MemberRole;
-import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
+import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
-import static com.picktoss.picktossserver.domain.quiz.constant.QuizConstant.FREE_PLAN_QUIZ_QUESTION_NUM;
-import static com.picktoss.picktossserver.domain.quiz.constant.QuizConstant.PRO_PLAN_QUIZ_QUESTION_NUM;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,7 @@ import static com.picktoss.picktossserver.domain.quiz.constant.QuizConstant.PRO_
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Transactional
     public Long createMember(Member member) {
@@ -121,5 +127,54 @@ public class MemberService {
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         member.changeAiPickCountForTest(aiPickCount);
+    }
+
+    @Transactional
+    public void createMemberForTest() {
+        String nickname = "test Member";
+        String clientId = "test client id";
+
+        List<Member> members = new ArrayList<>();
+
+        for (int i = 0; i < 999; i++) {
+            Member member = Member.builder()
+                    .name(nickname)
+                    .clientId(clientId)
+                    .socialPlatform(SocialPlatform.GOOGLE)
+                    .isQuizNotificationEnabled(false)
+                    .aiPickCount(AVAILABLE_AI_PICK_COUNT)
+                    .role(MemberRole.ROLE_USER)
+                    .build();
+
+            members.add(member);
+        }
+
+        String insertQuizSetQuizzesSql = "INSERT INTO member (name, client_id, social_platform, is_quiz_notification_enabled, ai_pick_count, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        jdbcTemplate.batchUpdate(
+                insertQuizSetQuizzesSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setObject(1, nickname);
+                        ps.setObject(2, clientId);
+                        ps.setObject(3, "GOOGLE");
+                        ps.setObject(4, false);
+                        ps.setObject(5, AVAILABLE_AI_PICK_COUNT);
+                        ps.setObject(6, "ROLE_USER");
+                        ps.setObject(7, LocalDateTime.now());
+                        ps.setObject(8, LocalDateTime.now());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return members.size();
+                    }
+                }
+        );
+    }
+
+    public Tuple findMinIdAndMaxIdAndIsQuizNotificationEnabled() {
+        return memberRepository.findMinIdAndMaxIdAndIsQuizNotificationEnabled();
     }
 }

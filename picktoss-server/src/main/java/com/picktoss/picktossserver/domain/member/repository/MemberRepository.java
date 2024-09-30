@@ -17,6 +17,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "WHERE m.isQuizNotificationEnabled = true")
     List<Member> findAllByIsQuizNotificationEnabled();
 
+    //  "WHERE m.isQuizNotificationEnabled = true"
     @Query("SELECT MIN(m.id), MAX(m.id) FROM Member m")
-    Tuple findMinIdAndMaxId();
+    Tuple findMinIdAndMaxIdAndIsQuizNotificationEnabled();
 }

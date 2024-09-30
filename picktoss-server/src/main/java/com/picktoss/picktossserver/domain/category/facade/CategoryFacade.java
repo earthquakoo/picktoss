@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.category.facade;
 
-import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
@@ -70,5 +69,4 @@ public class CategoryFacade {
     public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
         return categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
     }
-
 }

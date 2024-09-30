@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
+import com.picktoss.picktossserver.core.event.publisher.EmailSenderPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
@@ -21,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +32,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.time.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +52,8 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizSetRepository quizSetRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final EmailSenderPublisher emailSenderPublisher;
 
     private static final String exampleQuizzes = "defaultQuiz/example_quiz_set.json";
 
@@ -297,7 +307,7 @@ public class QuizService {
 
     @Transactional
     public void updateQuizLatest(Document document) {
-        List<Quiz> quizzes = document.getQuizzes();
+        Set<Quiz> quizzes = document.getQuizzes();
         for (Quiz quiz : quizzes) {
             quiz.updateQuizLatestByDocumentReUpload();
         }
@@ -588,5 +598,173 @@ public class QuizService {
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
         return quizSetId;
+    }
+
+    @Transactional
+    public void quizCreate(List<Quiz> quizzes, List<QuizSet> quizSets, List<QuizSetQuiz> quizSetQuizzes, Member member) {
+//        List<QuizSet> quizSets = new ArrayList<>();
+//        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+//        List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
+//        List<Category> categories = member.getCategories();
+//        for (Category category : categories) {
+//            if (category.getDocuments() == null) {
+//                continue;
+//            }
+//            Set<Document> documents = category.getDocuments();
+//            for (Document document : documents) {
+//                if (document.getQuizzes() == null) {
+//                    continue;
+//                }
+//                Set<Quiz> quizzes = document.getQuizzes();
+//                if (quizzes.isEmpty()) {
+//                    continue;
+//                }
+//                // quiz.deliveredCount 순으로 정렬 or List로 정렬
+//                List<Quiz> quizList = quizzes.stream().sorted((e1, e2) -> e1.getDeliveredCount()).limit(10).toList();
+//                quizzesBySortedDeliveredCount.addAll(quizList);
+//            }
+//        }
+//        String quizSetId = UUID.randomUUID().toString().replace("-", "");
+//        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+//        quizSets.add(quizSet);
+//
+//        quizzesBySortedDeliveredCount.stream().sorted((e1, e2) -> e1.getDeliveredCount());
+//        int quizCount = 0;
+//
+//        for (Quiz quiz : quizzesBySortedDeliveredCount) {
+//            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+//            quizSetQuizzes.add(quizSetQuiz);
+//            quiz.addDeliveredCount();
+//            quizCount += 1;
+//            if (quizCount == 10) {
+//                break;
+//            }
+//        }
+//
+//        quizSetRepository.saveAll(quizSets);
+//        quizSetQuizRepository.saveAll(quizSetQuizzes);
+        String insertQuizSetSql = "INSERT INTO quiz_set (id, solved, is_today_quiz_set, member_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.batchUpdate(
+                insertQuizSetSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        QuizSet quizSet = quizSets.get(i);
+                        ps.setString(1, quizSet.getId());
+                        ps.setBoolean(2, quizSet.isSolved());
+                        ps.setBoolean(3, quizSet.isTodayQuizSet());
+                        ps.setLong(4, quizSet.getMember().getId());
+                        ps.setObject(5, LocalDateTime.now());
+                        ps.setObject(6, LocalDateTime.now());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return quizSets.size();
+                    }
+                }
+        );
+
+        String insertQuizSetQuizzesSql = "INSERT INTO quiz_set_quiz (quiz_id, quiz_set_id, created_at, updated_at) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.batchUpdate(
+                insertQuizSetQuizzesSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        QuizSetQuiz quizSetQuiz = quizSetQuizzes.get(i);
+                        ps.setObject(1, quizSetQuiz.getQuiz().getId());
+                        ps.setObject(2, quizSetQuiz.getQuizSet().getId());
+                        ps.setObject(3, LocalDateTime.now());
+                        ps.setObject(4, LocalDateTime.now());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return quizSetQuizzes.size();
+                    }
+                }
+        );
+
+        String updateQuizSql = "UPDATE quiz SET delivered_count = delivered_count + 1 WHERE id = ?";
+        jdbcTemplate.batchUpdate(
+                updateQuizSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        Quiz quiz = quizzes.get(i);
+                        ps.setObject(1, quiz.getId());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return quizzes.size();
+                    }
+                }
+        );
+    }
+
+    @Transactional
+    public void quizChunkBatchInsert(
+            List<Quiz> quizzes, List<QuizSet> quizSets, List<QuizSetQuiz> quizSetQuizzes, List<Member> members) {
+        String insertQuizSetSql = "INSERT INTO quiz_set (id, solved, is_today_quiz_set, member_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.batchUpdate(
+                insertQuizSetSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        QuizSet quizSet = quizSets.get(i);
+                        ps.setString(1, quizSet.getId());
+                        ps.setBoolean(2, quizSet.isSolved());
+                        ps.setBoolean(3, quizSet.isTodayQuizSet());
+                        ps.setLong(4, quizSet.getMember().getId());
+                        ps.setObject(5, LocalDateTime.now());
+                        ps.setObject(6, LocalDateTime.now());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return quizSets.size();
+                    }
+                }
+        );
+
+        String insertQuizSetQuizzesSql = "INSERT INTO quiz_set_quiz (quiz_id, quiz_set_id, created_at, updated_at) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.batchUpdate(
+                insertQuizSetQuizzesSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        QuizSetQuiz quizSetQuiz = quizSetQuizzes.get(i);
+                        ps.setObject(1, quizSetQuiz.getQuiz().getId());
+                        ps.setObject(2, quizSetQuiz.getQuizSet().getId());
+                        ps.setObject(3, LocalDateTime.now());
+                        ps.setObject(4, LocalDateTime.now());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return quizSetQuizzes.size();
+                    }
+                }
+        );
+
+        String updateQuizSql = "UPDATE quiz SET delivered_count = delivered_count + 1 WHERE id = ?";
+        jdbcTemplate.batchUpdate(
+                updateQuizSql,
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        Quiz quiz = quizzes.get(i);
+                        ps.setObject(1, quiz.getId());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return quizzes.size();
+                    }
+                }
+        );
+
+//        emailSenderPublisher.emailSenderPublisher(new EmailSenderEvent(members));
     }
 }

@@ -4,7 +4,10 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
-import com.picktoss.picktossserver.domain.quiz.controller.request.*;
+import com.picktoss.picktossserver.domain.quiz.controller.request.CreateQuizzesRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizCountByDocumentRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateBookmarkQuizRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
@@ -191,5 +194,11 @@ public class QuizController {
 
         String quizSetId = quizFacade.createTodayQuizForTest(memberId);
         return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
+    }
+
+    @GetMapping("/test/quiz-create")
+    @ResponseStatus(HttpStatus.OK)
+    public void quizCreate() {
+        quizFacade.quizCreate();
     }
 }
