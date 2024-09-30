@@ -88,6 +88,7 @@ oauth:
   notion:
     client_id: ${PICKTOSS_NOTION_CLIENT_ID}
     client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
+    access_token: ${PICKTOSS_NOTION_ACCESS_TOKEN}
 
 cloud:
   aws:
