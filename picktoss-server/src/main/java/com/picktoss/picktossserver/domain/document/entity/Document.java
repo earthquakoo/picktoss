@@ -7,14 +7,13 @@ import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.DocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.PROCESSED;
 
 @Entity
 @Getter
@@ -52,7 +51,7 @@ public class Document extends AuditBase {
     private List<KeyPoint> keyPoints = new ArrayList<>();
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
-    private List<Quiz> quizzes = new ArrayList<>();
+    private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods
     public static Document createDocument(String name, String s3Key, int order, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Category category) {

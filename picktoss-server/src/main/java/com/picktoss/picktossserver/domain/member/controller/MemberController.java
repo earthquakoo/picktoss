@@ -68,6 +68,11 @@ public class MemberController {
         Long memberId = jwtUserInfo.getMemberId();
 
         memberFacade.changeAiPickCountForTest(memberId, request.getAiPickCount());
+    }
 
+    @PostMapping("/test/create-member")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void createMemberForTest() {
+        memberFacade.createMemberForTest();
     }
 }

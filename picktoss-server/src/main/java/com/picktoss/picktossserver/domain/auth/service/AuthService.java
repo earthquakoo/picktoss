@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.picktoss.picktossserver.core.email.MailgunVerificationEmailManager;
+import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
@@ -15,7 +15,6 @@ import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepos
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.SocialPlatform;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -36,7 +35,7 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final MailgunVerificationEmailManager mailgunVerificationEmailManager;
+    private final MailgunEmailSenderManager mailgunEmailSenderManager;
     private final EmailVerificationRepository emailVerificationRepository;
     private final S3Provider s3Provider;
 
@@ -55,8 +54,6 @@ public class AuthService {
     private static final String defaultNickname = "Picktoss#";
     private static final String chars = "0123456789";
     private static final int randomCodeLen = 6;
-    private static final String emailIconImageS3Key = "email-icon.png";
-    private static final String logoBlackIconImageS3Key = "logo-black-icon.png";
 
 
     public String getRedirectUri() {
@@ -151,7 +148,7 @@ public class AuthService {
     public void sendVerificationCode(String email) {
         // Send verification code
         String verificationCode = generateVerificationCode();
-        mailgunVerificationEmailManager.sendVerificationCode(email, verificationCode);
+        mailgunEmailSenderManager.sendVerificationCode(email, verificationCode);
 
         // Upsert register verification entry (always make is_verified to False)
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);

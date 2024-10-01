@@ -7,8 +7,8 @@ import com.picktoss.picktossserver.global.enums.CategoryTag;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -40,7 +40,7 @@ public class Category extends AuditBase {
     private Member member;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Document> documents = new ArrayList<>();
+    private Set<Document> documents = new HashSet<>();
 
     // Constructor methods
     public static Category createCategory(Member member, String name, CategoryTag tag, int order, String emoji) {

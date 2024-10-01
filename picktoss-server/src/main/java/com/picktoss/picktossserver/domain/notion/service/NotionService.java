@@ -82,7 +82,7 @@ public class NotionService {
     }
 
     public String findNotionPage(String accessToken) {
-        String pageId = "646a31a7-d68e-4ab2-ab16-46cd8af36558";
+        String pageId = "539e5af7-113b-44ae-948a-7359d725ee18";
         RestTemplate restTemplate = new RestTemplate();
 
         // 헤더 설정

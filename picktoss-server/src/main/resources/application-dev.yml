@@ -5,20 +5,38 @@ spring:
   config:
     activate:
       on-profile: dev
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+      name: emailSenderJob
 
   datasource:
-    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    hibernate.default_batch_fetch_size: 1000
     hibernate:
       ddl-auto: update
+      order_inserts: true
+      order_updates: true
+      jdbc:
+        batch_size: 2500
 
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6
+  jdbc:
+    sqlonly: off
+    sqltiming: info
+    resultsettable: off
+    audit: off
+    resultset: off
+    connection: off
 
 springdoc:
   packages-to-scan:
@@ -70,6 +88,7 @@ oauth:
   notion:
     client_id: ${PICKTOSS_NOTION_CLIENT_ID}
     client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
+    access_token: ${PICKTOSS_NOTION_ACCESS_TOKEN}
 
 cloud:
   aws:

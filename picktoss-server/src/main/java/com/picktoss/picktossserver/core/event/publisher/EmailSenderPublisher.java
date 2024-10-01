@@ -1,17 +1,17 @@
 package com.picktoss.picktossserver.core.event.publisher;
 
-import com.picktoss.picktossserver.core.event.event.SQSEvent;
+import com.picktoss.picktossserver.core.event.event.EmailSenderEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SQSEventMessagePublisher {
+public class EmailSenderPublisher {
 
     private final ApplicationEventPublisher publisher;
 
-    public void sqsEventMessagePublisher(SQSEvent event) {
+    public void emailSenderPublisher(EmailSenderEvent event) {
         publisher.publishEvent(event);
     }
 }

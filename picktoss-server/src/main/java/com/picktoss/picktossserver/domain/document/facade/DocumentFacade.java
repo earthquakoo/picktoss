@@ -1,6 +1,8 @@
 package com.picktoss.picktossserver.domain.document.facade;
 
-import com.picktoss.picktossserver.core.event.event.TransactionEvent;
+import com.picktoss.picktossserver.core.event.event.S3Event;
+import com.picktoss.picktossserver.core.event.event.SQSEvent;
+import com.picktoss.picktossserver.core.event.publisher.S3UploadPublisher;
 import com.picktoss.picktossserver.core.event.publisher.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.category.entity.Category;
@@ -25,9 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.DEFAULT_DOCUMENT;
 
 @Service
 @Transactional(readOnly = true)
@@ -41,18 +45,38 @@ public class DocumentFacade {
     private final QuizService quizService;
     private final KeyPointService keyPointService;
     private final OutboxService outboxService;
+
     private final SQSEventMessagePublisher sqsEventMessagePublisher;
+    private final S3UploadPublisher s3UploadPublisher;
 
     @Transactional
     public Long createDocument(String documentName, MultipartFile file, Long memberId, Long categoryId) {
-        int possessDocumentCount = documentService.findPossessDocumentCount(memberId);
+        List<Document> documents = documentService.findAllByMemberId(memberId);
+        int possessDocumentCount = documents.size();
+        for (Document document : documents) {
+            if (document.getStatus() == DEFAULT_DOCUMENT) {
+                possessDocumentCount -= 1;
+            }
+        }
+
+        String s3Key = UUID.randomUUID().toString();
 
         if (possessDocumentCount >= FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT) {
             throw new CustomException(FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
         }
 
         Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        return documentService.createDocument(documentName, file, category, memberId);
+//        Set<Document> documentsByCategory = category.getDocuments();
+//        int lastOrder = 1;
+//        for (Document document : documentsByCategory) {
+//            if (lastOrder < document.getOrder()) {
+//                lastOrder = document.getOrder();
+//            }
+//        }
+//        lastOrder += 1;
+
+        s3UploadPublisher.s3UploadPublisher(new S3Event(file, s3Key));
+        return documentService.createDocument(documentName, category, memberId, s3Key);
     }
 
     @Transactional
@@ -62,7 +86,7 @@ public class DocumentFacade {
         Document document = documentService.findByDocumentIdAndMemberId(documentId, memberId);
         boolean isFirstAiPick = documentService.createAiPick(document, memberId, subscription, member);
         outboxService.createOutbox(OutboxStatus.WAITING, document);
-        sqsEventMessagePublisher.sqsEventMessagePublisher(new TransactionEvent(memberId, document.getS3Key(), documentId, subscription.getSubscriptionPlanType()));
+        sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSEvent(memberId, document.getS3Key(), documentId, subscription.getSubscriptionPlanType()));
         return isFirstAiPick;
     }
 
@@ -100,7 +124,9 @@ public class DocumentFacade {
 
     @Transactional
     public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
-        documentService.updateDocumentContent(documentId, memberId, name, file);
+        String s3Key = UUID.randomUUID().toString();
+        documentService.updateDocumentContent(documentId, memberId, name, s3Key);
+        s3UploadPublisher.s3UploadPublisher(new S3Event(file, s3Key));
     }
 
     @Transactional

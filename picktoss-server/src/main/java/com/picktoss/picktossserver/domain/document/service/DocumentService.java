@@ -4,7 +4,10 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.controller.response.*;
+import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
+import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
@@ -16,14 +19,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.DEFAULT_DOCUMENT;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.UNPROCESSED;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +41,7 @@ public class DocumentService {
     private String defaultDocumentS3Key;
 
     @Transactional
-    public Long createDocument(String documentName, MultipartFile file, Category category, Long memberId) {
-        String s3Key = s3Provider.uploadFile(file);
-
+    public Long createDocument(String documentName, Category category, Long memberId, String s3Key) {
         Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
         if (lastOrder == null) {
             lastOrder = 0;
@@ -244,7 +245,7 @@ public class DocumentService {
         HashMap<Document, Integer> documentIncorrectAnswerCounts = new LinkedHashMap<>();
 
         for (Document document : documents) {
-            List<Quiz> quizzes = document.getQuizzes();
+            Set<Quiz> quizzes = document.getQuizzes();
 
             if (quizzes.isEmpty()) {
                 continue;
@@ -292,7 +293,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public void updateDocumentContent(Long documentId, Long memberId, String name, MultipartFile file) {
+    public void updateDocumentContent(Long documentId, Long memberId, String name, String s3Key) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
@@ -300,10 +301,12 @@ public class DocumentService {
             s3Provider.deleteFile(document.getS3Key());
         }
 
-        String s3Key = s3Provider.uploadFile(file);
+        if (document.getStatus() != UNPROCESSED) {
+            document.updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument();
+        }
+
         document.updateDocumentS3KeyByUpdatedContent(s3Key);
         document.updateDocumentName(name);
-        document.updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument();
     }
 
     @Transactional
