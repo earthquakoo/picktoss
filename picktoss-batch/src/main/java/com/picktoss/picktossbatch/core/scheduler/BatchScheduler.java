@@ -29,7 +29,7 @@ public class BatchScheduler {
 
     private final String JOB_NAME = "emailSenderJob";
 
-    @Scheduled(cron = "0 */10 * * * *")
+    @Scheduled(cron = "0 */3 * * * *")
     public void transactionOutboxJobRun() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException, NoSuchJobException {
         JobParameters jobParameters = new JobParameters(
                 Collections.singletonMap("requestTime", new JobParameter(System.currentTimeMillis(), Long.class))
@@ -37,8 +37,7 @@ public class BatchScheduler {
         jobLauncher.run(transactionOutboxJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 0/5 2-3 * * *") // 00:00부터 01:00까지 20분마다
-//    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 0/15 0-1 * * *") // 00:00부터 01:00까지 20분마다
     public void emailSendJobRun() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException, NoSuchJobException {
         JobInstance lastJobInstance = jobExplorer.getLastJobInstance(JOB_NAME);
 
@@ -48,8 +47,8 @@ public class BatchScheduler {
             // 마지막 작업의 실행 완료 시간을 확인
             if (lastJobExecution != null && lastJobExecution.getStatus() == BatchStatus.COMPLETED) {
                 LocalDate today = LocalDate.now();
-                LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(2, 0));
-                LocalDateTime endTime = LocalDateTime.of(today, LocalTime.of(3, 0));
+                LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(15, 0));
+                LocalDateTime endTime = LocalDateTime.of(today, LocalTime.of(16, 0));
                 LocalDate lastEndDate = lastJobExecution.getEndTime().toLocalDate();
                 LocalTime lastEndTime = lastJobExecution.getEndTime().toLocalTime();
 

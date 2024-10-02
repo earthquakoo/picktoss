@@ -6,8 +6,8 @@ spring:
     activate:
       on-profile: dev
   batch:
-    jdbc:
-      initialize-schema: always
+#    jdbc:
+#      initialize-schema: always
     job:
       enabled: false
       name: emailSenderJob
