@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.category.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoriesOrderRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
@@ -13,13 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
-import static com.picktoss.picktossserver.global.enums.CategoryTag.DEFAULT;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +28,7 @@ public class CategoryService {
         List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> categoryDtos = new ArrayList<>();
 
         for (Category category : categories) {
-            List<Document> documents = category.getDocuments();
+            Set<Document> documents = category.getDocuments();
 
             List<GetAllCategoriesResponse.GetAllCategoriesDocumentDto> documentDtos = new ArrayList<>();
             for (Document document : documents) {

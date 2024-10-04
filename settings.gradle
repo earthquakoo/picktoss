@@ -2,4 +2,3 @@ rootProject.name = 'picktossserver'
 
 include 'picktoss-batch'
 include 'picktoss-server'
-include 'picktoss-send-email-batch'

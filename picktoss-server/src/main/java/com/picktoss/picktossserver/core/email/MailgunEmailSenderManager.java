@@ -14,10 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @Component
-public class MailgunVerificationEmailManager implements EmailManager {
+public class MailgunEmailSenderManager implements EmailManager {
 
     @Value("${mailgun.api_key}")
     private String mailgunApiKey;
@@ -26,6 +28,7 @@ public class MailgunVerificationEmailManager implements EmailManager {
     private String mailgunDomain;
 
     private static final String verificationHtmlPath = "emails/email_verification.html";
+    private static final String todayQuizTemplateHtmlPath = "emails/today_quiz_template.html";
 
     @Override
     public void sendEmail(String recipientEmail, String subject, String content) {
@@ -61,6 +64,26 @@ public class MailgunVerificationEmailManager implements EmailManager {
                 String content = reader.lines().collect(Collectors.joining("\n"));
                 content = content.replace("__VERIFICATION_CODE__", verificationCode);
                 sendEmail(recipientEmail, "[Picktoss] Please verify your email", content);
+            }
+        } catch (IOException e) {
+            // TODO: ERROR 핸들링
+            System.out.println("sendVerificationCode error");
+        }
+    }
+
+    public void sendTodayQuizSet(String recipientEmail, String memberName) {
+        try {
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일");
+            String formattedDate = today.format(formatter);
+
+            ClassPathResource classPathResource = new ClassPathResource(todayQuizTemplateHtmlPath);
+            try (InputStream inputStream = classPathResource.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                String content = reader.lines().collect(Collectors.joining("\n"));
+                content = content.replace("__TODAY_DATE__", formattedDate);
+                content = content.replace("__USER_NAME__", memberName);
+                sendEmail(recipientEmail, "\uD83D\uDE80 오늘의 퀴즈가 도착했습니다!", content);
             }
         } catch (IOException e) {
             // TODO: ERROR 핸들링

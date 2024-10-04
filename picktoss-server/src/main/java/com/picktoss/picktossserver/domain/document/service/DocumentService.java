@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.DEFAULT_DOCUMENT;
+import static com.picktoss.picktossserver.global.enums.DocumentStatus.UNPROCESSED;
 
 @Service
 @RequiredArgsConstructor
@@ -244,7 +245,7 @@ public class DocumentService {
         HashMap<Document, Integer> documentIncorrectAnswerCounts = new LinkedHashMap<>();
 
         for (Document document : documents) {
-            List<Quiz> quizzes = document.getQuizzes();
+            Set<Quiz> quizzes = document.getQuizzes();
 
             if (quizzes.isEmpty()) {
                 continue;

@@ -1,4 +1,4 @@
-package com.picktoss.picktossbatch.core.config;
+package com.picktoss.picktossbatch.core.config.job;
 
 import com.picktoss.picktossserver.core.event.event.SQSEvent;
 import com.picktoss.picktossserver.core.event.publisher.SQSEventMessagePublisher;
@@ -33,7 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Configuration
 @ComponentScan(basePackages = {"com.picktoss.picktossserver"})
-public class BatchConfig {
+public class TransactionOutboxJobConfig {
 
     private final OutboxService outboxService;
     private final SubscriptionService subscriptionService;
@@ -42,10 +42,7 @@ public class BatchConfig {
     private final String JOB_NAME = "transactionOutboxJob";
     private final String STEP_NAME = "transactionOutboxStep";
 
-    /**
-     * Job 등록
-     */
-    @Bean
+    @Bean(name = JOB_NAME)
     public Job transactionOutboxJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new JobBuilder(JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer()) // sequential id
@@ -53,9 +50,6 @@ public class BatchConfig {
                 .build();
     }
 
-    /**
-     * Step 등록
-     */
     @Bean
     @JobScope
     public Step transactionOutboxStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
@@ -64,9 +58,6 @@ public class BatchConfig {
                 .build();
     }
 
-    /**
-     * Tasklet: Reader-Processor-Writer를 구분하지 않는 단일 step
-     */
     @Bean
     @StepScope
     public Tasklet transactionOutboxTasklet() {

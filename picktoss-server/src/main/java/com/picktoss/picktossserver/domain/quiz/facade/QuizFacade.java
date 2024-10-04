@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.facade;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.entity.Event;
@@ -10,6 +11,8 @@ import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.global.enums.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.QuizType;
@@ -17,7 +20,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.POINT_NOT_ENOUGH;
 import static com.picktoss.picktossserver.domain.event.constant.EventConstant.FIVE_DAYS_CONTINUOUS_POINT;
@@ -122,6 +128,53 @@ public class QuizFacade {
             Event event = eventService.findEventByMemberId(memberId);
             event.addOnePointWithIncorrectlyGeneratedQuiz();
         }
+    }
+
+    @Transactional
+    public void quizCreate() {
+        long memberId = 1;
+        Member member = memberService.findMemberById(memberId);
+        List<QuizSet> quizSets = new ArrayList<>();
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+
+        List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
+        List<Category> categories = member.getCategories();
+        for (Category category : categories) {
+            if (category.getDocuments() == null) {
+                continue;
+            }
+            Set<Document> documents = category.getDocuments();
+            for (Document document : documents) {
+                if (document.getQuizzes() == null) {
+                    continue;
+                }
+                Set<Quiz> quizzes = document.getQuizzes();
+                if (quizzes.isEmpty()) {
+                    continue;
+                }
+                // quiz.deliveredCount 순으로 정렬 or List로 정렬
+                List<Quiz> quizList = quizzes.stream().sorted((e1, e2) -> e1.getDeliveredCount()).limit(10).toList();
+                quizzesBySortedDeliveredCount.addAll(quizList);
+            }
+        }
+        String quizSetId = UUID.randomUUID().toString().replace("-", "");
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+        quizSets.add(quizSet);
+
+        quizzesBySortedDeliveredCount.stream().sorted((e1, e2) -> e1.getDeliveredCount());
+        int quizCount = 0;
+
+        for (Quiz quiz : quizzesBySortedDeliveredCount) {
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+            quiz.addDeliveredCount();
+            quizCount += 1;
+            if (quizCount == 10) {
+                break;
+            }
+        }
+
+        quizService.quizCreate(quizzesBySortedDeliveredCount, quizSets, quizSetQuizzes, member);
     }
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)

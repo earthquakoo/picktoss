@@ -16,15 +16,11 @@ import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
-import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
-
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
 
 @Service
 @RequiredArgsConstructor
@@ -98,5 +94,10 @@ public class MemberFacade {
     @Transactional
     public void changeAiPickCountForTest(Long memberId, int aiPickCount) {
         memberService.changeAiPickCountForTest(memberId, aiPickCount);
+    }
+
+    @Transactional
+    public void createMemberForTest() {
+        memberService.createMemberForTest();
     }
 }
