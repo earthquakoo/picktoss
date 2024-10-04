@@ -76,7 +76,7 @@ public class EmailSenderJobConfig {
             JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder(STEP_NAME, jobRepository)
                 .listener(stepListener)
-                .<Member, Member>chunk(10, transactionManager)
+                .<Member, Member>chunk(2500, transactionManager)
                 .reader(itemReader(null, null))
                 .writer(itemWriter())
                 .build();
@@ -103,7 +103,7 @@ public class EmailSenderJobConfig {
         map.put("end", end);
         jpaPagingItemReader.setParameterValues(map);
         jpaPagingItemReader.setEntityManagerFactory(entityManagerFactory);
-        jpaPagingItemReader.setPageSize(10);
+        jpaPagingItemReader.setPageSize(2500);
         long readerDurationEndTime = System.currentTimeMillis();
         long duration = readerDurationEndTime - readerDurationStartTime;
         System.out.println("Reader Duration time: " + duration);
