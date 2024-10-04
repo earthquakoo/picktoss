@@ -1,0 +1,10 @@
+group = 'com.picktoss.picktoss-batch'
+version = '0.0.2-SNAPSHOT'
+
+dependencies {
+    implementation project(':picktoss-server')
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+}
