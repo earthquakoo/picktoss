@@ -1,10 +1,10 @@
 server:
-  port: 8181
+  port: 8080
 
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   batch:
     #    jdbc:
     #      initialize-schema: always
@@ -19,9 +19,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
-    hibernate.default_batch_fetch_size: 1000
+    hibernate.default_batch_fetch_size: 2500
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       order_inserts: true
       order_updates: true
       jdbc:
