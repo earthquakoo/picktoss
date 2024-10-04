@@ -5,20 +5,38 @@ spring:
   config:
     activate:
       on-profile: prod
+  batch:
+#    jdbc:
+#      initialize-schema: always
+    job:
+      enabled: false
+      name: emailSenderJob
 
   datasource:
-    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    hibernate.default_batch_fetch_size: 1000
     hibernate:
       ddl-auto: validate
+      order_inserts: true
+      order_updates: true
+      jdbc:
+        batch_size: 2500
 
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6
+  jdbc:
+    sqlonly: off
+    sqltiming: info
+    resultsettable: off
+    audit: off
+    resultset: off
+    connection: off
 
 springdoc:
   packages-to-scan:
@@ -32,6 +50,7 @@ springdoc:
     - com.picktoss.picktossserver.domain.feedback.controller
     - com.picktoss.picktossserver.domain.payment.controller
     - com.picktoss.picktossserver.domain.event.controller
+    - com.picktoss.picktossserver.domain.notion.controller
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
   swagger-ui:
@@ -50,17 +69,6 @@ jwt:
   access_token_expiration_ms: ${PICKTOSS_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
   refresh_token_expiration_ms: ${PICKTOSS_JWT_REFRESH_TOKEN_EXPIRE_MINUTES}
 
-oauth:
-  google:
-    client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
-    client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
-    redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
-    oauth_callback_response_url: ${PICKTOSS_OAUTH_CALLBACK_RESPONSE_REDIRECT_URL}
-  notion:
-    client_id: ${PICKTOSS_NOTION_CLIENT_ID}
-    client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
-    access_token: ${PICKTOSS_NOTION_ACCESS_TOKEN}
-
 mailgun:
   api_key: ${PICKTOSS_MAILGUN_API_KEY}
   domain: ${PICKTOSS_MAILGUN_DOMAIN}
@@ -71,6 +79,16 @@ email_verification:
 cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
   cors_allowed_origin_prod: ${PICKTOSS_CORS_ALLOWED_ORIGIN_PROD}
+
+oauth:
+  google:
+    client_id: ${PICKTOSS_OAUTH_CLIENT_ID}
+    client_secret: ${PICKTOSS_OAUTH_CLIENT_SECRET}
+    redirect_uri: ${PICKTOSS_OAUTH_REDIRECT_URI}
+  notion:
+    client_id: ${PICKTOSS_NOTION_CLIENT_ID}
+    client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
+    access_token: ${PICKTOSS_NOTION_ACCESS_TOKEN}
 
 cloud:
   aws:

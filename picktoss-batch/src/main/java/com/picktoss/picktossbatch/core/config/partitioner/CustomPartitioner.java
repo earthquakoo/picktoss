@@ -24,11 +24,11 @@ public class CustomPartitioner implements Partitioner {
         //isQuizNotificationEnabled = true 일 때만
         Tuple minIdAndMaxId = memberService.findMinIdAndMaxIdAndIsQuizNotificationEnabled();
 
-        int minValue = 1;
-        int maxValue = 40;
+//        int minValue = 1;
+//        int maxValue = 40;
 
-//        int minValue = ((Long) minIdAndMaxId.get(0)).intValue();
-//        int maxValue = ((Long) minIdAndMaxId.get(1)).intValue();
+        int minValue = ((Long) minIdAndMaxId.get(0)).intValue();
+        int maxValue = ((Long) minIdAndMaxId.get(1)).intValue();
         int eachValue = ((maxValue - minValue) / gridSize) + 1 ;
 
         HashMap<String, ExecutionContext> partition = new HashMap<>();

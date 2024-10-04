@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
-import com.picktoss.picktossserver.core.event.event.EmailSenderEvent;
 import com.picktoss.picktossserver.core.event.publisher.EmailSenderPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
@@ -766,6 +765,6 @@ public class QuizService {
                 }
         );
 
-        emailSenderPublisher.emailSenderPublisher(new EmailSenderEvent(members));
+//        emailSenderPublisher.emailSenderPublisher(new EmailSenderEvent(members));
     }
 }
