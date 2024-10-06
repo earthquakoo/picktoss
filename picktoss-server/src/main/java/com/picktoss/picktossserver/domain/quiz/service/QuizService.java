@@ -768,4 +768,8 @@ public class QuizService {
 
         emailSenderPublisher.emailSenderPublisher(new EmailSenderEvent(members));
     }
+
+    public List<Quiz> findQuizzesByQuizIds(List<Long> quizIds, Long memberId) {
+        return quizRepository.findQuizzesByQuizIds(memberId, quizIds);
+    }
 }

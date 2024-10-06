@@ -70,4 +70,15 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     List<Quiz> findAllByMemberIdForTest(
             @Param("memberId") Long memberId
     );
+
+    @Query("SELECT q FROM Quiz q " +
+            "JOIN FETCH q.options " +
+            "JOIN q.document d " +
+            "JOIN d.category c " +
+            "WHERE c.member.id = :memberId " +
+            "AND q.id IN :ids")
+    List<Quiz> findQuizzesByQuizIds(
+            @Param("memberId") Long memberId,
+            @Param("ids") List<Long> quizIds
+    );
 }

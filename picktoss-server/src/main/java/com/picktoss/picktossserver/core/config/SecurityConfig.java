@@ -61,7 +61,8 @@ public class SecurityConfig {
                                 "/api/v2/notion/**",
                                 "/api/v2/test/**",
                                 "/api/v2/test/create-member",
-                                "/api/v2/test/quiz-create"
+                                "/api/v2/test/quiz-create",
+                                "/api/v2/upload"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

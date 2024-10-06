@@ -2,6 +2,8 @@ package com.picktoss.picktossserver.domain.member.entity;
 
 
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
@@ -64,6 +66,12 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSet> quizSets = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Collection> collections = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<CollectionBookmark> collectionBookmarks = new ArrayList<>();
 
     public void useAiPick() {
         this.aiPickCount -= 1;
