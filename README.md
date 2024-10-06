@@ -1,5 +1,5 @@
 <p align="middle" >
-  <img width="200px;" src="https://picktoss-dev-bucket.s3.amazonaws.com/logo-icon.png"/>
+  <img width="200px;" src="https://picktoss-dev-bucket.s3.amazonaws.com/logo-black-icon.png">
 </p>
 
 ![image](https://picktoss-dev-bucket.s3.amazonaws.com/picktoss+main+image.png)
