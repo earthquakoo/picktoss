@@ -170,4 +170,16 @@ public class DocumentController {
 
         documentFacade.reUploadDocument(documentId, memberId);
     }
+
+    @Operation(summary = "Choose which document you don't want to take today quiz")
+    @PatchMapping("/documents/today-quiz-settings")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void selectDocumentToNotGenerateByTodayQuiz(
+            @Valid @RequestBody UpdateDocumentToNotGenerateByTodayQuizRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentFacade.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIds(), memberId);
+    }
 }

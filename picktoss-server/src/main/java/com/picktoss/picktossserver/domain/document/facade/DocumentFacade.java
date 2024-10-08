@@ -144,4 +144,9 @@ public class DocumentFacade {
         documentService.reUploadDocument(document, subscription, member);
         document.updateDocumentStatusProcessingByGenerateAiPick();
     }
+
+    @Transactional
+    public void selectDocumentToNotGenerateByTodayQuiz(List<Long> documentIds, Long memberId) {
+        documentService.selectDocumentToNotGenerateByTodayQuiz(documentIds, memberId);
+    }
 }
