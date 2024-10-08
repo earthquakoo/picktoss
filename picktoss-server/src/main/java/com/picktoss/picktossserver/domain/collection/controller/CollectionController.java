@@ -8,10 +8,12 @@ import com.picktoss.picktossserver.domain.collection.controller.request.CreateCo
 import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionInfoRequest;
 import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizzesRequest;
 import com.picktoss.picktossserver.domain.collection.controller.request.UploadRequest;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetAllCollectionsResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
+import com.picktoss.picktossserver.global.enums.CollectionDomain;
+import com.picktoss.picktossserver.global.enums.CollectionSortOption;
+import com.picktoss.picktossserver.global.enums.QuizType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -67,22 +69,18 @@ public class CollectionController {
     @Operation(summary = "Get all Collections")
     @GetMapping("/collection/collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllCollectionsResponse> findAllCollections(
-            @RequestParam(required = false, defaultValue = "createdAt", value = "collection-sort-option") String collectionSortOption,
-            @RequestParam(required = false, value = "collection-domain-option") List<String> collectionDomainOption,
-            @RequestParam(required = false, value = "quiz-type") String quizType,
+    public ResponseEntity<CollectionResponseDto> findAllCollections(
+            @RequestParam(required = false, defaultValue = "POPULARITY", value = "collection-sort-option") CollectionSortOption collectionSortOption,
+            @RequestParam(required = false, value = "collection-domain-option") List<CollectionDomain> collectionDomainOption,
+            @RequestParam(required = false, value = "quiz-type") QuizType quizType,
             @RequestParam(required = false, value = "quiz-count") Integer quizCount
-            ) {
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        System.out.println("collectionSortOption = " + collectionSortOption);
-        System.out.println("collectionDomainOption = " + collectionDomainOption);
-        System.out.println("quizType = " + quizType);
-        System.out.println("quizCount = " + quizCount);
-
-        List<GetAllCollectionsResponse.GetAllCollectionsDto> response = collectionFacade.findAllCollections(collectionSortOption, collectionDomainOption, quizType, quizCount);
-        return ResponseEntity.ok().body(new GetAllCollectionsResponse(response));
+        List<Collection> collections = collectionFacade.findAllCollections(collectionSortOption, collectionDomainOption, quizType, quizCount, memberId);
+        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        return ResponseEntity.ok().body(response);
     }
 
     // my collection
@@ -121,7 +119,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.searchCollections(keyword);
+        List<Collection> collections = collectionFacade.searchCollections(keyword, memberId);
         CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
@@ -138,6 +136,15 @@ public class CollectionController {
         collectionFacade.deleteCollection(collectionId, memberId);
     }
 
+    @Operation(summary = "Update collection quiz result")
+    @PatchMapping("/collections/{collection_id}/update-collection-result")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCollectionQuizResult(@PathVariable(name = "collection_id") Long collectionId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        collectionFacade.updateCollectionQuizResult(collectionId);
+    }
 
     @Operation(summary = "Update Collection info")
     @PatchMapping("/collections/{collection_id}/update-info")

@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetAllCollectionsResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
@@ -13,6 +12,7 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.enums.CollectionDomain;
+import com.picktoss.picktossserver.global.enums.CollectionSortOption;
 import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.COLLECTION_NOT_FOUND;
 
@@ -52,96 +53,37 @@ public class CollectionService {
     }
 
     // 탐색 컬렉션
-    public List<GetAllCollectionsResponse.GetAllCollectionsDto> findAllCollections(
-            String collectionSortOption, List<String> collectionDomains, String quizType, Integer quizCount) {
-        List<GetAllCollectionsResponse.GetAllCollectionsDto> collectionsDtos = new ArrayList<>();
-        List<Collection> collections = new ArrayList<>();
+    public List<Collection> findAllCollections(
+            CollectionSortOption collectionSortOption, List<CollectionDomain> collectionDomains, QuizType quizType, Integer quizCount, Long memberId) {
 
-        if (collectionDomains != null) {
-            List<CollectionDomain> domains = new ArrayList<>();
-            for (String collectionDomain : collectionDomains) {
-                CollectionDomain domain = CollectionDomain.valueOf(collectionDomain);
-                domains.add(domain);
-            }
-            collections = collectionRepository.findAllByCollectionDomains(domains);
-        } else {
-            collections = collectionRepository.findAllOrderByCreatedAtDesc();
+        List<Collection> collections = filterCollectionByDomains(collectionDomains, memberId);
+
+        if (quizCount == null && quizType == null) {
+            return collections;
         }
 
-        if (quizType == null && quizCount == null) {
-            for (Collection collection : collections) {
-                int collectionQuizCount = collection.getCollectionQuizzes().size();
-                int bookmarkCount = collection.getCollectionBookmarks().size();
-                GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
-                        .id(collection.getId())
-                        .name(collection.getName())
-                        .emoji(collection.getEmoji())
-                        .bookmarkCount(bookmarkCount)
-                        .collectionDomain(collection.getCollectionDomain())
-                        .memberName(collection.getMember().getName())
-                        .quizCount(collectionQuizCount)
-                        .build();
-
-                collectionsDtos.add(collectionDto);
-            }
-            return collectionsDtos;
-        } else {
-            if (collectionSortOption == "bookmark") {
-                collections.sort((c1, c2) ->
-                        Integer.compare(c2.getCollectionBookmarks().size(), c1.getCollectionBookmarks().size())
-                );
-            }
-
-            if (quizType != null) {
-                for (Collection collection : collections) {
-                    List<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
-                    boolean isQuizType = true;
-                    for (CollectionQuiz collectionQuiz : collectionQuizzes) {
-                        if (collectionQuiz.getQuiz().getQuizType() != QuizType.valueOf(quizType)) {
-                            isQuizType = false;
-                            break;
-                        }
-                    }
-                    if (isQuizType) {
-                        int collectionQuizCount = collection.getCollectionQuizzes().size();
-                        int bookmarkCount = collection.getCollectionBookmarks().size();
-                        GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
-                                .id(collection.getId())
-                                .name(collection.getName())
-                                .emoji(collection.getEmoji())
-                                .bookmarkCount(bookmarkCount)
-                                .collectionDomain(collection.getCollectionDomain())
-                                .memberName(collection.getMember().getName())
-                                .quizCount(collectionQuizCount)
-                                .build();
-
-                        collectionsDtos.add(collectionDto);
-                    }
-                }
-            }
-
-            if (quizCount != null) {
-                for (Collection collection : collections) {
-                    int collectionQuizCount = collection.getCollectionQuizzes().size();
-                    if (collectionQuizCount < quizCount) {
-                        continue;
-                    }
-                    int bookmarkCount = collection.getCollectionBookmarks().size();
-                    GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
-                            .id(collection.getId())
-                            .name(collection.getName())
-                            .emoji(collection.getEmoji())
-                            .bookmarkCount(bookmarkCount)
-                            .collectionDomain(collection.getCollectionDomain())
-                            .memberName(collection.getMember().getName())
-                            .quizCount(collectionQuizCount)
-                            .build();
-
-                    collectionsDtos.add(collectionDto);
-                }
-            }
+        if (collectionSortOption == CollectionSortOption.POPULARITY) {
+            collections.sort((c1, c2) ->
+                    Integer.compare(c2.getCollectionBookmarks().size(), c1.getCollectionBookmarks().size())
+            );
         }
-        return collectionsDtos;
+
+        // 퀴즈 타입에 따른 필터링
+        if (quizType != null) {
+            collections = collections.stream()
+                    .filter(collection -> collection.getCollectionQuizzes().stream()
+                            .allMatch(collectionQuiz -> collectionQuiz.getQuiz().getQuizType() == quizType))
+                    .collect(Collectors.toList());
+        }
+
+        // 퀴즈 개수에 따른 필터링
+        if (quizCount != null) {
+            collections = collections.stream()
+                    .filter(collection -> collection.getCollectionQuizzes().size() >= quizCount)
+                    .collect(Collectors.toList());
+        }
+
+        return collections;
     }
 
     // 내 컬렉션(내가 만든 컬렉션이나 북마크한 컬렉션) 내가 만든 컬렉션은 북마크가 이미 되어있도록 설정(+ 내가 만든 컬렉션은 북마크를 해제할 수 없음)
@@ -178,6 +120,7 @@ public class CollectionService {
         }
 
         return GetSingleCollectionResponse.builder()
+                .id(collection.getId())
                 .name(collection.getName())
                 .description(collection.getDescription())
                 .tag(collection.getTag())
@@ -188,8 +131,8 @@ public class CollectionService {
     }
 
     // 컬렉션 키워드 검색
-    public List<Collection> searchCollections(String keyword) {
-        return collectionRepository.findByCollectionContaining(keyword);
+    public List<Collection> searchCollections(String keyword, Long memberId) {
+        return collectionRepository.findByCollectionContaining(keyword, memberId);
     }
 
     @Transactional
@@ -198,6 +141,14 @@ public class CollectionService {
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
         collectionRepository.delete(collection);
+    }
+
+    @Transactional
+    public void updateCollectionQuizResult(Long collectionId) {
+        Collection collection = collectionRepository.findCollectionById(collectionId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        collection.updateCollectionByUpdateCollectionSolved();
     }
 
     // 컬렉션 정보 수정
@@ -227,4 +178,10 @@ public class CollectionService {
         collectionQuizRepository.saveAll(newCollectionQuizzes);
     }
 
+    private List<Collection> filterCollectionByDomains(List<CollectionDomain> collectionDomains, Long memberId) {
+        if (collectionDomains == null) {
+            return collectionRepository.findAllOrderByUpdatedAtDesc(memberId);
+        }
+        return collectionRepository.findAllByCollectionDomains(collectionDomains, memberId);
+    }
 }

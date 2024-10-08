@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GetSingleCollectionResponse {
 
+    private Long id;
     private String name;
     private String description;
     private String tag;

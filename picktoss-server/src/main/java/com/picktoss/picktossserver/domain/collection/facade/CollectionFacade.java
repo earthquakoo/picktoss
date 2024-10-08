@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
-import com.picktoss.picktossserver.domain.collection.controller.response.GetAllCollectionsResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
@@ -9,6 +8,8 @@ import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.global.enums.CollectionDomain;
+import com.picktoss.picktossserver.global.enums.CollectionSortOption;
+import com.picktoss.picktossserver.global.enums.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +36,9 @@ public class CollectionFacade {
     }
 
     // 탐색 컬렉션
-    public List<GetAllCollectionsResponse.GetAllCollectionsDto> findAllCollections(
-            String collectionSortOption, List<String> collectionDomains, String quizType, Integer quizCount) {
-        return collectionService.findAllCollections(collectionSortOption, collectionDomains, quizType, quizCount);
+    public List<Collection> findAllCollections(
+            CollectionSortOption collectionSortOption, List<CollectionDomain> collectionDomains, QuizType quizType, Integer quizCount, Long memberId) {
+        return collectionService.findAllCollections(collectionSortOption, collectionDomains, quizType, quizCount, memberId);
     }
 
     // 내 컬렉션(내가 만든 컬렉션이나 북마크한 컬렉션) 내가 만든 컬렉션은 북마크가 이미 되어있도록 설정(+ 내가 만든 컬렉션은 북마크를 해제할 수 없음)
@@ -51,13 +52,18 @@ public class CollectionFacade {
     }
 
     // 컬렉션 키워드 검색
-    public List<Collection> searchCollections(String keyword) {
-        return collectionService.searchCollections(keyword);
+    public List<Collection> searchCollections(String keyword, Long memberId) {
+        return collectionService.searchCollections(keyword, memberId);
     }
 
     @Transactional
     public void deleteCollection(Long collectionId, Long memberId) {
         collectionService.deleteCollection(collectionId, memberId);
+    }
+
+    @Transactional
+    public void updateCollectionQuizResult(Long collectionId) {
+        collectionService.updateCollectionQuizResult(collectionId);
     }
 
     // 컬렉션 정보 수정
