@@ -34,42 +34,114 @@ public class CollectionService {
 
     @Transactional
     public void createCollection(
-            List<Quiz> quizzes, String name, String description, String tag, String emoji, CollectionDomain collectionType, Member member) {
+            List<Quiz> quizzes, String name, String description, String tag, String emoji, CollectionDomain collectionDomain, Member member) {
 
-        List<CollectionQuiz> collectionQuizs = new ArrayList<>();
+        List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
 
-        Collection collection = Collection.createCollection(name, emoji, description, tag, collectionType, member);
+        Collection collection = Collection.createCollection(name, emoji, description, tag, collectionDomain, member);
         CollectionBookmark collectionBookmark = CollectionBookmark.createCollectionBookmark(collection, member);
 
         for (Quiz quiz : quizzes) {
             CollectionQuiz collectionQuiz = CollectionQuiz.createQuizCollection(quiz, collection);
-            collectionQuizs.add(collectionQuiz);
+            collectionQuizzes.add(collectionQuiz);
         }
 
         collectionRepository.save(collection);
-        collectionQuizRepository.saveAll(collectionQuizs);
+        collectionQuizRepository.saveAll(collectionQuizzes);
         collectionBookmarkRepository.save(collectionBookmark);
     }
 
     // 탐색 컬렉션
-    public void findAllCollections(String collectionSortOption, List<CollectionDomain> collectionDomains, QuizType quizType, Integer quizCount) {
+    public List<GetAllCollectionsResponse.GetAllCollectionsDto> findAllCollections(
+            String collectionSortOption, List<String> collectionDomains, String quizType, Integer quizCount) {
         List<GetAllCollectionsResponse.GetAllCollectionsDto> collectionsDtos = new ArrayList<>();
-        List<Collection> collections = collectionRepository.findAllOrderByCreatedAtDesc();
-        // 파라미터가 null 값이라면 넘어가고 해당 파라미터가 null 값이 아니라면 탐색
+        List<Collection> collections = new ArrayList<>();
 
-        for (Collection collection : collections) {
-            int collectionQuizCount = collection.getCollectionQuizzes().size();
-            int bookmarkCount = collection.getCollectionBookmarks().size();
-            GetAllCollectionsResponse.GetAllCollectionsDto.builder()
-                    .id(collection.getId())
-                    .name(collection.getName())
-                    .emoji(collection.getEmoji())
-                    .bookmarkCount(bookmarkCount)
-                    .collectionDomain(collection.getCollectionDomain())
-                    .memberName(collection.getMember().getName())
-                    .quizCount(collectionQuizCount)
-                    .build();
+        if (collectionDomains != null) {
+            List<CollectionDomain> domains = new ArrayList<>();
+            for (String collectionDomain : collectionDomains) {
+                CollectionDomain domain = CollectionDomain.valueOf(collectionDomain);
+                domains.add(domain);
+            }
+            collections = collectionRepository.findAllByCollectionDomains(domains);
+        } else {
+            collections = collectionRepository.findAllOrderByCreatedAtDesc();
         }
+
+        if (quizType == null && quizCount == null) {
+            for (Collection collection : collections) {
+                int collectionQuizCount = collection.getCollectionQuizzes().size();
+                int bookmarkCount = collection.getCollectionBookmarks().size();
+                GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
+                        .id(collection.getId())
+                        .name(collection.getName())
+                        .emoji(collection.getEmoji())
+                        .bookmarkCount(bookmarkCount)
+                        .collectionDomain(collection.getCollectionDomain())
+                        .memberName(collection.getMember().getName())
+                        .quizCount(collectionQuizCount)
+                        .build();
+
+                collectionsDtos.add(collectionDto);
+            }
+            return collectionsDtos;
+        } else {
+            if (collectionSortOption == "bookmark") {
+                collections.sort((c1, c2) ->
+                        Integer.compare(c2.getCollectionBookmarks().size(), c1.getCollectionBookmarks().size())
+                );
+            }
+
+            if (quizType != null) {
+                for (Collection collection : collections) {
+                    List<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+                    boolean isQuizType = true;
+                    for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+                        if (collectionQuiz.getQuiz().getQuizType() != QuizType.valueOf(quizType)) {
+                            isQuizType = false;
+                            break;
+                        }
+                    }
+                    if (isQuizType) {
+                        int collectionQuizCount = collection.getCollectionQuizzes().size();
+                        int bookmarkCount = collection.getCollectionBookmarks().size();
+                        GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
+                                .id(collection.getId())
+                                .name(collection.getName())
+                                .emoji(collection.getEmoji())
+                                .bookmarkCount(bookmarkCount)
+                                .collectionDomain(collection.getCollectionDomain())
+                                .memberName(collection.getMember().getName())
+                                .quizCount(collectionQuizCount)
+                                .build();
+
+                        collectionsDtos.add(collectionDto);
+                    }
+                }
+            }
+
+            if (quizCount != null) {
+                for (Collection collection : collections) {
+                    int collectionQuizCount = collection.getCollectionQuizzes().size();
+                    if (collectionQuizCount < quizCount) {
+                        continue;
+                    }
+                    int bookmarkCount = collection.getCollectionBookmarks().size();
+                    GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
+                            .id(collection.getId())
+                            .name(collection.getName())
+                            .emoji(collection.getEmoji())
+                            .bookmarkCount(bookmarkCount)
+                            .collectionDomain(collection.getCollectionDomain())
+                            .memberName(collection.getMember().getName())
+                            .quizCount(collectionQuizCount)
+                            .build();
+
+                    collectionsDtos.add(collectionDto);
+                }
+            }
+        }
+        return collectionsDtos;
     }
 
     // 내 컬렉션(내가 만든 컬렉션이나 북마크한 컬렉션) 내가 만든 컬렉션은 북마크가 이미 되어있도록 설정(+ 내가 만든 컬렉션은 북마크를 해제할 수 없음)
@@ -85,8 +157,8 @@ public class CollectionService {
         List<GetSingleCollectionResponse.GetSingleCollectionQuizDto> quizzesDtos = new ArrayList<>();
 
         List<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
-        for (CollectionQuiz collectionQuizz : collectionQuizzes) {
-            Quiz quiz = collectionQuizz.getQuiz();
+        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+            Quiz quiz = collectionQuiz.getQuiz();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                 List<Option> options = quiz.getOptions();
@@ -120,6 +192,14 @@ public class CollectionService {
         return collectionRepository.findByCollectionContaining(keyword);
     }
 
+    @Transactional
+    public void deleteCollection(Long collectionId, Long memberId) {
+        Collection collection = collectionRepository.findCollectionByIdAndMemberId(collectionId, memberId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        collectionRepository.delete(collection);
+    }
+
     // 컬렉션 정보 수정
     @Transactional
     public void updateCollectionInfo(
@@ -130,7 +210,6 @@ public class CollectionService {
         collection.updateCollectionByUpdateCollectionInfo(name, tag, description, emoji, collectionDomain);
     }
 
-    // 기존에 collection_quiz들을 삭제하고 다시 생성한다?
     @Transactional
     public void updateCollectionQuizzes(List<Quiz> quizzes, Long collectionId, Long memberId) {
         Collection collection = collectionRepository.findCollectionByIdAndMemberId(collectionId, memberId)

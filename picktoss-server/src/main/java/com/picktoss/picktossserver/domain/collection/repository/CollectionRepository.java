@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.collection.repository;
 
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.global.enums.CollectionDomain;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,12 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     @Query("SELECT c FROM Collection c " +
             "ORDER BY c.createdAt DESC")
     List<Collection> findAllOrderByCreatedAtDesc();
+
+    @Query("SELECT c FROM Collection c " +
+            "WHERE c.collectionDomain IN :collectionDomains")
+    List<Collection> findAllByCollectionDomains(
+            @Param("collectionDomains") List<CollectionDomain> collectionDomains
+    );
 
     @Query("SELECT c FROM Collection c " +
             "WHERE c.id = :collectionId " +

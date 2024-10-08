@@ -2,8 +2,13 @@ package com.picktoss.picktossserver.domain.collection.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.collection.controller.dto.CollectionResponseDto;
+import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionMapper;
 import com.picktoss.picktossserver.domain.collection.controller.request.CreateCollectionRequest;
+import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionInfoRequest;
+import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizzesRequest;
 import com.picktoss.picktossserver.domain.collection.controller.request.UploadRequest;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetAllCollectionsResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
@@ -15,7 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -30,29 +36,26 @@ public class CollectionController {
 
     @PostMapping(value = "/upload")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> handleFileUpload(
+    public String handleFileUpload(
             UploadRequest request
     ) {
-        if (request.getFile().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No file uploaded.");
-        }
 
-        try {
-            // 파일 내용을 String으로 변환
-            String fileContent = new String(request.getFile().getBytes(), StandardCharsets.UTF_8);
-            System.out.println("File Content: ");
-            System.out.println(fileContent); // 파일 내용을 출력
+        StringBuilder content = new StringBuilder();
 
-            return ResponseEntity.ok("File uploaded successfully. Content printed in console.");
-
-        } catch (IOException e) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getFile().getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed.");
+            return "파일 읽기에 실패했습니다.";
         }
+        return content.toString();
     }
 
     @Operation(summary = "Create Collection")
-    @PostMapping(value = "/collections")
+    @PostMapping(value = "/collection/collections")
     @ResponseStatus(HttpStatus.OK)
     public void createCollection(@Valid @RequestBody CreateCollectionRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -62,66 +65,103 @@ public class CollectionController {
     }
 
     @Operation(summary = "Get all Collections")
-    @GetMapping("/collections")
+    @GetMapping("/collection/collections")
     @ResponseStatus(HttpStatus.OK)
-    public void findAllCollections() {
+    public ResponseEntity<GetAllCollectionsResponse> findAllCollections(
+            @RequestParam(required = false, defaultValue = "createdAt", value = "collection-sort-option") String collectionSortOption,
+            @RequestParam(required = false, value = "collection-domain-option") List<String> collectionDomainOption,
+            @RequestParam(required = false, value = "quiz-type") String quizType,
+            @RequestParam(required = false, value = "quiz-count") Integer quizCount
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
+        System.out.println("collectionSortOption = " + collectionSortOption);
+        System.out.println("collectionDomainOption = " + collectionDomainOption);
+        System.out.println("quizType = " + quizType);
+        System.out.println("quizCount = " + quizCount);
+
+        List<GetAllCollectionsResponse.GetAllCollectionsDto> response = collectionFacade.findAllCollections(collectionSortOption, collectionDomainOption, quizType, quizCount);
+        return ResponseEntity.ok().body(new GetAllCollectionsResponse(response));
     }
 
+    // my collection
     @Operation(summary = "Get Collection by member id")
-    @GetMapping("/collection")
+    @GetMapping("/collection/get-collection")
     @ResponseStatus(HttpStatus.OK)
-    public void findCollectionByMemberId() {
+    public ResponseEntity<CollectionResponseDto> findCollectionByMemberId() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionFacade.findCollectionByMemberId(memberId);
+        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        return ResponseEntity.ok().body(response);
     }
 
+    // collection 상세 정보
     @Operation(summary = "Get collection by collection id")
     @GetMapping("/collections/{collection_id}")
     @ResponseStatus(HttpStatus.OK)
-    public void findCollectionByCollectionId(
+    public ResponseEntity<GetSingleCollectionResponse> findCollectionByCollectionId(
             @PathVariable(name = "collection_id") Long collectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
         GetSingleCollectionResponse response = collectionFacade.findCollectionByCollectionId(collectionId, memberId);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "Search collections")
-    @GetMapping("/collections/{keyword}")
+    @GetMapping("/collection/collections/{keyword}")
     @ResponseStatus(HttpStatus.OK)
-    public void searchCollections(
+    public ResponseEntity<CollectionResponseDto> searchCollections(
             @PathVariable(name = "keyword") String keyword
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-//        List<Collection> collections = collectionFacade.searchCollections(keyword);
+        List<Collection> collections = collectionFacade.searchCollections(keyword);
+        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "Delete collection")
+    @DeleteMapping("/collections/{collection_id}/delete-collection")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCollection(
+            @PathVariable(name = "collection_id") Long collectionId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        collectionFacade.deleteCollection(collectionId, memberId);
     }
 
 
     @Operation(summary = "Update Collection info")
-    @PatchMapping("/collections/info")
+    @PatchMapping("/collections/{collection_id}/update-info")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCollectionInfo() {
+    public void updateCollectionInfo(
+            @PathVariable(name = "collection_id") Long collectionId,
+            @Valid @RequestBody UpdateCollectionInfoRequest request
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
+        collectionFacade.updateCollectionInfo(collectionId, memberId, request.getName(), request.getTag(), request.getDescription(), request.getEmoji(), request.getCollectionDomain());
     }
 
     @Operation(summary = "Update Collection quizzes")
-    @PatchMapping("/collections/quizzes")
+    @PatchMapping("/collections/{collection_id}/update-quizzes")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCollectionQuizzes() {
+    public void updateCollectionQuizzes(
+            @PathVariable(name = "collection_id") Long collectionId,
+            @Valid @RequestBody UpdateCollectionQuizzesRequest request
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
+
+        collectionFacade.updateCollectionQuizzes(request.getQuizzes(), collectionId, memberId);
     }
-
-
-
 }

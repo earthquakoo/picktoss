@@ -71,8 +71,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             @Param("memberId") Long memberId
     );
 
+
     @Query("SELECT q FROM Quiz q " +
-            "JOIN FETCH q.options " +
+            "LEFT JOIN FETCH q.options " +
             "JOIN q.document d " +
             "JOIN d.category c " +
             "WHERE c.member.id = :memberId " +
