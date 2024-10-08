@@ -87,4 +87,8 @@ public class Collection extends AuditBase {
         }
     }
 
+
+    public void updateCollectionByUpdateCollectionSolved() {
+        this.solvedCount += 1;
+    }
 }

@@ -12,13 +12,24 @@ import java.util.Optional;
 public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
-            "ORDER BY c.createdAt DESC")
-    List<Collection> findAllOrderByCreatedAtDesc();
+            "WHERE c.member.id = :memberId " +
+            "ORDER BY c.updatedAt DESC")
+    List<Collection> findAllOrderByUpdatedAtDesc(
+            @Param("memberId") Long memberId
+    );
 
     @Query("SELECT c FROM Collection c " +
-            "WHERE c.collectionDomain IN :collectionDomains")
+            "WHERE c.collectionDomain IN :collectionDomains " +
+            "AND c.member.id = :memberId")
     List<Collection> findAllByCollectionDomains(
-            @Param("collectionDomains") List<CollectionDomain> collectionDomains
+            @Param("collectionDomains") List<CollectionDomain> collectionDomains,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT c FROM Collection c " +
+            "WHERE c.id = :collectionId")
+    Optional<Collection> findCollectionById(
+            @Param("collectionId") Long collectionId
     );
 
     @Query("SELECT c FROM Collection c " +
@@ -30,8 +41,10 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     );
 
     @Query("SELECT c FROM Collection c " +
-            "WHERE c.name LIKE %:keyword%")
+            "WHERE c.name LIKE %:keyword% " +
+            "AND c.member.id = :memberId")
     List<Collection> findByCollectionContaining(
-            @Param("keyword") String keyword
+            @Param("keyword") String keyword,
+            @Param("memberId") Long memberId
     );
 }
