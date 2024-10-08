@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.entity;
 
+import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.QuizType;
@@ -55,6 +56,9 @@ public class Quiz extends AuditBase {
 
     @OneToMany(mappedBy = "quiz", orphanRemoval = true)
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "quiz", orphanRemoval = true)
+    private List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
 
     // Business Logics
     public void updateBookmark(boolean bookmark) {
