@@ -333,6 +333,15 @@ public class DocumentService {
         sqsProvider.sendMessage(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
+    // "오늘의 퀴즈 관리"에서 선택하지 않은 documentId만 받을 수 있는 프론트한테 물어봐야함.
+    @Transactional
+    public void selectDocumentToNotGenerateByTodayQuiz(List<Long> documentIds, Long memberId) {
+        List<Document> documents = documentRepository.findByDocumentIdsInAndMemberId(documentIds, memberId);
+        for (Document document : documents) {
+            document.updateDocumentIsTodayQuizIncludedBYNotGenerateTodayQuiz();
+        }
+    }
+
     //보유한 모든 문서의 개수
     public int findPossessDocumentCount(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);

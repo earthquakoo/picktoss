@@ -37,12 +37,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT DISTINCT d FROM Document d " +
-            "LEFT JOIN FETCH d.quizzes " +
+    @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.category c " +
             "WHERE d.id IN :documentIds " +
             "AND c.member.id = :memberId")
-    List<Document> findByMemberIdAndDocumentIdsIn(
+    List<Document> findByDocumentIdsInAndMemberId(
             @Param("documentIds") List<Long> documentIds,
             @Param("memberId") Long memberId
     );
@@ -104,4 +103,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             @Param("categoryId") Long categoryId,
             @Param("memberId") Long memberId
     );
+
+
 }

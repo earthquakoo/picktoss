@@ -115,6 +115,10 @@ public class Document extends AuditBase {
         this.status = DocumentStatus.KEYPOINT_UPDATE_POSSIBLE;
     }
 
+    public void updateDocumentIsTodayQuizIncludedBYNotGenerateTodayQuiz() {
+        this.isTodayQuizIncluded = false;
+    }
+
     public DocumentStatus updateDocumentStatusClientResponse(DocumentStatus documentStatus) {
         if (documentStatus == PARTIAL_SUCCESS ||
                 documentStatus == PROCESSED ||
