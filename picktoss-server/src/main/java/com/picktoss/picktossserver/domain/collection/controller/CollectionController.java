@@ -8,6 +8,7 @@ import com.picktoss.picktossserver.domain.collection.controller.request.CreateCo
 import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionInfoRequest;
 import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizzesRequest;
 import com.picktoss.picktossserver.domain.collection.controller.request.UploadRequest;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
@@ -107,6 +108,19 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         GetSingleCollectionResponse response = collectionFacade.findCollectionByCollectionId(collectionId, memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "컬렉션을 푼 상세 기록")
+    @GetMapping("/collections/{collection_id}/record")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetCollectionSolvedRecordResponse> getCollectionRecord(
+            @PathVariable("collection_id") Long collectionId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetCollectionSolvedRecordResponse response = collectionFacade.findCollectionSolvedRecord(memberId, collectionId);
         return ResponseEntity.ok().body(response);
     }
 

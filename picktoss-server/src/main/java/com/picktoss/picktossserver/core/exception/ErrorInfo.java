@@ -82,6 +82,7 @@ public enum ErrorInfo {
      * Quiz
      */
     QUIZ_NOT_FOUND_ERROR(400, "QUIZ_NOT_FOUND", "Quiz set not found."),
+    QUIZ_COUNT_EXCEEDED(400, "QUIZ_COUNT_EXCEEDED", "You have exceeded the number of quizzes you can generate."),
     QUIZ_NOT_IN_DOCUMENT(400, "QUIZ_NOT_IN_DOCUMENT", "Quiz does not exist in this document."),
     QUIZ_SET_NOT_FOUND_ERROR(400, "QUIZ_SET_NOT_FOUND", "Quiz set not found.");
 

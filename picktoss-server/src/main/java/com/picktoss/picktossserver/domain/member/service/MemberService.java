@@ -174,6 +174,11 @@ public class MemberService {
         );
     }
 
+    public Member findMemberWithCollectionSolvedRecordByMemberId(Long memberId) {
+        return memberRepository.findMemberWithCollectionSolvedRecordByMemberId(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+    }
+
     public Tuple findMinIdAndMaxIdAndIsQuizNotificationEnabled() {
         return memberRepository.findMinIdAndMaxIdAndIsQuizNotificationEnabled();
     }

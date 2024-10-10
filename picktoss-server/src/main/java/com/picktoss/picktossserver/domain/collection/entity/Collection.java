@@ -50,6 +50,9 @@ public class Collection extends AuditBase {
     @OneToMany(mappedBy = "collection", orphanRemoval = true)
     private List<CollectionBookmark> collectionBookmarks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "collection", orphanRemoval = true)
+    private List<CollectionSolvedRecord> collectionSolvedRecords = new ArrayList<>();
+
     // Constructor methods
     public static Collection createCollection(
             String name, String emoji, String description, String tag, CollectionDomain collectionDomain, Member member

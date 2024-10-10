@@ -60,6 +60,18 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             @Param("documentId") Long documentId
     );
 
+    @Query("SELECT DISTINCT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.category c " +
+            "WHERE d.id = :documentId " +
+            "AND c.member.id = :memberId " +
+            "AND q.latest = true")
+    List<Quiz> findByDocumentIdAndMemberIdAndIsQuizLatest(
+            @Param("documentId") Long documentId,
+            @Param("memberId") Long memberId
+    );
+
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Query("SELECT q FROM Quiz q " +
             "JOIN FETCH q.options " +

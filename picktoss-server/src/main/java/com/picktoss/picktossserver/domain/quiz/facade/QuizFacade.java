@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.quiz.facade;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.collection.service.CollectionService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.event.entity.Event;
@@ -38,6 +39,7 @@ public class QuizFacade {
     private final QuizService quizService;
     private final MemberService memberService;
     private final EventService eventService;
+    private final CollectionService collectionService;
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
         return quizService.findQuizSet(quizSetId, memberId);
@@ -106,6 +108,21 @@ public class QuizFacade {
             }
         }
         return null;
+    }
+
+    @Transactional
+    public String createQuizzesByDocument(Long documentId, Long memberId, QuizType quizType, Integer quizCount) {
+        Member member = memberService.findMemberById(memberId);
+        return quizService.createQuizzesByDocument(documentId, member, quizType, quizCount);
+    }
+
+    public List<GetQuizRecordResponse.GetQuizRecordDto> findAllQuizRecord(Long memberId) {
+        Member member = memberService.findMemberWithCollectionSolvedRecordByMemberId(memberId);
+        return quizService.findAllQuizRecord(member, member.getCollectionSolvedRecords());
+    }
+
+    public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId) {
+        return quizService.findQuizSetRecordByMemberIdAndQuizSetId(memberId, quizSetId);
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysisByWeek(Long memberId, Long categoryId, int weeks) {
