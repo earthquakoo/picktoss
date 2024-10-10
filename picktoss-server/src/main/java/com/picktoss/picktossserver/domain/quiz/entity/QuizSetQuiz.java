@@ -4,8 +4,6 @@ import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalTime;
-
 @Entity
 @Getter
 @Table(name = "quiz_set_quiz")
@@ -23,6 +21,9 @@ public class QuizSetQuiz extends AuditBase {
 
     @Column(name = "is_answer")
     private Boolean isAnswer;
+
+    @Column(name = "chose_answer")
+    private String choseAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id", nullable = false)
@@ -42,6 +43,10 @@ public class QuizSetQuiz extends AuditBase {
 
     public void updateIsAnswer(Boolean isAnswer) {
         this.isAnswer = isAnswer;
+    }
+
+    public void updateChoseAnswer(String choseAnswer) {
+        this.choseAnswer = choseAnswer;
     }
 
     public void updateElapsedTime(int elapsedTimeMs) {

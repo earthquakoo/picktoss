@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
@@ -49,6 +50,10 @@ public class CollectionFacade {
     // 만든 컬렉션 상세
     public GetSingleCollectionResponse findCollectionByCollectionId(Long collectionId, Long memberId) {
         return collectionService.findCollectionByCollectionId(collectionId, memberId);
+    }
+
+    public GetCollectionSolvedRecordResponse findCollectionSolvedRecord(Long memberId, Long collectionId) {
+        return collectionService.findCollectionSolvedRecord(memberId, collectionId);
     }
 
     // 컬렉션 키워드 검색

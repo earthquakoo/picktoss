@@ -4,10 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
-import com.picktoss.picktossserver.domain.quiz.controller.request.CreateQuizzesRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizCountByDocumentRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateBookmarkQuizRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.*;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
@@ -71,7 +68,7 @@ public class QuizController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String quizSetId = quizFacade.createQuizzes(request.getDocuments(), request.getPoint(), request.getQuizType(), memberId);
+        String quizSetId = quizFacade.createQuizzes(request.getDocumentIds(), request.getPoint(), request.getQuizType(), memberId);
         return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
     }
 
@@ -168,7 +165,6 @@ public class QuizController {
         return ResponseEntity.ok().body(response);
     }
 
-
     @Operation(summary = "Delete incorrect quiz")
     @DeleteMapping("/incorrect-quiz/{document_id}/{quiz_set_id}/{quiz_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -181,6 +177,52 @@ public class QuizController {
 
         quizFacade.deleteIncorrectQuiz(quizId, quizSetId, documentId, memberId);
     }
+
+    /**
+     * Picktoss Update
+     */
+
+    @Operation(summary = "사용자가 생성한 문서에서 직접 퀴즈 생성(랜덤, OX, 객관식)")
+    @PostMapping("/quizzes/documents/{document_id}/create-quizzes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<CreateQuizzesResponse> createQuizzesByDocument(
+            @PathVariable("document_id") Long documentId,
+            @Valid @RequestBody CreateQuizzesByDocumentRequest request
+            ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        String quizSetId = quizFacade.createQuizzesByDocument(documentId, memberId, request.getQuizType(), request.getQuizCount());
+        return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
+    }
+
+    @Operation(summary = "퀴즈 기록")
+    @GetMapping("/quizzes/quiz-records")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetQuizRecordResponse> getQuizzesRecord() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<GetQuizRecordResponse.GetQuizRecordDto> response = quizFacade.findAllQuizRecord(memberId);
+        return ResponseEntity.ok().body(new GetQuizRecordResponse(response));
+    }
+
+    @Operation(summary = "퀴즈셋에 대한 상세 기록")
+    @GetMapping("/quizzes/{quiz_set_id}/quiz-record")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetSingleQuizSetRecordResponse> getSingleQuizSetRecord(
+            @PathVariable("quiz_set_id") String quizSetId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetSingleQuizSetRecordResponse response = quizFacade.findQuizSetRecordByMemberIdAndQuizSetId(memberId, quizSetId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    /**
+     * Test API
+     */
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Tag(name = "Client test 전용 API")

@@ -16,6 +16,7 @@ public class GetQuizResultRequest {
     public static class GetQuizResultQuizDto {
         private Long id;
         private boolean answer;
+        private String choseAnswer;
         private int elapsedTime;
     }
 }

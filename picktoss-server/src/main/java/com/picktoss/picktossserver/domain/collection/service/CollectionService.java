@@ -1,13 +1,13 @@
 package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
-import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
+import com.picktoss.picktossserver.domain.collection.entity.*;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionBookmarkRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionSolvedRecordRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -32,6 +32,7 @@ public class CollectionService {
     private final CollectionRepository collectionRepository;
     private final CollectionQuizRepository collectionQuizRepository;
     private final CollectionBookmarkRepository collectionBookmarkRepository;
+    private final CollectionSolvedRecordRepository collectionSolvedRecordRepository;
 
     @Transactional
     public void createCollection(
@@ -128,6 +129,30 @@ public class CollectionService {
                 .bookmarkCount(collection.getCollectionBookmarks().size())
                 .quizzes(quizzesDtos)
                 .build();
+    }
+
+    public GetCollectionSolvedRecordResponse findCollectionSolvedRecord(Long memberId, Long collectionId) {
+        CollectionSolvedRecord collectionSolvedRecord = collectionSolvedRecordRepository.findByMemberIdAndCollectionId(memberId, collectionId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        List<GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto> collectionSolvedRecordDtos = new ArrayList<>();
+
+        List<CollectionQuiz> collectionQuizzes = collectionSolvedRecord.getCollection().getCollectionQuizzes();
+        List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
+        int elapsedTimeMs = 0;
+        for (int i = 0; i <= collectionQuizzes.size(); i++) {
+            elapsedTimeMs += collectionSolvedRecordDetails.get(i).getElapsedTime();
+            GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto collectionSolvedRecordDto = GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto.builder()
+                    .question(collectionQuizzes.get(i).getQuiz().getQuestion())
+                    .answer(collectionQuizzes.get(i).getQuiz().getAnswer())
+                    .explanation(collectionQuizzes.get(i).getQuiz().getExplanation())
+                    .isAnswer(collectionSolvedRecordDetails.get(i).getIsAnswer())
+                    .choseAnswer(collectionSolvedRecordDetails.get(i).getChoseAnswer())
+                    .build();
+
+            collectionSolvedRecordDtos.add(collectionSolvedRecordDto);
+        }
+        return new GetCollectionSolvedRecordResponse(collectionSolvedRecord.getCreatedAt(), elapsedTimeMs, collectionSolvedRecordDtos);
     }
 
     // 컬렉션 키워드 검색

@@ -5,6 +5,8 @@ import com.picktoss.picktossserver.core.event.publisher.EmailSenderPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.event.entity.Event;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -267,36 +269,6 @@ public class QuizService {
         return quizSetId;
     }
 
-    @Transactional
-    public String createTodayQuizSet(Member member) {
-        List<Quiz> quizzes = quizRepository.findAllByMemberIdOrderByDeliveredCountASC(member.getId());
-        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
-
-        String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
-
-        int quizCount = 0;
-
-        for (Quiz quiz : quizzes) {
-            if (quizCount == 10) {
-                break;
-            }
-            quiz.addDeliveredCount();
-
-            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
-            quizSetQuizzes.add(quizSetQuiz);
-            quizCount += 1;
-        }
-
-        quizSetRepository.save(quizSet);
-        quizSetQuizRepository.saveAll(quizSetQuizzes);
-
-        return quizSetId;
-    }
-
-    public List<Quiz> findAllByMemberIdOrderByDeliveredCountASC(Long memberId) {
-        return quizRepository.findAllByMemberIdOrderByDeliveredCountASC(memberId);
-    }
 
     public List<Quiz> findAllGeneratedQuizzes(Long documentId, QuizType quizType, Long memberId) {
         return quizRepository.findAllByDocumentIdAndMemberId(documentId, quizType, memberId);
@@ -349,6 +321,7 @@ public class QuizService {
                     quiz.addIncorrectAnswerCount();
                 }
                 quizSetQuiz.updateIsAnswer(quizDto.isAnswer());
+                quizSetQuiz.updateChoseAnswer(quizDto.getChoseAnswer());
                 quizSetQuiz.updateElapsedTime(quizDto.getElapsedTime());
             }
         }
@@ -544,6 +517,129 @@ public class QuizService {
             }
         }
     }
+
+    /**
+     * Picktoss update
+     */
+
+    @Transactional
+    public String createQuizzesByDocument(Long documentId, Member member, QuizType quizType, Integer quizCount) {
+        List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberIdAndIsQuizLatest(documentId, member.getId());
+
+        if (quizType != null) {
+            quizzes = quizzes.stream()
+                    .filter(quiz -> quiz.getQuizType() == quizType)
+                    .toList();
+        }
+
+        if (quizCount > quizzes.size()) {
+            throw new CustomException(QUIZ_COUNT_EXCEEDED);
+        }
+
+        Collections.shuffle(quizzes);
+        quizzes = quizzes.subList(0, quizCount + 1);
+
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+        String quizSetId = createQuizSetId();
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, false, member);
+
+        for (Quiz quiz : quizzes) {
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+        }
+
+        quizSetRepository.save(quizSet);
+        quizSetQuizRepository.saveAll(quizSetQuizzes);
+
+        return quizSetId;
+    }
+
+    public List<GetQuizRecordResponse.GetQuizRecordDto> findAllQuizRecord(Member member, List<CollectionSolvedRecord> collectionSolvedRecords) {
+        List<QuizSet> quizSets = quizSetRepository.findQuizSetsWithQuizAndQuizSetQuizByMemberId(member.getId());
+
+        List<GetQuizRecordResponse.GetQuizRecordDto> quizRecordDtos = new ArrayList<>();
+
+        int continuousQuizDatesCount = 0;
+        for (QuizSet quizSet : quizSets) {
+            int quizCount = quizSet.getQuizSetQuizzes().size();
+            int score = quizCount;
+            List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
+            for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+                if (!quizSetQuiz.getIsAnswer()) {
+                    score -= 1;
+                }
+            }
+            Quiz quiz = quizSet.getQuizSetQuizzes().getFirst().getQuiz();
+            String recordName = quiz.getDocument().getName();
+
+            if (quizSet.isTodayQuizSet()) {
+                if (quizSet.isSolved()) {
+                    continuousQuizDatesCount += 1;
+                } else {
+                    continuousQuizDatesCount = 0;
+                }
+                recordName = "오늘의 퀴즈";
+            }
+
+            GetQuizRecordResponse.GetQuizRecordDto recordDto = GetQuizRecordResponse.GetQuizRecordDto.builder()
+                    .quizSetId(quizSet.getId())
+                    .name(recordName)
+                    .quizCount(quizCount)
+                    .score(score)
+                    .solvedDate(quizSet.getCreatedAt())
+                    .continuousQuizDatesCount(continuousQuizDatesCount)
+                    .build();
+
+            quizRecordDtos.add(recordDto);
+        }
+
+        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
+            Collection collection = collectionSolvedRecord.getCollection();
+
+            GetQuizRecordResponse.GetQuizRecordDto recordDto = GetQuizRecordResponse.GetQuizRecordDto.builder()
+                    .collectionId(collection.getId())
+                    .name(collection.getName())
+                    .quizCount(collection.getCollectionQuizzes().size())
+                    .score(collectionSolvedRecord.getScore())
+                    .solvedDate(collectionSolvedRecord.getCreatedAt())
+                    .continuousQuizDatesCount(continuousQuizDatesCount)
+                    .build();
+
+            quizRecordDtos.add(recordDto);
+        }
+        return quizRecordDtos;
+    }
+
+    // 해결한 컬렉션에 대한 상세 기록
+    public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId) {
+        QuizSet quizSet = quizSetRepository.findQuizSetWithQuizSetQuizAndQuizAndDocumentAndCategoryByMemberIdAndQuizSetId(memberId, quizSetId)
+                .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
+
+        List<GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto> quizSetRecordDtos = new ArrayList<>();
+
+        int elapsedTimeMs = 0;
+        List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
+        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            elapsedTimeMs += quizSetQuiz.getElapsedTimeMs();
+            Document document = quizSetQuiz.getQuiz().getDocument();
+            Category category = document.getCategory();
+
+            GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
+                    .question(quizSetQuiz.getQuiz().getQuestion())
+                    .answer(quizSetQuiz.getQuiz().getAnswer())
+                    .explanation(quizSetQuiz.getQuiz().getExplanation())
+                    .choseAnswer(quizSetQuiz.getChoseAnswer())
+                    .isAnswer(quizSetQuiz.getIsAnswer())
+                    .documentName(document.getName())
+                    .categoryName(category.getName())
+                    .build();
+
+            quizSetRecordDtos.add(quizSetRecordDto);
+        }
+
+        return new GetSingleQuizSetRecordResponse(quizSet.getCreatedAt(), elapsedTimeMs, quizSetRecordDtos);
+    }
+
 
     private static String createQuizSetId() {
         return UUID.randomUUID().toString().replace("-", "");
