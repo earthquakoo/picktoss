@@ -12,7 +12,7 @@ import java.util.List;
 public class GetSingleQuizSetRecordResponse {
 
     private LocalDateTime createdAt;
-    private Integer elapsedTime;
+    private Integer totalElapsedTimeMs;
     private List<GetSingleQuizSetRecordDto> quizzes;
 
     @Getter
@@ -21,6 +21,7 @@ public class GetSingleQuizSetRecordResponse {
         private String question;
         private String answer;
         private String explanation;
+        private List<String> options;
         private boolean isAnswer;
         private String choseAnswer;
         private String documentName;

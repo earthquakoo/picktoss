@@ -1,19 +1,16 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
+import static com.picktoss.picktossserver.global.enums.document.DocumentStatus.*;
 
 @Entity
 @Getter
@@ -30,9 +27,6 @@ public class Document extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "orders", nullable = false)
-    private int order;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private DocumentStatus status;
@@ -48,17 +42,13 @@ public class Document extends AuditBase {
     private Category category;
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
-    private List<KeyPoint> keyPoints = new ArrayList<>();
-
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
     private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, int order, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Category category) {
+    public static Document createDocument(String name, String s3Key, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Category category) {
         return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
-                .order(order)
                 .status(documentStatus)
                 .isTodayQuizIncluded(isTodayQuizIncluded)
                 .category(category)
@@ -69,7 +59,6 @@ public class Document extends AuditBase {
         return Document.builder()
                 .name("예시 문서")
                 .s3Key(s3Key)
-                .order(1)
                 .status(DocumentStatus.DEFAULT_DOCUMENT)
                 .isTodayQuizIncluded(false)
                 .category(category)
@@ -83,18 +72,6 @@ public class Document extends AuditBase {
     }
 
     // Business Logics
-    public void updateDocumentOrder(int order) {
-        this.order = order;
-    }
-
-    public void addDocumentOrder() {
-        this.order += 1;
-    }
-
-    public void minusDocumentOrder() {
-        this.order -= 1;
-    }
-
     public void moveDocumentToCategory(Category category) {
         this.category = category;
     }
@@ -115,8 +92,8 @@ public class Document extends AuditBase {
         this.status = DocumentStatus.KEYPOINT_UPDATE_POSSIBLE;
     }
 
-    public void updateDocumentIsTodayQuizIncludedBYNotGenerateTodayQuiz() {
-        this.isTodayQuizIncluded = false;
+    public void updateDocumentIsTodayQuizIncluded(Boolean isTodayQuizIncluded) {
+        this.isTodayQuizIncluded = isTodayQuizIncluded;
     }
 
     public DocumentStatus updateDocumentStatusClientResponse(DocumentStatus documentStatus) {

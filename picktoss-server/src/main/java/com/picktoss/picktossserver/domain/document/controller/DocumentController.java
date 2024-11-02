@@ -5,10 +5,9 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.document.controller.request.*;
 import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
+import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "3. Document")
+@Tag(name = "Document")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
@@ -28,7 +27,7 @@ public class DocumentController {
     private final JwtTokenProvider jwtTokenProvider;
     private final DocumentFacade documentFacade;
 
-    @Operation(summary = "Create document")
+    @Operation(summary = "문서 생성")
     @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CreateDocumentResponse> createDocument(
@@ -38,26 +37,11 @@ public class DocumentController {
         Long memberId = jwtUserInfo.getMemberId();
         Long categoryId = Long.valueOf(request.getCategoryId());
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, categoryId);
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, categoryId, request.getStar(), request.getQuizType());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
-    @Operation(summary = "Create AI Pick")
-    @PostMapping("/documents/{document_id}/ai-pick")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CreateAiPickResponse> createAiPick(
-            @PathVariable(name = "document_id") Long documentId) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        boolean isFirstUseAiPick = documentFacade.createAiPick(documentId, memberId);
-        return ResponseEntity.ok().body(new CreateAiPickResponse(isFirstUseAiPick));
-    }
-
-    @Operation(summary = "Get document by id",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Get document success!",
-                            content = @Content(schema = @Schema(implementation = GetSingleDocumentResponse.class)))})
+    @Operation(summary = "document_id로 문서 가져오기")
     @GetMapping("/documents/{document_id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
@@ -69,75 +53,64 @@ public class DocumentController {
         return ResponseEntity.ok().body(documents);
     }
 
-    @Operation(summary = "Get all documents by category id",
-            responses = {
-            @ApiResponse(responseCode = "200", description = "Get all document success!",
-                    content = @Content(schema = @Schema(implementation = GetAllDocumentsResponse.class)))})
-    @GetMapping("/categories/{category_id}/documents")
+    @Operation(summary = "모든 문서 가져오기")
+    @GetMapping("/categories/documents")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
-            @PathVariable(name = "category_id") Long categoryId,
-            @RequestParam(required = false, defaultValue = "createdAt", value = "sort-option") String documentSortOption) {
+            @Schema(description = "Null 인 경우 전체 노트") @RequestParam(required = false, value = "category_id") Long categoryId,
+            @RequestParam(required = false, defaultValue = "CREATE_AT", value = "sort-option") DocumentSortOption documentSortOption) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId, documentSortOption);
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocumentsInCategory(memberId, categoryId, documentSortOption);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
-    @Operation(summary = "Get most incorrect top 5 document")
-    @GetMapping("/documents/top-five")
+    @Operation(summary = "복습 필수 노트 top 5")
+    @GetMapping("/documents/review-need-documents")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetMostIncorrectDocumentsResponse> getMostIncorrectDocuments() {
+    public ResponseEntity<GetDocumentsNeedingReviewResponse> getDocumentsNeedingReview() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetMostIncorrectDocumentsResponse response = documentFacade.findMostIncorrectDocuments(memberId);
+        GetDocumentsNeedingReviewResponse response = documentFacade.findDocumentsNeedingReview(memberId);
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Get document search result")
+    @Operation(summary = "문서 검색")
     @PostMapping("/documents/search")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<SearchDocumentResponse> searchDocumentName(@Valid @RequestBody SearchDocumentNameRequest request) {
+    public ResponseEntity<SearchDocumentResponse> searchDocumentByKeyword(@Valid @RequestBody SearchRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<SearchDocumentResponse.SearchDocumentDto> documents = documentFacade.searchDocument(request.getWord(), memberId);
-        return ResponseEntity.ok().body(new SearchDocumentResponse(documents));
+        SearchDocumentResponse response = documentFacade.searchDocumentByKeyword(request.getKeyword(), memberId);
+        return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Delete document by id")
-    @DeleteMapping("/documents/{document_id}")
+    @Operation(summary = "문서 삭제")
+    @DeleteMapping("/documents/delete-documents")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDocument(@PathVariable(name = "document_id") Long documentId) {
+    public void deleteDocument(
+            @Valid @RequestBody DeleteDocumentRequest request
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.deleteDocument(memberId, documentId);
+        documentFacade.deleteDocument(memberId, request.getDocumentIds());
     }
 
-    @Operation(summary = "Change document order")
-    @PatchMapping("/documents/reorder")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changeDocumentsOrder(@Valid @RequestBody UpdateDocumentsOrderRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        documentFacade.changeDocumentOrder(request.getDocumentId(), request.getPreDragDocumentOrder(), request.getAfterDragDocumentOrder(), memberId);
-    }
-
-    @Operation(summary = "Move document to category")
+    @Operation(summary = "문서 다른 폴더로 옮기기")
     @PatchMapping("/documents/move")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void moveDocumentToCategory(@Valid @RequestBody MoveDocumentToCategoryRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.moveDocumentToCategory(request.getDocumentId(), request.getCategoryId(), memberId);
+        documentFacade.moveDocumentToCategory(request.getDocumentIds(), memberId, request.getCategoryId());
     }
 
-    @Operation(summary = "Update document content")
+    @Operation(summary = "문서 내용 업데이트")
     @PatchMapping(value = "/documents/{document_id}/update-content", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changeDocumentContent(
@@ -149,7 +122,7 @@ public class DocumentController {
         documentFacade.updateDocumentContent(documentId, memberId, request.getName(), request.getFile());
     }
 
-    @Operation(summary = "Change document name")
+    @Operation(summary = "문서 이름 변경")
     @PatchMapping("/documents/{document_id}/update-name")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateDocumentName(
@@ -161,25 +134,29 @@ public class DocumentController {
         documentFacade.updateDocumentName(documentId, memberId, request.getName());
     }
 
-    @Operation(summary = "Re-upload document")
-    @PostMapping("/documents/{document_id}/re-upload")
-    @ResponseStatus(HttpStatus.OK)
-    public void reUploadDocument(@PathVariable(name = "document_id") Long documentId) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.reUploadDocument(documentId, memberId);
-    }
-
-    @Operation(summary = "Choose which document you don't want to take today quiz")
+    @Operation(summary = "오늘의 퀴즈 관리(문제를 가져올 노트 선택)")
     @PatchMapping("/documents/today-quiz-settings")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void selectDocumentToNotGenerateByTodayQuiz(
-            @Valid @RequestBody UpdateDocumentToNotGenerateByTodayQuizRequest request
+            @Valid @RequestBody UpdateTodayQuizSettingsRequest request
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIds(), memberId);
+        documentFacade.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIdTodayQuizMap(), memberId);
+    }
+
+    @Operation(summary = "통합(문서, 컬렉션, 퀴즈) 검색")
+    @PostMapping("/integrated-search")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<IntegratedSearchResponse> integratedSearchByKeyword(
+            @Valid @RequestBody SearchRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        IntegratedSearchResponse response = documentFacade.integratedSearchByKeyword(memberId, request.getKeyword());
+        return ResponseEntity.ok().body(response);
     }
 }

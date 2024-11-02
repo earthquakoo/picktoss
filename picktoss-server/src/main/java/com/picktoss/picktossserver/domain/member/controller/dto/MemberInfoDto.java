@@ -1,8 +1,9 @@
 package com.picktoss.picktossserver.domain.member.controller.dto;
 
+import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.global.enums.MemberRole;
-import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import com.picktoss.picktossserver.global.enums.member.MemberRole;
+import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,8 +22,8 @@ public class MemberInfoDto {
                 .name(name)
                 .email(email)
                 .role(MemberRole.ROLE_USER)
+                .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
                 .isQuizNotificationEnabled(true)
-                .aiPickCount(0)
                 .build();
     }
 }

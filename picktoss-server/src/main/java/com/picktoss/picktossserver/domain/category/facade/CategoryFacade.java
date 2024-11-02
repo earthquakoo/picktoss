@@ -2,11 +2,9 @@ package com.picktoss.picktossserver.domain.category.facade;
 
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
-import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
-import com.picktoss.picktossserver.global.enums.CategoryTag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +29,9 @@ public class CategoryFacade {
     }
 
     @Transactional
-    public Long createCategory(Long memberId, String name, CategoryTag tag, String emoji) {
+    public Long createCategory(Long memberId, String name, String emoji) {
         Member member = memberService.findMemberById(memberId);
-        return categoryService.createCategory(name, tag, memberId, member, emoji);
+        return categoryService.createCategory(name, memberId, member, emoji);
     }
 
     @Transactional
@@ -42,31 +40,7 @@ public class CategoryFacade {
     }
 
     @Transactional
-    public void updateCategoryName(Long memberId, Long categoryId, String categoryName) {
-        categoryService.updateCategoryName(memberId, categoryId, categoryName);
-    }
-
-    @Transactional
-    public void updateCategoryTag(Long memberId, Long categoryId, CategoryTag tag) {
-        categoryService.updateCategoryTag(memberId, categoryId, tag);
-    }
-
-    @Transactional
-    public void updateCategoryEmoji(Long memberId, Long categoryId, String emoji) {
-        categoryService.updateCategoryEmoji(memberId, categoryId, emoji);
-    }
-
-    @Transactional
-    public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji, CategoryTag categoryTag) {
-        categoryService.updateCategoryInfo(memberId, categoryId, name, emoji, categoryTag);
-    }
-
-    @Transactional
-    public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
-        categoryService.updateCategoriesOrder(categoryId, preDragCategoryOrder, afterDragCategoryOrder, memberId);
-    }
-
-    public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
-        return categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
+    public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji) {
+        categoryService.updateCategoryInfo(memberId, categoryId, name, emoji);
     }
 }

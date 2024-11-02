@@ -21,7 +21,7 @@ public class CollectionMapper {
                     .emoji(collection.getEmoji())
                     .bookmarkCount(bookmarkCount)
                     .memberName(collection.getMember().getName())
-                    .collectionDomain(collection.getCollectionDomain())
+                    .collectionField(collection.getCollectionField())
                     .quizCount(collectionQuizCount)
                     .build();
 

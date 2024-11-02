@@ -21,6 +21,7 @@ public class GetCollectionSolvedRecordResponse {
         private String question;
         private String answer;
         private String explanation;
+        private List<String> options;
         private boolean isAnswer;
         private String choseAnswer;
     }

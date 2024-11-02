@@ -1,11 +1,11 @@
 package com.picktoss.picktossserver.domain.member.controller.response;
 
-import com.picktoss.picktossserver.global.enums.MemberRole;
-import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
+import com.picktoss.picktossserver.global.enums.member.MemberRole;
+import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -14,34 +14,20 @@ public class GetMemberInfoResponse {
     private Long id;
     private String name;
     private String email;
+    private SocialPlatform socialPlatform;
     private MemberRole role;
-    private int point;
-    private int continuousQuizDatesCount;
-    private int maxContinuousQuizDatesCount;
-    private GetMemberInfoSubscriptionDto subscription;
+    private List<String> interestField;
     private GetMemberInfoDocumentDto documentUsage;
     private boolean isQuizNotificationEnabled;
+    private int star;
 
-    @Getter
-    @Builder
-    public static class GetMemberInfoSubscriptionDto {
-        private SubscriptionPlanType plan;
-        private LocalDateTime purchasedDate;
-        private LocalDateTime expireDate;
-    }
 
     @Getter
     @Builder
     public static class GetMemberInfoDocumentDto {
         // 보유한 문서 개수
         private int possessDocumentCount;
-        // 구독 기간 동안 사용가능한 AI PICK 횟수
-        private int availableAiPickCount;
-        // Free 플랜 최대 문서 보유 개수 20
-        private int freePlanMaxPossessDocumentCount;
-        // Free 플랜 매달 사용가능한 AI PICK 횟수
-        private int freePlanMonthlyAvailableAiPickCount;
-        // Pro 플랜 매달 사용가능한 AI PICK 횟수
-        private int proPlanMonthlyAvailableAiPickCount;
+        // Free 플랜 최대 문서 보유 개수 40
+        private int maxPossessDocumentCount;
     }
 }

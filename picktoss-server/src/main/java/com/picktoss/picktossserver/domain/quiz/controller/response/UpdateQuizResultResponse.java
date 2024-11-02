@@ -9,4 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UpdateQuizResultResponse {
     private Integer reward;
+    private Integer currentConsecutiveTodayQuizDate;
 }

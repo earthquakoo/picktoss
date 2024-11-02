@@ -4,9 +4,8 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
-import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
-import com.picktoss.picktossserver.global.enums.MemberRole;
-import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import com.picktoss.picktossserver.global.enums.member.MemberRole;
+import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -22,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.*;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.MAX_POSSESS_DOCUMENT_COUNT;
 
 @Service
 @RequiredArgsConstructor
@@ -40,27 +39,15 @@ public class MemberService {
 
     public GetMemberInfoResponse findMemberInfo(
             Member member,
-            Subscription subscription,
             int possessDocumentCount,
-            int availableAiPickCount,
-            int point,
-            int continuousQuizDatesCount,
-            int maxContinuousQuizDatesCount
+            int star
     ) {
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
-                .availableAiPickCount(availableAiPickCount)
-                .freePlanMaxPossessDocumentCount(FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT)
-                .freePlanMonthlyAvailableAiPickCount(FREE_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
-                .proPlanMonthlyAvailableAiPickCount(PRO_PLAN_MONTHLY_AVAILABLE_AI_PICK_COUNT)
+                .maxPossessDocumentCount(MAX_POSSESS_DOCUMENT_COUNT)
                 .build();
 
-        GetMemberInfoResponse.GetMemberInfoSubscriptionDto subscriptionDto = GetMemberInfoResponse.GetMemberInfoSubscriptionDto.builder()
-                .plan(subscription.getSubscriptionPlanType())
-                .purchasedDate(subscription.getPurchasedDate())
-                .expireDate(subscription.getExpireDate())
-                .build();
 
         String email = Optional.ofNullable(member.getEmail()).orElse("");
 
@@ -68,12 +55,11 @@ public class MemberService {
                 .id(member.getId())
                 .name(member.getName())
                 .email(email)
+                .socialPlatform(member.getSocialPlatform())
+                .interestField(member.getInterestCollectionFields())
                 .role(member.getRole())
-                .point(point)
-                .continuousQuizDatesCount(continuousQuizDatesCount)
-                .maxContinuousQuizDatesCount(maxContinuousQuizDatesCount)
                 .documentUsage(documentDto)
-                .subscription(subscriptionDto)
+                .star(star)
                 .isQuizNotificationEnabled(member.isQuizNotificationEnabled())
                 .build();
     }
@@ -85,11 +71,6 @@ public class MemberService {
 
     public Optional<Member> findMemberByGoogleClientId(String googleClientId) {
         return memberRepository.findByClientId(googleClientId);
-    }
-
-    public Member findMemberByEmail(String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
     }
 
     public Optional<Member> findMemberByClientId(String clientId) {
@@ -120,13 +101,20 @@ public class MemberService {
         member.updateQuizNotification(isQuizNotification);
     }
 
-    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Transactional
-    public void changeAiPickCountForTest(Long memberId, int aiPickCount) {
+    public void updateInterestCollectionFields(Long memberId, List<String> interestCollectionFields) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        member.changeAiPickCountForTest(aiPickCount);
+        member.updateInterestCollectionFields(interestCollectionFields);
+    }
+
+    @Transactional
+    public void updateTodayQuizCount(Long memberId, Integer todayQuizCount) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        member.updateTodayQuizCount(todayQuizCount);
     }
 
     @Transactional
@@ -142,14 +130,13 @@ public class MemberService {
                     .clientId(clientId)
                     .socialPlatform(SocialPlatform.GOOGLE)
                     .isQuizNotificationEnabled(false)
-                    .aiPickCount(AVAILABLE_AI_PICK_COUNT)
                     .role(MemberRole.ROLE_USER)
                     .build();
 
             members.add(member);
         }
 
-        String insertQuizSetQuizzesSql = "INSERT INTO member (name, client_id, social_platform, is_quiz_notification_enabled, ai_pick_count, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertQuizSetQuizzesSql = "INSERT INTO member (name, client_id, social_platform, is_quiz_notification_enabled, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(
                 insertQuizSetQuizzesSql,
@@ -160,10 +147,9 @@ public class MemberService {
                         ps.setObject(2, clientId);
                         ps.setObject(3, "GOOGLE");
                         ps.setObject(4, false);
-                        ps.setObject(5, AVAILABLE_AI_PICK_COUNT);
-                        ps.setObject(6, "ROLE_USER");
+                        ps.setObject(5, "ROLE_USER");
+                        ps.setObject(6, LocalDateTime.now());
                         ps.setObject(7, LocalDateTime.now());
-                        ps.setObject(8, LocalDateTime.now());
                     }
 
                     @Override

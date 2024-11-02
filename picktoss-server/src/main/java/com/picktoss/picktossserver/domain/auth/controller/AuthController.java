@@ -4,7 +4,6 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
-import com.picktoss.picktossserver.domain.auth.controller.request.OnlyBackendLoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
@@ -19,13 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-
-@Tag(name = "1. Auth")
+@Tag(name = "Auth")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")

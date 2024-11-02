@@ -3,7 +3,7 @@ package com.picktoss.picktossserver.domain.quiz.entity;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.QuizType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,14 +38,8 @@ public class Quiz extends AuditBase {
     @Column(name = "quiz_type", nullable = false)
     private QuizType quizType;
 
-    @Column(name = "bookmark", nullable = false)
-    private boolean bookmark;
-
     @Column(name = "incorrect_answer_count", nullable = false)
     private int incorrectAnswerCount;
-
-    @Column(name = "latest", nullable = false)
-    private boolean latest;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
@@ -61,14 +55,6 @@ public class Quiz extends AuditBase {
     private List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
 
     // Business Logics
-    public void updateBookmark(boolean bookmark) {
-        this.bookmark = bookmark;
-    }
-
-    public void updateQuizLatestByDocumentReUpload() {
-        this.latest = false;
-    }
-
     public void addIncorrectAnswerCount() {
         this.incorrectAnswerCount += 1;
     }

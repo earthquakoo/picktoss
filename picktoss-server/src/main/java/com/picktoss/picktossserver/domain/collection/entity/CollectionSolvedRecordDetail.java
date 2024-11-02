@@ -1,12 +1,13 @@
 package com.picktoss.picktossserver.domain.collection.entity;
 
+import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Getter
-@Table(name = "collection_solved_record")
+@Table(name = "collection_solved_record_detail")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -29,7 +30,20 @@ public class CollectionSolvedRecordDetail extends AuditBase {
     @JoinColumn(name = "collection_solved_record_id", nullable = false)
     private CollectionSolvedRecord collectionSolvedRecord;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "quiz_id", nullable = false)
-//    private Quiz quiz;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "quiz_id", nullable = false)
+    private Quiz quiz;
+
+
+    public static CollectionSolvedRecordDetail createCollectionSolvedRecordDetail(
+            Integer elapsedTime, Boolean isAnswer, String choseAnswer, CollectionSolvedRecord collectionSolvedRecord, Quiz quiz
+    ) {
+        return CollectionSolvedRecordDetail.builder()
+                .elapsedTime(elapsedTime)
+                .isAnswer(isAnswer)
+                .choseAnswer(choseAnswer)
+                .collectionSolvedRecord(collectionSolvedRecord)
+                .quiz(quiz)
+                .build();
+    }
 }

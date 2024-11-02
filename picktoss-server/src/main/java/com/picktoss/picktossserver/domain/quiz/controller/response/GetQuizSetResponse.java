@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.response;
 
-import com.picktoss.picktossserver.global.enums.QuizType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

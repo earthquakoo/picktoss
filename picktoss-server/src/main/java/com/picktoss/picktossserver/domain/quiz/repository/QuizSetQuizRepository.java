@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> {
@@ -17,7 +18,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quizSet qs " +
             "WHERE qs.id = :quizSetId " +
             "AND qs.member.id = :memberId")
-    List<QuizSetQuiz> findAllQuizzesByQuizSetIdAndMemberId(
+    List<QuizSetQuiz> findAllByQuizSetIdAndMemberId(
             @Param("quizSetId") String quizSetId,
             @Param("memberId") Long memberId
     );
@@ -29,7 +30,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH d.category c " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true")
-    List<QuizSetQuiz> findAllByMemberId(
+    List<QuizSetQuiz> findAllByMemberIdAndSolvedTrue(
             @Param("memberId") Long memberId
     );
 
@@ -40,21 +41,45 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH d.category c " +
             "WHERE qs.member.id = :memberId " +
             "AND c.id = :categoryId " +
-            "AND qs.solved = true " +
-            "ORDER BY qsq.updatedAt ASC")
-    List<QuizSetQuiz> findAllByMemberIdAndCategoryId(
+            "AND qs.solved = true")
+    List<QuizSetQuiz> findAllByMemberIdAndCategoryIdAndSolvedTrue(
             @Param("memberId") Long memberId,
             @Param("categoryId") Long categoryId
     );
 
-    @Query("SELECT DISTINCT qsq FROM QuizSetQuiz qsq " +
-            "JOIN FETCH qsq.quiz q " +
-            "LEFT JOIN FETCH q.options " +
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
             "JOIN FETCH qsq.quizSet qs " +
-            "WHERE qs.id = :quizSetId " +
-            "AND qs.member.id = :memberId")
-    List<QuizSetQuiz> findAllByQuizSetIdAndMemberId(
-            @Param("quizSetId") String quizSetId,
-            @Param("memberId") Long memberId
+            "JOIN FETCH qsq.quiz q " +
+            "JOIN FETCH q.document d " +
+            "WHERE qs.member.id = :memberId " +
+            "AND d.id = :documentId " +
+            "AND qs.solved = true " +
+            "AND qsq.createdAt >= :sevenDaysAgo")
+    List<QuizSetQuiz> findByMemberIdAndDocumentIdAndSolvedTrueAndCreatedAtAfter(
+            @Param("memberId") Long memberId,
+            @Param("documentId") Long documentId,
+            @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
     );
+
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN FETCH qsq.quizSet qs " +
+            "JOIN FETCH qsq.quiz q " +
+            "JOIN FETCH q.document d " +
+            "WHERE qs.member.id = :memberId " +
+            "AND qsq.createdAt >= :sevenDaysAgo")
+    List<QuizSetQuiz> findAllByMemberIdAndCreatedAtAfter(
+            @Param("memberId") Long memberId,
+            @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
+    );
+
+//    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+//            "JOIN FETCH qsq.quizSet qs " +
+//            "JOIN FETCH qsq.quiz q " +
+//            "JOIN FETCH q.document d " +
+//            "WHERE qs.member.id = :memberId " +
+//            "AND qsq.isReview = false " +
+//            "ORDER BY qsq.updatedAt DESC")
+//    List<QuizSetQuiz> findAllByMemberIdAndIsReviewOrderByUpdatedAt(
+//            @Param("memberId") Long memberId
+//    );
 }

@@ -3,9 +3,10 @@ package com.picktoss.picktossserver.domain.member.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.member.controller.request.ChangeAiPickCountForTestRequest;
+import com.picktoss.picktossserver.domain.member.controller.request.UpdateInterestCollectionFieldsRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateMemberNameRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateQuizNotificationRequest;
+import com.picktoss.picktossserver.domain.member.controller.request.UpdateTodayQuizCountRequest;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,10 +15,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "6. Member")
+@Tag(name = "Member")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
@@ -57,17 +57,24 @@ public class MemberController {
         memberFacade.updateQuizNotification(memberId, request.isQuizNotificationEnabled());
     }
 
-    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
-    @Tag(name = "Client test 전용 API")
-    @Operation(summary = "AI PICK 횟수 변경 API(테스트 혹은 예외처리를 위한 API로서 실제 사용 X)")
-    @PatchMapping("/test/change-ai-pick")
+    @Operation(summary = "관심분야 태그 설정")
+    @PatchMapping("/members/update-collection-fields")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public void changeAiPickCountForTest(@Valid @RequestBody ChangeAiPickCountForTestRequest request) {
+    public void updateInterestCollectionFields(@Valid @RequestBody UpdateInterestCollectionFieldsRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.changeAiPickCountForTest(memberId, request.getAiPickCount());
+        memberFacade.updateInterestCollectionFields(memberId, request.getInterestCollectionFields());
+    }
+
+    @Operation(summary = "오늘의 퀴즈 관리(오늘의 퀴즈 개수 설정)")
+    @PatchMapping("/members/update-today-quiz-count")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateTodayQuizCount(@Valid @RequestBody UpdateTodayQuizCountRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        memberFacade.updateTodayQuizCount(memberId, request.getTodayQuizCount());
     }
 
     @PostMapping("/test/create-member")

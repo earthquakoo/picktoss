@@ -9,10 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "4. Feedback")
+@Tag(name = "Feedback")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
@@ -22,12 +22,13 @@ public class FeedbackController {
     private final FeedbackFacade feedbackFacade;
 
     @Operation(summary = "Create Feedback")
-    @PostMapping("/feedback")
+    @PostMapping(value = "/feedback", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public void createFeedback(@Valid @RequestBody CreateFeedbackRequest request) {
+    public void createFeedback(
+            @Valid @RequestBody CreateFeedbackRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        feedbackFacade.createFeedback(request.getContent(), request.getType(), memberId);
+        feedbackFacade.createFeedback(request.getTitle(), request.getContent(), request.getType(), memberId);
     }
 }

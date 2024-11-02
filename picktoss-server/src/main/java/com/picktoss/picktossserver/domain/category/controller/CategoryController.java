@@ -2,7 +2,8 @@ package com.picktoss.picktossserver.domain.category.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.category.controller.request.*;
+import com.picktoss.picktossserver.domain.category.controller.request.CreateCategoryRequest;
+import com.picktoss.picktossserver.domain.category.controller.request.UpdateCategoryInfoRequest;
 import com.picktoss.picktossserver.domain.category.controller.response.CreateCategoryResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetAllCategoriesResponse;
 import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "2. Category")
+@Tag(name = "Category")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
@@ -26,7 +27,7 @@ public class CategoryController {
     private final CategoryFacade categoryFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @Operation(summary = "Get all categories")
+    @Operation(summary = "모든 카테고리 가져오기")
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllCategoriesResponse> getCategories() {
@@ -48,76 +49,35 @@ public class CategoryController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Create category")
+    @Operation(summary = "카테고리 생성")
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateCategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long categoryId = categoryFacade.createCategory(memberId, request.getName(), request.getTag(), request.getEmoji());
+        Long categoryId = categoryFacade.createCategory(memberId, request.getName(), request.getEmoji());
         return ResponseEntity.status(HttpStatus.CREATED).body(new CreateCategoryResponse(categoryId));
     }
 
-    @Operation(summary = "Delete category")
-    @DeleteMapping("/categories/{id}")
+    @Operation(summary = "카테고리 삭제")
+    @DeleteMapping("/categories/{category_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable(name = "id") Long categoryId) {
+    public void deleteCategory(@PathVariable(name = "category_id") Long categoryId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
         categoryFacade.deleteCategory(memberId, categoryId);
     }
 
-    @Operation(summary = "Update category name")
-    @PatchMapping("/categories/name/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCategoryName(@PathVariable(name = "id") Long categoryId, @Valid @RequestBody UpdateCategoryNameRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-        categoryFacade.updateCategoryName(memberId, categoryId, request.getCategoryName());
-    }
-
-    @Operation(summary = "Update category tag")
-    @PatchMapping("/categories/tag/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCategoryTag(@PathVariable(name = "id") Long categoryId, @Valid @RequestBody UpdateCategoryTagRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        categoryFacade.updateCategoryTag(memberId, categoryId, request.getTag());
-    }
-
-    @Operation(summary = "Update category emoji")
-    @PatchMapping("/categories/emoji/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCategoryEmoji(
-            @PathVariable(name = "id") Long categoryId,
-            @Valid @RequestBody UpdateCategoryEmojiRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        categoryFacade.updateCategoryEmoji(memberId, categoryId, request.getEmoji());
-    }
-
-    @Operation(summary = "update category info")
-    @PatchMapping("/categories/info/{id}")
+    @Operation(summary = "카테고리 정보 변경")
+    @PatchMapping("/categories/{category_id}/update-info")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCategoryInfo(
-            @PathVariable(name = "id") Long categoryId,
+            @PathVariable(name = "category_id") Long categoryId,
             @Valid @RequestBody UpdateCategoryInfoRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        categoryFacade.updateCategoryInfo(memberId, categoryId, request.getName(), request.getEmoji(), request.getCategoryTag());
-    }
-
-    @Operation(summary = "Update categories order")
-    @PatchMapping("/categories/reorder")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCategoriesOrder(@Valid @RequestBody UpdateCategoriesOrderRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        categoryFacade.updateCategoriesOrder(request.getCategoryId(), request.getPreDragCategoryOrder(), request.getAfterDragCategoryOrder(), memberId);
+        categoryFacade.updateCategoryInfo(memberId, categoryId, request.getName(), request.getEmoji());
     }
 }

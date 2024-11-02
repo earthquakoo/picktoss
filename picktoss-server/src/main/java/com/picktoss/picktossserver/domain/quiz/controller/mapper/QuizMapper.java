@@ -5,7 +5,7 @@ import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
-import com.picktoss.picktossserver.global.enums.QuizType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 
 import java.util.ArrayList;
 import java.util.List;

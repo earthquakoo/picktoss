@@ -1,7 +1,7 @@
 package com.picktoss.picktossserver.domain.collection.controller.dto;
 
 
-import com.picktoss.picktossserver.global.enums.CollectionDomain;
+import com.picktoss.picktossserver.global.enums.collection.CollectionField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,9 +22,8 @@ public class CollectionResponseDto {
         private String name;
         private String emoji;
         private int bookmarkCount;
-        private CollectionDomain collectionDomain;
+        private CollectionField collectionField;
         private String memberName;
         private int quizCount;
     }
-
 }
