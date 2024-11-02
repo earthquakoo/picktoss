@@ -5,14 +5,15 @@ import com.picktoss.picktossserver.domain.category.controller.response.GetAllCat
 import com.picktoss.picktossserver.domain.category.controller.response.GetSingleCategoryResponse;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.repository.CategoryRepository;
-import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.global.enums.CategoryTag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
@@ -28,27 +29,11 @@ public class CategoryService {
         List<GetAllCategoriesResponse.GetAllCategoriesCategoryDto> categoryDtos = new ArrayList<>();
 
         for (Category category : categories) {
-            Set<Document> documents = category.getDocuments();
-
-            List<GetAllCategoriesResponse.GetAllCategoriesDocumentDto> documentDtos = new ArrayList<>();
-            for (Document document : documents) {
-                GetAllCategoriesResponse.GetAllCategoriesDocumentDto documentDto = GetAllCategoriesResponse.GetAllCategoriesDocumentDto.builder()
-                        .id(document.getId())
-                        .name(document.getName())
-                        .order(document.getOrder())
-                        .documentStatus(document.getStatus())
-                        .build();
-
-                documentDtos.add(documentDto);
-            }
-
             GetAllCategoriesResponse.GetAllCategoriesCategoryDto categoryDto = GetAllCategoriesResponse.GetAllCategoriesCategoryDto.builder()
                     .id(category.getId())
                     .name(category.getName())
                     .tag(category.getTag())
-                    .order(category.getOrder())
                     .emoji(category.getEmoji())
-                    .documents(documentDtos)
                     .build();
 
             categoryDtos.add(categoryDto);
@@ -65,26 +50,18 @@ public class CategoryService {
                 .name(category.getName())
                 .tag(category.getTag())
                 .emoji(category.getEmoji())
-                .order(category.getOrder())
                 .build();
 
     }
 
     @Transactional
-    public Long createCategory(String name, CategoryTag tag, Long memberId, Member member, String emoji) {
+    public Long createCategory(String name, Long memberId, Member member, String emoji) {
         Optional<Category> optionalCategory = categoryRepository.findByNameAndMemberId(name, memberId);
         if (optionalCategory.isPresent()) {
             throw new CustomException(DUPLICATE_CATEGORY);
         }
 
-        Integer lastOrder = categoryRepository.findLastOrderByMemberId(memberId);
-        if (lastOrder == null) {
-            lastOrder = 0;
-        }
-
-        int order = lastOrder;
-
-        Category category = Category.createCategory(member, name, tag, order + 1, emoji);
+        Category category = Category.createCategory(member, name, emoji);
         categoryRepository.save(category);
         return category.getId();
     }
@@ -105,45 +82,11 @@ public class CategoryService {
             throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
         }
 
-        categoryRepository.updateMinusOrderByDeletedOrder(memberId, category.getOrder());
         categoryRepository.delete(category);
     }
 
     @Transactional
-    public void updateCategoryName(Long memberId, Long categoryId, String categoryName) {
-        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
-
-        if (!Objects.equals(category.getMember().getId(), memberId)) {
-            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
-        }
-        category.updateCategoryName(categoryName);
-    }
-
-    @Transactional
-    public void updateCategoryTag(Long memberId, Long categoryId, CategoryTag tag) {
-        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
-
-        if (!Objects.equals(category.getMember().getId(), memberId)) {
-            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
-        }
-        category.updateCategoryTag(tag);
-    }
-
-    @Transactional
-    public void updateCategoryEmoji(Long memberId, Long categoryId, String emoji) {
-        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
-
-        if (!Objects.equals(category.getMember().getId(), memberId)) {
-            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
-        }
-        category.updateCategoryEmoji(emoji);
-    }
-
-    @Transactional
-    public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji, CategoryTag categoryTag) {
+    public void updateCategoryInfo(Long memberId, Long categoryId, String name, String emoji) {
         Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
 
@@ -153,25 +96,15 @@ public class CategoryService {
 
         category.updateCategoryEmoji(emoji);
         category.updateCategoryName(name);
-        category.updateCategoryTag(categoryTag);
-    }
-
-    @Transactional
-    public void updateCategoriesOrder(Long categoryId, int preDragCategoryOrder, int afterDragCategoryOrder, Long memberId) {
-        Category category = categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
-
-        if (preDragCategoryOrder > afterDragCategoryOrder) {
-            categoryRepository.updatePlusOrderByPreOrderGreaterThanAfterOrder(memberId, afterDragCategoryOrder, preDragCategoryOrder);
-        } else {
-            categoryRepository.updateMinusOrderByPreOrderLessThanAfterOrder(memberId, preDragCategoryOrder, afterDragCategoryOrder);
-        }
-
-        category.updateCategoryOrder(afterDragCategoryOrder);
     }
 
     public Category findByCategoryIdAndMemberId(Long categoryId, Long memberId) {
         return categoryRepository.findByCategoryIdAndMemberId(categoryId, memberId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
+    }
+
+    public Category findCategoryWithMemberAndStarAndStarHistoryByCategoryIdAndMemberId(Long categoryId, Long memberId) {
+        return categoryRepository.findCategoryWithMemberAndStarAndStarHistoryByCategoryIdAndMemberId(categoryId, memberId)
                 .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
     }
 }

@@ -11,17 +11,28 @@ import java.util.List;
 @AllArgsConstructor
 public class GetQuizRecordResponse {
 
+    private int currentConsecutiveDays;
+    private int maxConsecutiveDays;
     private List<GetQuizRecordDto> quizRecords;
+    private List<GetCollectionRecordDto> collectionRecords;
 
     @Getter
     @Builder
     public static class GetQuizRecordDto {
-        private Long collectionId;
         private String quizSetId;
         private String name;
         private int quizCount;
         private int score;
         private LocalDateTime solvedDate;
-        private int continuousQuizDatesCount;
+    }
+
+    @Getter
+    @Builder
+    public static class GetCollectionRecordDto {
+        private Long collectionId;
+        private String name;
+        private int quizCount;
+        private int score;
+        private LocalDateTime solvedDate;
     }
 }

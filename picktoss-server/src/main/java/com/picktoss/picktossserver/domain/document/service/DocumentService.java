@@ -4,17 +4,16 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.document.controller.response.GetAllDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetMostIncorrectDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.GetSingleDocumentResponse;
-import com.picktoss.picktossserver.domain.document.controller.response.SearchDocumentResponse;
+import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
-import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
-import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
-import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
+import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
+import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.DEFAULT_DOCUMENT;
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.UNPROCESSED;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
+import static com.picktoss.picktossserver.global.enums.document.DocumentStatus.DEFAULT_DOCUMENT;
+import static com.picktoss.picktossserver.global.enums.document.DocumentStatus.UNPROCESSED;
 
 @Service
 @RequiredArgsConstructor
@@ -41,38 +39,15 @@ public class DocumentService {
     private String defaultDocumentS3Key;
 
     @Transactional
-    public Long createDocument(String documentName, Category category, Long memberId, String s3Key) {
-        Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
-        if (lastOrder == null) {
-            lastOrder = 0;
-        }
-
-        int order = lastOrder;
-
+    public Document createDocument(
+            String documentName, Category category, Long memberId, String s3Key, Integer starCount
+    ) {
         Document document = Document.createDocument(
-                documentName, s3Key, order + 1, UNPROCESSED, true, category
+                documentName, s3Key, UNPROCESSED, true, category
         );
 
         documentRepository.save(document);
-        return document.getId();
-    }
-
-    @Transactional
-    public boolean createAiPick(Document document, Long memberId, Subscription subscription, Member member) {
-        int aiPickCount = member.getAiPickCount();
-        boolean isFirstUseAiPick = (aiPickCount == AVAILABLE_AI_PICK_COUNT);
-
-        if (aiPickCount < 1) {
-            if (subscription.getAvailableAiPickCount() < 1) {
-                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
-            }
-            subscription.minusAvailableAiPickCount();
-        } else {
-            member.useAiPick();
-        }
-
-        document.updateDocumentStatusProcessingByGenerateAiPick();
-        return isFirstUseAiPick;
+        return document;
     }
 
     @Transactional
@@ -86,20 +61,33 @@ public class DocumentService {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        List<KeyPoint> keyPoints = document.getKeyPoints();
-        List<GetSingleDocumentResponse.GetSingleDocumentKeyPointDto> keyPointDtos = new ArrayList<>();
-
         String content = s3Provider.findFile(document.getS3Key());
+        int characterCount = content.length();
 
-        for (KeyPoint keyPoint : keyPoints) {
-            GetSingleDocumentResponse.GetSingleDocumentKeyPointDto keyPointDto = GetSingleDocumentResponse.GetSingleDocumentKeyPointDto.builder()
-                    .id(keyPoint.getId())
-                    .question(keyPoint.getQuestion())
-                    .answer(keyPoint.getAnswer())
-                    .bookmark(keyPoint.isBookmark())
+        Set<Quiz> quizzes = document.getQuizzes();
+        List<GetSingleDocumentResponse.GetSingleDocumentQuizDto> quizDtos = new ArrayList<>();
+        for (Quiz quiz : quizzes) {
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                List<Option> options = quiz.getOptions();
+                if (options.isEmpty()) {
+                    continue;
+                }
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+
+            GetSingleDocumentResponse.GetSingleDocumentQuizDto quizDto = GetSingleDocumentResponse.GetSingleDocumentQuizDto.builder()
+                    .id(quiz.getId())
+                    .question(quiz.getQuestion())
+                    .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
+                    .options(optionList)
+                    .quizType(quiz.getQuizType())
                     .build();
 
-            keyPointDtos.add(keyPointDto);
+            quizDtos.add(quizDto);
         }
 
         GetSingleDocumentResponse.GetSingleDocumentCategoryDto categoryDto = GetSingleDocumentResponse.GetSingleDocumentCategoryDto.builder()
@@ -113,33 +101,62 @@ public class DocumentService {
                 .id(document.getId())
                 .documentName(document.getName())
                 .status(documentStatus)
-                .isTodayQuizIncluded(document.isTodayQuizIncluded())
                 .category(categoryDto)
-                .keyPoints(keyPointDtos)
                 .content(content)
-                .createdAt(document.getCreatedAt())
+                .characterCount(characterCount)
+                .totalQuizCount(quizDtos.size())
+                .updatedAt(document.getUpdatedAt())
+                .quizzes(quizDtos)
                 .build();
     }
 
-    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocuments(Long memberId, Long categoryId, String documentSortOption) {
-        List<Document> documents = switch (documentSortOption) {
-            case "updatedAt" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(categoryId, memberId);
-            case "name" -> documentRepository.findAllByCategoryIdAndMemberIdOrderByNameAsc(categoryId, memberId);
-            case "createdAt" -> documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
-            default -> throw new CustomException(DOCUMENT_SORT_OPTION_ERROR);
-        };
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInCategory(
+            Long memberId, Long categoryId, DocumentSortOption documentSortOption, List<QuizSetQuiz> quizSetQuizzes
+    ) {
+        List<Document> documents;
+
+        if (categoryId == null) {
+            documents = (documentSortOption == DocumentSortOption.CREATED_AT)
+                    ? documentRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId)
+                    : documentRepository.findAllByMemberIdOrderByUpdatedAtDesc(memberId);
+        } else {
+            documents = (documentSortOption == DocumentSortOption.CREATED_AT)
+                    ? documentRepository.findAllByCategoryIdAndMemberIdOrderByCreatedAtDesc(categoryId, memberId)
+                    : documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(categoryId, memberId);
+        }
+
+        Map<Long, Integer> reviewNeededDocumentIdAndQuizCount = new HashMap<>();
+        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            // 정답이 아니거나 문제를 푸는데 20초이상 걸렸다면
+            if (!quizSetQuiz.getIsAnswer() || quizSetQuiz.getElapsedTimeMs() >= 20000) {
+                Long documentId = quizSetQuiz.getQuiz().getDocument().getId();
+                reviewNeededDocumentIdAndQuizCount.put(documentId, reviewNeededDocumentIdAndQuizCount.getOrDefault(documentId, 0) + 1);
+            }
+        }
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
+            Integer reviewNeededQuizCount = reviewNeededDocumentIdAndQuizCount.get(document.getId());
             DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
+            String content = s3Provider.findFile(document.getS3Key());
+            int characterCount = content.length();
+
+            Category category = document.getCategory();
+            GetAllDocumentsResponse.GetAllDocumentsCategoryDto categoryDto = GetAllDocumentsResponse.GetAllDocumentsCategoryDto.builder()
+                    .name(category.getName())
+                    .categoryTag(category.getTag())
+                    .build();
 
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
                     .id(document.getId())
                     .name(document.getName())
+                    .characterCount(characterCount)
                     .status(documentStatus)
-                    .isTodayQuizIncluded(document.isTodayQuizIncluded())
+                    .totalQuizCount(document.getQuizzes().size())
                     .createdAt(document.getCreatedAt())
                     .updatedAt(document.getUpdatedAt())
+                    .reviewNeededQuizCount(reviewNeededQuizCount)
+                    .category(categoryDto)
                     .build();
 
             documentDtos.add(documentDto);
@@ -148,79 +165,39 @@ public class DocumentService {
     }
 
     @Transactional
-    public void deleteDocument(Long memberId, Long documentId) {
-        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
-                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+    public List<Document> deleteDocument(Long memberId, List<Long> documentIds) {
+        List<Document> deleteDocuments = documentRepository.findByDocumentIdsInAndMemberId(documentIds, memberId);
 
-        if (!Objects.equals(document.getCategory().getMember().getId(), memberId)) {
-            throw new CustomException(UNAUTHORIZED_OPERATION_EXCEPTION);
-        }
-
-        if (!document.getS3Key().equals(defaultDocumentS3Key)) {
-            s3Provider.deleteFile(document.getS3Key());
-        }
-
-        List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        for (Document d : documents) {
-            if (d.getOrder() > document.getOrder()) {
-                d.minusDocumentOrder();
-            }
-        }
-
-        documentRepository.delete(document);
-    }
-
-    @Transactional
-    public void changeDocumentOrder(Long documentId, int preDragDocumentOrder, int afterDragDocumentOrder, Long memberId) {
-        if (preDragDocumentOrder > afterDragDocumentOrder) {
-            List<Document> documents = documentRepository.findByOrderGreaterThanEqualAndOrderLessThanOrderByOrderAsc(
-                    afterDragDocumentOrder, preDragDocumentOrder, memberId);
-            for (Document document : documents) {
-                document.addDocumentOrder();
-            }
-        } else {
-            List<Document> documents = documentRepository.findByOrderGreaterThanAndOrderLessThanEqualOrderByOrderAsc(
-                    preDragDocumentOrder, afterDragDocumentOrder, memberId);
-            for (Document document : documents) {
-                document.minusDocumentOrder();
-            }
-        }
-        Optional<Document> optionalDocument = documentRepository.findByDocumentIdAndMemberId(documentId, memberId);
-
-        if (optionalDocument.isEmpty()) {
+        if (deleteDocuments.isEmpty()) {
             throw new CustomException(DOCUMENT_NOT_FOUND);
         }
 
-        Document document = optionalDocument.get();
-        document.updateDocumentOrder(afterDragDocumentOrder);
+        documentRepository.deleteAll(deleteDocuments);
+        return deleteDocuments;
     }
 
     @Transactional
-    public void moveDocumentToCategory(Long documentId, Long memberId, Category category) {
-        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
-                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
-
-        document.moveDocumentToCategory(category);
-
-        Integer lastOrder = documentRepository.findLastOrderByCategoryIdAndMemberId(category.getId(), memberId);
-        if (lastOrder == null) {
-            lastOrder = 0;
+    public void moveDocumentToCategory(List<Long> documentIds, Long memberId, Category category) {
+        List<Document> documents = documentRepository.findByDocumentIdsInAndMemberId(documentIds, memberId);
+        for (Document document : documents) {
+            document.moveDocumentToCategory(category);
         }
-
-        document.updateDocumentOrder(lastOrder + 1);
     }
 
-    public List<SearchDocumentResponse.SearchDocumentDto> searchDocument(String word, Long memberId) {
+    public SearchDocumentResponse searchDocumentByKeyword(String keyword, Long memberId) {
 
         List<SearchDocumentResponse.SearchDocumentDto> documentDtos = new ArrayList<>();
+        List<SearchDocumentResponse.SearchDocumentQuizDto> quizDtos = new ArrayList<>();
 
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
+
         for (Document document : documents) {
+            Category category = document.getCategory();
             String content = s3Provider.findFile(document.getS3Key());
             String documentName = document.getName();
-            if (content.toLowerCase().contains(word.toLowerCase())
-                    || documentName.toLowerCase().contains(word.toLowerCase())) {
-                Category category = document.getCategory();
+            if (content.toLowerCase().contains(keyword.toLowerCase())
+                    || documentName.toLowerCase().contains(keyword.toLowerCase())
+            ) {
                 SearchDocumentResponse.SearchDocumentCategoryDto categoryDto = SearchDocumentResponse.SearchDocumentCategoryDto.builder()
                         .id(category.getId())
                         .name(category.getName())
@@ -235,34 +212,43 @@ public class DocumentService {
 
                 documentDtos.add(documentDto);
             }
+
+            Set<Quiz> quizzes = document.getQuizzes();
+            for (Quiz quiz : quizzes) {
+                if (quiz.getQuestion().toLowerCase().contains(keyword.toLowerCase())
+                        || quiz.getAnswer().toLowerCase().contains(keyword.toLowerCase())
+                        || quiz.getExplanation().toLowerCase().contains(keyword.toLowerCase())
+                ) {
+                    SearchDocumentResponse.SearchDocumentQuizDto quizDto = SearchDocumentResponse.SearchDocumentQuizDto.builder()
+                            .id(quiz.getId())
+                            .question(quiz.getQuestion())
+                            .answer(quiz.getAnswer())
+                            .categoryName(category.getName())
+                            .documentName(document.getName())
+                            .build();
+
+                    quizDtos.add(quizDto);
+                }
+            }
         }
-        return documentDtos;
+        return new SearchDocumentResponse(documentDtos, quizDtos);
     }
 
-    public GetMostIncorrectDocumentsResponse findMostIncorrectDocuments(Long memberId) {
-        List<Document> documents = documentRepository.findMostIncorrectDocuments(memberId);
-
-        HashMap<Document, Integer> documentIncorrectAnswerCounts = new LinkedHashMap<>();
-
+    public GetDocumentsNeedingReviewResponse findDocumentsNeedingReview(Long memberId, List<QuizSetQuiz> quizSetQuizzes) {
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        HashMap<Document, Integer> documentsNeedingReviewCountMap = new LinkedHashMap<>();
         for (Document document : documents) {
-            Set<Quiz> quizzes = document.getQuizzes();
-
-            if (quizzes.isEmpty()) {
-                continue;
-            }
-
-            int totalIncorrectAnswerCount = 0;
-
-            for (Quiz quiz : quizzes) {
-                totalIncorrectAnswerCount += quiz.getIncorrectAnswerCount();
-            }
-
-            documentIncorrectAnswerCounts.put(document, totalIncorrectAnswerCount);
+            documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.getOrDefault(document, 0));
         }
+        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            if (!quizSetQuiz.getIsAnswer() || quizSetQuiz.getElapsedTimeMs() >= 20000) {
+                Document document = quizSetQuiz.getQuiz().getDocument();
+                documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.get(document) + 1);
+            }
+        }
+        List<GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDto> documentsDtos = new ArrayList<>();
 
-        List<GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto> documentsDtos = new ArrayList<>();
-
-        HashMap<Document, Integer> top5Documents = documentIncorrectAnswerCounts.entrySet().stream()
+        HashMap<Document, Integer> top5Documents = documentsNeedingReviewCountMap.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(5)
                 .collect(Collectors.toMap(
@@ -275,21 +261,21 @@ public class DocumentService {
         for (Document document : top5Documents.keySet()) {
             Category category = document.getCategory();
 
-            GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsCategoryDto categoryDto = GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsCategoryDto.builder()
+            GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsCategoryDto categoryDto = GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsCategoryDto.builder()
                     .id(category.getId())
                     .name(category.getName())
                     .build();
 
-            GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto documentDto = GetMostIncorrectDocumentsResponse.GetMostIncorrectDocumentsDto.builder()
+            GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDto documentDto = GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDto.builder()
                     .id(document.getId())
                     .name(document.getName())
-                    .incorrectAnswerCount(top5Documents.get(document))
+                    .reviewNeededQuizCount(top5Documents.get(document))
                     .category(categoryDto)
                     .build();
 
             documentsDtos.add(documentDto);
         }
-        return new GetMostIncorrectDocumentsResponse(documentsDtos);
+        return new GetDocumentsNeedingReviewResponse(documentsDtos);
     }
 
     @Transactional
@@ -299,10 +285,6 @@ public class DocumentService {
 
         if (!document.getS3Key().equals(defaultDocumentS3Key)) {
             s3Provider.deleteFile(document.getS3Key());
-        }
-
-        if (document.getStatus() != UNPROCESSED) {
-            document.updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument();
         }
 
         document.updateDocumentS3KeyByUpdatedContent(s3Key);
@@ -317,29 +299,80 @@ public class DocumentService {
         document.updateDocumentName(documentName);
     }
 
+
     @Transactional
-    public void reUploadDocument(Document document, Subscription subscription, Member member) {
-        int aiPickCount = member.getAiPickCount();
-
-        if (aiPickCount < 1) {
-            if (subscription.getAvailableAiPickCount() < 1) {
-                throw new CustomException(FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR);
+    public void selectDocumentToNotGenerateByTodayQuiz(Map<Long, Boolean> documentIdTodayQuizMap, Long memberId) {
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        for (Document document : documents) {
+            if (documentIdTodayQuizMap.containsKey(document.getId())) {
+                document.updateDocumentIsTodayQuizIncluded(documentIdTodayQuizMap.get(document.getId()));
             }
-            subscription.minusAvailableAiPickCount();
-        } else {
-            member.useAiPick();
         }
-
-        sqsProvider.sendMessage(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType());
     }
 
-    // "오늘의 퀴즈 관리"에서 선택하지 않은 documentId만 받을 수 있는 프론트한테 물어봐야함.
-    @Transactional
-    public void selectDocumentToNotGenerateByTodayQuiz(List<Long> documentIds, Long memberId) {
-        List<Document> documents = documentRepository.findByDocumentIdsInAndMemberId(documentIds, memberId);
+    public IntegratedSearchResponse integratedSearchByKeyword(Long memberId, String keyword, List<Collection> collections) {
+        List<Document> documents = documentRepository.findAllWithCategoryAndQuizzes(memberId);
+        List<IntegratedSearchResponse.IntegratedSearchDocumentDto> documentDtos = new ArrayList<>();
+        List<IntegratedSearchResponse.IntegratedSearchQuizDto> quizDtos = new ArrayList<>();
+        List<IntegratedSearchResponse.IntegratedSearchCollectionDto> collectionDtos = new ArrayList<>();
+
         for (Document document : documents) {
-            document.updateDocumentIsTodayQuizIncludedBYNotGenerateTodayQuiz();
+            Category category = document.getCategory();
+            String content = s3Provider.findFile(document.getS3Key());
+            String documentName = document.getName();
+            if (content.toLowerCase().contains(keyword.toLowerCase())
+                    || documentName.toLowerCase().contains(keyword.toLowerCase())
+            ) {
+                IntegratedSearchResponse.IntegratedSearchCategoryDto categoryDto = IntegratedSearchResponse.IntegratedSearchCategoryDto.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .build();
+
+                IntegratedSearchResponse.IntegratedSearchDocumentDto documentDto = IntegratedSearchResponse.IntegratedSearchDocumentDto.builder()
+                        .documentId(document.getId())
+                        .documentName(document.getName())
+                        .content(content)
+                        .category(categoryDto)
+                        .build();
+
+                documentDtos.add(documentDto);
+            }
+
+            Set<Quiz> quizzes = document.getQuizzes();
+            for (Quiz quiz : quizzes) {
+                if (quiz.getQuestion().toLowerCase().contains(keyword.toLowerCase())
+                        || quiz.getAnswer().toLowerCase().contains(keyword.toLowerCase())
+                        || quiz.getExplanation().toLowerCase().contains(keyword.toLowerCase())
+                ) {
+                    IntegratedSearchResponse.IntegratedSearchQuizDto quizDto = IntegratedSearchResponse.IntegratedSearchQuizDto.builder()
+                            .id(quiz.getId())
+                            .question(quiz.getQuestion())
+                            .answer(quiz.getAnswer())
+                            .categoryName(category.getName())
+                            .documentName(document.getName())
+                            .build();
+
+                    quizDtos.add(quizDto);
+                }
+            }
         }
+
+        for (Collection collection : collections) {
+            IntegratedSearchResponse.IntegratedSearchCollectionDto collectionDto = IntegratedSearchResponse.IntegratedSearchCollectionDto.builder()
+                    .id(collection.getId())
+                    .name(collection.getName())
+                    .emoji(collection.getEmoji())
+                    .bookmarkCount(collection.getCollectionBookmarks().size())
+                    .collectionField(collection.getCollectionField())
+                    .memberName(collection.getMember().getName())
+                    .quizCount(collection.getCollectionQuizzes().size())
+                    .build();
+
+            collectionDtos.add(collectionDto);
+
+        }
+
+        return new IntegratedSearchResponse(documentDtos, quizDtos, collectionDtos);
     }
 
     //보유한 모든 문서의 개수
@@ -354,32 +387,7 @@ public class DocumentService {
         return possessDocumentCount;
     }
 
-
-    //현재 구독 사이클에 업로드한 문서 개수
-    public int findUploadedDocumentCountForCurrentSubscription(Long memberId, Subscription subscription) {
-        List<Document> uploadedDocuments = documentRepository.findAllByMemberId(memberId);
-
-        List<Document> currentSubscriptionDocumentUploads = new ArrayList<>();
-        for (Document doc : uploadedDocuments) {
-            if ((doc.getCreatedAt().isAfter(subscription.getPurchasedDate()) ||
-                    doc.getCreatedAt().isEqual(subscription.getPurchasedDate())) &&
-                    doc.getCreatedAt().isBefore(subscription.getExpireDate())) {
-                currentSubscriptionDocumentUploads.add(doc);
-            }
-        }
-        return currentSubscriptionDocumentUploads.size();
-    }
-
-    public List<Document> findAllByCategoryIdAndMemberId(Long categoryId, Long memberId) {
-        return documentRepository.findAllByCategoryIdAndMemberId(categoryId, memberId);
-    }
-
     public List<Document> findAllByMemberId(Long memberId) {
         return documentRepository.findAllByMemberId(memberId);
-    }
-
-    public Document findByDocumentIdAndMemberId(Long documentId, Long memberId) {
-        return documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
-                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
     }
 }

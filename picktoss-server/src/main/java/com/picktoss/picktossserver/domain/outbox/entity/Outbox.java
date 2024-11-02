@@ -1,7 +1,7 @@
 package com.picktoss.picktossserver.domain.outbox.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.global.enums.OutboxStatus;
+import com.picktoss.picktossserver.global.enums.outbox.OutboxStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

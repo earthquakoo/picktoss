@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.category.controller.response;
 
-import com.picktoss.picktossserver.global.enums.CategoryTag;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.category.CategoryTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,17 +19,6 @@ public class GetAllCategoriesResponse {
         private Long id;
         private String name;
         private CategoryTag tag;
-        private int order;
         private String emoji;
-        private List<GetAllCategoriesDocumentDto> documents;
-    }
-
-    @Getter
-    @Builder
-    public static class GetAllCategoriesDocumentDto {
-        private Long id;
-        private String name;
-        private int order;
-        private DocumentStatus documentStatus;
     }
 }

@@ -3,7 +3,7 @@ package com.picktoss.picktossserver.domain.category.entity;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.CategoryTag;
+import com.picktoss.picktossserver.global.enums.category.CategoryTag;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,9 +32,6 @@ public class Category extends AuditBase {
     @Column(name = "emoji")
     private String emoji;
 
-    @Column(name = "orders")
-    private int order;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -43,12 +40,11 @@ public class Category extends AuditBase {
     private Set<Document> documents = new HashSet<>();
 
     // Constructor methods
-    public static Category createCategory(Member member, String name, CategoryTag tag, int order, String emoji) {
+    public static Category createCategory(Member member, String name, String emoji) {
         Category category = Category.builder()
                 .name(name)
+                .tag(CategoryTag.NORMAL)
                 .member(member)
-                .tag(tag)
-                .order(order)
                 .emoji(emoji)
                 .build();
 
@@ -60,7 +56,6 @@ public class Category extends AuditBase {
         return Category.builder()
                 .name("기본 폴더")
                 .tag(CategoryTag.DEFAULT)
-                .order(1)
                 .emoji(null)
                 .member(member)
                 .build();
@@ -75,14 +70,6 @@ public class Category extends AuditBase {
     // Business Logics
     public void updateCategoryName(String name) {
         this.name = name;
-    }
-
-    public void updateCategoryTag(CategoryTag tag) {
-        this.tag = tag;
-    }
-
-    public void updateCategoryOrder(int order) {
-        this.order = order;
     }
 
     public void updateCategoryEmoji(String emoji) {

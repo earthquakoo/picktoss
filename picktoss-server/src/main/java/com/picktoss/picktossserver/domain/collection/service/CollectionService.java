@@ -1,28 +1,27 @@
 package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
+import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizResultRequest;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.*;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionBookmarkRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionSolvedRecordRepository;
+import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.repository.*;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
-import com.picktoss.picktossserver.global.enums.CollectionDomain;
-import com.picktoss.picktossserver.global.enums.CollectionSortOption;
-import com.picktoss.picktossserver.global.enums.QuizType;
+import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionSortOption;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.COLLECTION_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,15 +32,15 @@ public class CollectionService {
     private final CollectionQuizRepository collectionQuizRepository;
     private final CollectionBookmarkRepository collectionBookmarkRepository;
     private final CollectionSolvedRecordRepository collectionSolvedRecordRepository;
+    private final CollectionSolvedRecordDetailRepository collectionSolvedRecordDetailRepository;
 
     @Transactional
     public void createCollection(
-            List<Quiz> quizzes, String name, String description, String tag, String emoji, CollectionDomain collectionDomain, Member member) {
+            List<Quiz> quizzes, String name, String description, String emoji, CollectionField collectionField, Member member) {
 
         List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
 
-        Collection collection = Collection.createCollection(name, emoji, description, tag, collectionDomain, member);
-        CollectionBookmark collectionBookmark = CollectionBookmark.createCollectionBookmark(collection, member);
+        Collection collection = Collection.createCollection(name, emoji, description, collectionField, member);
 
         for (Quiz quiz : quizzes) {
             CollectionQuiz collectionQuiz = CollectionQuiz.createQuizCollection(quiz, collection);
@@ -50,14 +49,20 @@ public class CollectionService {
 
         collectionRepository.save(collection);
         collectionQuizRepository.saveAll(collectionQuizzes);
-        collectionBookmarkRepository.save(collectionBookmark);
     }
 
     // 탐색 컬렉션
     public List<Collection> findAllCollections(
-            CollectionSortOption collectionSortOption, List<CollectionDomain> collectionDomains, QuizType quizType, Integer quizCount, Long memberId) {
+            CollectionSortOption collectionSortOption, List<CollectionField> collectionFields, QuizType quizType, Integer quizCount) {
 
-        List<Collection> collections = filterCollectionByDomains(collectionDomains, memberId);
+        List<Collection> collections;
+
+        if (collectionFields == null) {
+            collections = collectionRepository.findAllOrderByUpdatedAtDesc();
+        } else {
+            collections = collectionRepository.findAllByCollectionDomainsAndUpdatedAt(collectionFields);
+        }
+
 
         if (quizCount == null && quizType == null) {
             return collections;
@@ -87,19 +92,24 @@ public class CollectionService {
         return collections;
     }
 
-    // 내 컬렉션(내가 만든 컬렉션이나 북마크한 컬렉션) 내가 만든 컬렉션은 북마크가 이미 되어있도록 설정(+ 내가 만든 컬렉션은 북마크를 해제할 수 없음)
-    public List<Collection> findCollectionByMemberId(Long memberId) {
-        return collectionBookmarkRepository.findCollectionByMemberId(memberId);
+    // 북마크한 컬렉션 가져오기
+    public List<Collection> findAllByMemberIdAndBookmarked(Long memberId) {
+        return collectionRepository.findAllByMemberIdAndBookmarked(memberId);
+    }
+
+    // 직접 생성한 컬렉션 가져오기
+    public List<Collection> findAllByMemberId(Long memberId) {
+        return collectionRepository.findAllByMemberId(memberId);
     }
 
     // 만든 컬렉션 상세
     public GetSingleCollectionResponse findCollectionByCollectionId(Long collectionId, Long memberId) {
-        Collection collection = collectionRepository.findCollectionByIdAndMemberId(collectionId, memberId)
+        Collection collection = collectionRepository.findCollectionWithCollectionSolvedRecordByCollectionIdAndMemberId(collectionId, memberId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
         List<GetSingleCollectionResponse.GetSingleCollectionQuizDto> quizzesDtos = new ArrayList<>();
 
-        List<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
         for (CollectionQuiz collectionQuiz : collectionQuizzes) {
             Quiz quiz = collectionQuiz.getQuiz();
             List<String> optionList = new ArrayList<>();
@@ -124,8 +134,7 @@ public class CollectionService {
                 .id(collection.getId())
                 .name(collection.getName())
                 .description(collection.getDescription())
-                .tag(collection.getTag())
-                .solvedCount(collection.getSolvedCount())
+                .solvedCount(collection.getCollectionSolvedRecords().size())
                 .bookmarkCount(collection.getCollectionBookmarks().size())
                 .quizzes(quizzesDtos)
                 .build();
@@ -137,61 +146,115 @@ public class CollectionService {
 
         List<GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto> collectionSolvedRecordDtos = new ArrayList<>();
 
-        List<CollectionQuiz> collectionQuizzes = collectionSolvedRecord.getCollection().getCollectionQuizzes();
         List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
-        int elapsedTimeMs = 0;
-        for (int i = 0; i <= collectionQuizzes.size(); i++) {
-            elapsedTimeMs += collectionSolvedRecordDetails.get(i).getElapsedTime();
+        int totalElapsedTimeMs = 0;
+        for (CollectionSolvedRecordDetail collectionSolvedRecordDetail : collectionSolvedRecordDetails) {
+            totalElapsedTimeMs += collectionSolvedRecordDetail.getElapsedTime();
+            Quiz quiz = collectionSolvedRecordDetail.getQuiz();
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                List<Option> options = quiz.getOptions();
+                if (options.isEmpty()) {
+                    continue;
+                }
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
             GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto collectionSolvedRecordDto = GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto.builder()
-                    .question(collectionQuizzes.get(i).getQuiz().getQuestion())
-                    .answer(collectionQuizzes.get(i).getQuiz().getAnswer())
-                    .explanation(collectionQuizzes.get(i).getQuiz().getExplanation())
-                    .isAnswer(collectionSolvedRecordDetails.get(i).getIsAnswer())
-                    .choseAnswer(collectionSolvedRecordDetails.get(i).getChoseAnswer())
+                    .question(quiz.getQuestion())
+                    .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
+                    .options(optionList)
+                    .isAnswer(collectionSolvedRecordDetail.getIsAnswer())
+                    .choseAnswer(collectionSolvedRecordDetail.getChoseAnswer())
                     .build();
 
             collectionSolvedRecordDtos.add(collectionSolvedRecordDto);
         }
-        return new GetCollectionSolvedRecordResponse(collectionSolvedRecord.getCreatedAt(), elapsedTimeMs, collectionSolvedRecordDtos);
+        return new GetCollectionSolvedRecordResponse(collectionSolvedRecord.getCreatedAt(), totalElapsedTimeMs, collectionSolvedRecordDtos);
     }
 
     // 컬렉션 키워드 검색
-    public List<Collection> searchCollections(String keyword, Long memberId) {
-        return collectionRepository.findByCollectionContaining(keyword, memberId);
+    public List<Collection> searchCollections(String keyword) {
+        return collectionRepository.findByCollectionContaining(keyword);
     }
 
     @Transactional
     public void deleteCollection(Long collectionId, Long memberId) {
-        Collection collection = collectionRepository.findCollectionByIdAndMemberId(collectionId, memberId)
+        Collection collection = collectionRepository.findCollectionByCollectionIdAndMemberId(collectionId, memberId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
         collectionRepository.delete(collection);
     }
 
     @Transactional
-    public void updateCollectionQuizResult(Long collectionId) {
-        Collection collection = collectionRepository.findCollectionById(collectionId)
+    public void updateCollectionQuizResult(
+            List<UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto> collectionQuizDtos, Long collectionId, Member member) {
+        Collection collection = collectionRepository.findCollectionWithCollectionQuizByCollectionId(collectionId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
-        collection.updateCollectionByUpdateCollectionSolved();
+        CollectionSolvedRecord collectionSolvedRecord = CollectionSolvedRecord.createCollectionSolvedRecord(collection, member);
+
+        List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = new ArrayList<>();
+        Map<Long, UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto> collectionQuizAndQuizIdMapping = new HashMap<>();
+        for (UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto collectionQuizDto : collectionQuizDtos) {
+            collectionQuizAndQuizIdMapping.put(collectionQuizDto.getQuizId(), collectionQuizDto);
+        }
+
+        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+
+        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+            Quiz quiz = collectionQuiz.getQuiz();
+            UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto collectionQuizDto = collectionQuizAndQuizIdMapping.get(quiz.getId());
+            CollectionSolvedRecordDetail collectionSolvedRecordDetail = CollectionSolvedRecordDetail.createCollectionSolvedRecordDetail(
+                    collectionQuizDto.getElapsedTimeMs(),
+                    collectionQuizDto.getIsAnswer(),
+                    collectionQuizDto.getChoseAnswer(),
+                    collectionSolvedRecord,
+                    quiz);
+
+            collectionSolvedRecordDetails.add(collectionSolvedRecordDetail);
+        }
+
+        collectionSolvedRecordRepository.save(collectionSolvedRecord);
+        collectionSolvedRecordDetailRepository.saveAll(collectionSolvedRecordDetails);
     }
 
     // 컬렉션 정보 수정
     @Transactional
     public void updateCollectionInfo(
-            Long collectionId, Long memberId, String name, String tag, String description, String emoji, CollectionDomain collectionDomain) {
-        Collection collection = collectionRepository.findCollectionByIdAndMemberId(collectionId, memberId)
+            Long collectionId, Long memberId, String name, String description, String emoji, CollectionField collectionField) {
+        Collection collection = collectionRepository.findCollectionByCollectionIdAndMemberId(collectionId, memberId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
-        collection.updateCollectionByUpdateCollectionInfo(name, tag, description, emoji, collectionDomain);
+        collection.updateCollectionByUpdateCollectionInfo(name, description, emoji, collectionField);
     }
 
+    // 컬렉션에 퀴즈 추가
     @Transactional
-    public void updateCollectionQuizzes(List<Quiz> quizzes, Long collectionId, Long memberId) {
-        Collection collection = collectionRepository.findCollectionByIdAndMemberId(collectionId, memberId)
+    public void addQuizToCollection(Long collectionId, Long memberId, Quiz quiz) {
+        Collection collection = collectionRepository.findCollectionByCollectionIdAndMemberId(collectionId, memberId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
-        List<CollectionQuiz> curCollectionQuizzes = collection.getCollectionQuizzes();
+        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+            if (Objects.equals(collectionQuiz.getQuiz().getId(), quiz.getId())) {
+                throw new CustomException(DUPLICATE_QUIZ_IN_COLLECTION);
+            }
+        }
+
+        CollectionQuiz collectionQuiz = CollectionQuiz.createQuizCollection(quiz, collection);
+        collectionQuizRepository.save(collectionQuiz);
+    }
+
+    // 컬렉션 퀴즈 편집
+    @Transactional
+    public void updateCollectionQuizzes(List<Quiz> quizzes, Long collectionId, Long memberId) {
+        Collection collection = collectionRepository.findCollectionByCollectionIdAndMemberId(collectionId, memberId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        Set<CollectionQuiz> curCollectionQuizzes = collection.getCollectionQuizzes();
         collectionQuizRepository.deleteAll(curCollectionQuizzes);
 
         List<CollectionQuiz> newCollectionQuizzes = new ArrayList<>();
@@ -203,10 +266,50 @@ public class CollectionService {
         collectionQuizRepository.saveAll(newCollectionQuizzes);
     }
 
-    private List<Collection> filterCollectionByDomains(List<CollectionDomain> collectionDomains, Long memberId) {
-        if (collectionDomains == null) {
-            return collectionRepository.findAllOrderByUpdatedAtDesc(memberId);
+    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
+        List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
+        Map<CollectionField, Integer> collectionFieldMap = new HashMap<>();
+
+        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
+            Collection collection = collectionSolvedRecord.getCollection();
+            collectionFieldMap.put(collection.getCollectionField(), collectionFieldMap.getOrDefault(collection.getCollectionField(), 0) + 1);
         }
-        return collectionRepository.findAllByCollectionDomains(collectionDomains, memberId);
+
+        return GetCollectionSAnalysisResponse.builder()
+                .collectionsAnalysis(collectionFieldMap)
+                .build();
+    }
+
+    @Transactional
+    public void createCollectionBookmark(Member member, Long collectionId) {
+        Collection collection = collectionRepository.findCollectionById(collectionId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        Long collectionMemberId = collection.getMember().getId();
+
+        if (Objects.equals(member.getId(), collectionMemberId)) {
+            throw new CustomException(OWN_COLLECTION_CANT_BOOKMARK);
+        }
+
+        CollectionBookmark collectionBookmark = CollectionBookmark.createCollectionBookmark(collection, member);
+
+        collectionBookmarkRepository.save(collectionBookmark);
+    }
+
+    @Transactional
+    public void deleteCollectionBookmark(Long memberId, Long collectionId) {
+        CollectionBookmark collectionBookmark = collectionBookmarkRepository.findByMemberIdAndCollectionId(memberId, collectionId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        collectionBookmarkRepository.delete(collectionBookmark);
+    }
+
+    public List<Collection> findInterestFieldCollections(List<String> collectionFields) {
+        List<CollectionField> interestCollectionFields = new ArrayList<>();
+        for (String collectionFieldString : collectionFields) {
+            CollectionField collectionField = CollectionField.valueOf(collectionFieldString);
+            interestCollectionFields.add(collectionField);
+        }
+        return collectionRepository.findAllByCollectionDomainsAndUpdatedAt(interestCollectionFields);
     }
 }

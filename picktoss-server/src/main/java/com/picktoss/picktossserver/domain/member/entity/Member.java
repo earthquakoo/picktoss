@@ -5,13 +5,12 @@ import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
-import com.picktoss.picktossserver.domain.event.entity.Event;
-import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
-import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
+import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.MemberRole;
-import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import com.picktoss.picktossserver.global.enums.member.MemberRole;
+import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
+import com.picktoss.picktossserver.global.utils.StringListConvert;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,24 +45,22 @@ public class Member extends AuditBase {
     @Column(name = "is_quiz_notification_enabled", nullable = false)
     private boolean isQuizNotificationEnabled;
 
-    @Column(name = "ai_pick_count", nullable = false)
-    private int aiPickCount;
+    @Column(name = "today_quiz_count", nullable = false)
+    private Integer todayQuizCount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private MemberRole role;
 
+    @Convert(converter = StringListConvert.class)
+    @Column(name = "interest_collection_fields")
+    private List<String> interestCollectionFields;
+
+    @OneToOne(mappedBy = "member", orphanRemoval = true)
+    private Star star;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Event> events = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Payment> payments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Subscription> subscriptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSet> quizSets = new ArrayList<>();
@@ -76,10 +73,6 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<CollectionSolvedRecord> collectionSolvedRecords = new ArrayList<>();
-
-    public void useAiPick() {
-        this.aiPickCount -= 1;
-    }
     
     public void updateMemberName(String name) {
         this.name = name;
@@ -93,8 +86,11 @@ public class Member extends AuditBase {
         this.isQuizNotificationEnabled = isQuizNotificationEnabled;
     }
 
-    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
-    public void changeAiPickCountForTest(int aiPickCount) {
-        this.aiPickCount = aiPickCount;
+    public void updateInterestCollectionFields(List<String> interestCollectionFields) {
+        this.interestCollectionFields = interestCollectionFields;
+    }
+
+    public void updateTodayQuizCount(Integer todayQuizCount) {
+        this.todayQuizCount = todayQuizCount;
     }
 }

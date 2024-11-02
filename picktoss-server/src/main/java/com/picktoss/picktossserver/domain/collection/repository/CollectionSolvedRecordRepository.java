@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CollectionSolvedRecordRepository extends JpaRepository<CollectionSolvedRecord, Long> {
@@ -15,5 +16,11 @@ public interface CollectionSolvedRecordRepository extends JpaRepository<Collecti
     Optional<CollectionSolvedRecord> findByMemberIdAndCollectionId(
             @Param("memberId") Long memberId,
             @Param("collectionId") Long collectionId
+    );
+
+    @Query("SELECT csr FROM CollectionSolvedRecord csr " +
+            "WHERE csr.member.id = :memberId")
+    List<CollectionSolvedRecord> findAllByMemberId(
+            @Param("memberId") Long memberId
     );
 }

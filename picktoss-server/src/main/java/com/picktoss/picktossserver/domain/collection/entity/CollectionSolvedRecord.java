@@ -20,9 +20,6 @@ public class CollectionSolvedRecord extends AuditBase {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "score", nullable = false)
-    private Integer score;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "collection_id", nullable = false)
     private Collection collection;
@@ -33,4 +30,12 @@ public class CollectionSolvedRecord extends AuditBase {
 
     @OneToMany(mappedBy = "collectionSolvedRecord", orphanRemoval = true)
     private List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = new ArrayList<>();
+
+    public static CollectionSolvedRecord createCollectionSolvedRecord(Collection collection, Member member) {
+        return CollectionSolvedRecord.builder()
+                .collection(collection)
+                .member(member)
+                .build();
+    }
+
 }

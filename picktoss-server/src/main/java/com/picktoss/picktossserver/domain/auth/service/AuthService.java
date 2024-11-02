@@ -14,7 +14,7 @@ import com.picktoss.picktossserver.domain.auth.entity.EmailVerification;
 import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepository;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;

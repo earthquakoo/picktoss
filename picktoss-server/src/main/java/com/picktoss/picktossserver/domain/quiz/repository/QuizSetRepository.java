@@ -10,14 +10,21 @@ import java.util.Optional;
 
 public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
 
-    @Query("SELECT qs FROM QuizSet qs WHERE qs.member.id = :memberId")
-    List<QuizSet> findAllByMemberId(@Param("memberId") Long memberId);
+    @Query("SELECT qs FROM QuizSet qs " +
+            "WHERE qs.member.id = :memberId " +
+            "AND qs.isTodayQuizSet = true " +
+            "AND qs.solved = true " +
+            "ORDER BY qs.createdAt DESC")
+    List<QuizSet> findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(
+            @Param("memberId") Long memberId
+    );
 
     @Query("SELECT qs FROM QuizSet qs " +
             "JOIN FETCH qs.quizSetQuizzes qsq " +
             "JOIN FETCH qsq.quiz q " +
-            "WHERE qs.member.id = :memberId")
-    List<QuizSet> findQuizSetsWithQuizAndQuizSetQuizByMemberId(
+            "WHERE qs.member.id = :memberId " +
+            "AND qs.solved = true")
+    List<QuizSet> findAllByMemberIdAndSolvedTrue(
             @Param("memberId") Long memberId
     );
 
@@ -28,7 +35,7 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "JOIN FETCH d.category c " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.id = :quizSetId")
-    Optional<QuizSet> findQuizSetWithQuizSetQuizAndQuizAndDocumentAndCategoryByMemberIdAndQuizSetId(
+    Optional<QuizSet> findQuizSetByMemberIdAndQuizSetId(
             @Param("memberId") Long memberId,
             @Param("quizSetId") String quizSetId
     );
@@ -45,7 +52,15 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "WHERE qs.member.id = :memberId " +
             "AND qs.isTodayQuizSet = true " +
             "ORDER BY qs.createdAt DESC")
-    List<QuizSet> findByMemberIdAndTodayQuizSetIsOrderByCreatedAt(
+    List<QuizSet> findByMemberIdAndTodayQuizSetIsOrderByCreatedAtDesc(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT qs FROM QuizSet qs " +
+            "WHERE qs.member.id = :memberId " +
+            "AND qs.isTodayQuizSet = true " +
+            "ORDER BY qs.createdAt ASC")
+    List<QuizSet> findByMemberIdAndTodayQuizSetIsOrderByCreatedAtAsc(
             @Param("memberId") Long memberId
     );
 }

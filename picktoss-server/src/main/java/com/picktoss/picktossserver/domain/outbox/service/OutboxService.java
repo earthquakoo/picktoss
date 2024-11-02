@@ -3,7 +3,7 @@ package com.picktoss.picktossserver.domain.outbox.service;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.outbox.entity.Outbox;
 import com.picktoss.picktossserver.domain.outbox.repository.OutboxRepository;
-import com.picktoss.picktossserver.global.enums.OutboxStatus;
+import com.picktoss.picktossserver.global.enums.outbox.OutboxStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

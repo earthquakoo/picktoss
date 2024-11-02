@@ -50,6 +50,8 @@ public enum ErrorInfo {
      * Global Exceptions
      **/
     UNAUTHORIZED_OPERATION_EXCEPTION(403, "UNAUTHORIZED_OPERATION_EXCEPTION", "You do not have permission to perform the operation"),
+    UNABLE_TO_CONVERT_LIST_TO_STRING(400, "UNABLE_TO_CONVERT_LIST_TO_STRING", "UNABLE_TO_CONVERT_LIST_TO_STRING."),
+    UNABLE_TO_CONVERT_STRING_TO_LIST(400, "UNABLE_TO_CONVERT_STRING_TO_LIST", "UNABLE_TO_CONVERT_STRING_TO_LIST"),
 
     /**
      * Subscription
@@ -61,22 +63,24 @@ public enum ErrorInfo {
     FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR(400, "FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR", "무료 플랜으로 사용할 수 있는 AI Pick을 초과했습니다."),
 
     /**
-     * KeyPoint
-     */
-    KEY_POINT_NOT_FOUND(400, "KEY_POINT_NOT_FOUND", "keypoint not found."),
-    DEFAULT_FILE_NOT_FOUND(400, "DEFAULT_FILE_NOT_FOUND", "Default keypoint set not found."),
-
-    /**
      * Collection
      */
     COLLECTION_NOT_FOUND(400, "COLLECTION_NOT_FOUND", "Collection not found."),
-
+    DUPLICATE_QUIZ_IN_COLLECTION(400, "DUPLICATE_QUIZ_IN_COLLECTION", "해당 퀴즈는 이미 컬렉션에 포함되어 있습니다."),
+    OWN_COLLECTION_CANT_BOOKMARK(400, "OWN_COLLECTION_CANT_BOOKMARK", "자신의 컬렉션은 북마크할 수 없습니다."),
+    INTEREST_COLLECTION_FIELD_NOT_FOUND(400, "INTEREST_COLLECTION_FIELD_NOT_FOUND", "관심분야 설정이 되어있지 않습니다"),
 
     /**
      * Event
      */
     EVENT_NOT_FOUND(400, "EVENT_NOT_FOUND", "Event not found."),
-    POINT_NOT_ENOUGH(400, "POINT_NOT_ENOUGH", "Point not enough."),
+    POINT_NOT_ENOUGH(400, "POINT_NOT_ENOUGH", "PointHistory not enough."),
+
+    /**
+     * Star
+     */
+    STAR_NOT_FOUND(400, "STAR_NOT_FOUND", "Star not found."),
+    STAR_SHORTAGE_IN_POSSESSION(400, "STAR_SHORTAGE_IN_POSSESSION", "Star shortage in possession."),
 
     /**
      * Quiz

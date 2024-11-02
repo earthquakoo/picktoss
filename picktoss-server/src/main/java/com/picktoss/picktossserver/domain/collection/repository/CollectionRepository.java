@@ -1,7 +1,7 @@
 package com.picktoss.picktossserver.domain.collection.repository;
 
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.global.enums.CollectionDomain;
+import com.picktoss.picktossserver.global.enums.collection.CollectionField;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,39 +12,68 @@ import java.util.Optional;
 public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
-            "WHERE c.member.id = :memberId " +
             "ORDER BY c.updatedAt DESC")
-    List<Collection> findAllOrderByUpdatedAtDesc(
-            @Param("memberId") Long memberId
+    List<Collection> findAllOrderByUpdatedAtDesc();
+
+    @Query("SELECT c FROM Collection c " +
+            "WHERE c.collectionField IN :collectionFields " +
+            "ORDER BY c.updatedAt DESC")
+    List<Collection> findAllByCollectionDomainsAndUpdatedAt(
+            @Param("collectionFields") List<CollectionField> collectionFields
     );
 
     @Query("SELECT c FROM Collection c " +
-            "WHERE c.collectionDomain IN :collectionDomains " +
-            "AND c.member.id = :memberId")
-    List<Collection> findAllByCollectionDomains(
-            @Param("collectionDomains") List<CollectionDomain> collectionDomains,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT c FROM Collection c " +
+            "JOIN FETCH c.member " +
             "WHERE c.id = :collectionId")
     Optional<Collection> findCollectionById(
             @Param("collectionId") Long collectionId
     );
 
     @Query("SELECT c FROM Collection c " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
+            "WHERE c.id = :collectionId")
+    Optional<Collection> findCollectionWithCollectionQuizByCollectionId(
+            @Param("collectionId") Long collectionId
+    );
+
+    @Query("SELECT c FROM Collection c " +
+            "LEFT JOIN FETCH c.collectionBookmarks cb " +
+            "WHERE cb.member.id = :memberId")
+    List<Collection> findAllByMemberIdAndBookmarked(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT c FROM Collection c " +
+            "WHERE c.member.id = :memberId")
+    List<Collection> findAllByMemberId(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT c FROM Collection c " +
             "WHERE c.id = :collectionId " +
             "AND c.member.id = :memberId")
-    Optional<Collection> findCollectionByIdAndMemberId(
+    Optional<Collection> findCollectionByCollectionIdAndMemberId(
             @Param("collectionId") Long collectionId,
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT c FROM Collection c " +
-            "WHERE c.name LIKE %:keyword% " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "LEFT JOIN FETCH c.collectionBookmarks " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "WHERE c.id = :collectionId " +
             "AND c.member.id = :memberId")
-    List<Collection> findByCollectionContaining(
-            @Param("keyword") String keyword,
+    Optional<Collection> findCollectionWithCollectionSolvedRecordByCollectionIdAndMemberId(
+            @Param("collectionId") Long collectionId,
             @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT c FROM Collection c " +
+            "WHERE c.name LIKE %:keyword%")
+    List<Collection> findByCollectionContaining(
+            @Param("keyword") String keyword
     );
 }

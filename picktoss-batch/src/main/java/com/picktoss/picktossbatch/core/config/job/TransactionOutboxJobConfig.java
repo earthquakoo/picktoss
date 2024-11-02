@@ -1,7 +1,7 @@
 package com.picktoss.picktossbatch.core.config.job;
 
-import com.picktoss.picktossserver.core.event.event.SQSEvent;
-import com.picktoss.picktossserver.core.event.publisher.SQSEventMessagePublisher;
+import com.picktoss.picktossserver.core.event.event.sqs.SQSMessageEvent;
+import com.picktoss.picktossserver.core.event.publisher.sqs.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.outbox.entity.Outbox;
@@ -75,7 +75,7 @@ public class TransactionOutboxJobConfig {
                     Subscription subscription = subscriptionService.findCurrentSubscription(member.getId(), member);
                     document.updateDocumentStatusProcessingByGenerateAiPick();
                     outbox.addTryCountBySendMessage();
-                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSEvent(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType()));
+                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType()));
                 }
                 return RepeatStatus.FINISHED;
             }

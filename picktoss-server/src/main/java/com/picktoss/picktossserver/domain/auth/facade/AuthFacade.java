@@ -8,24 +8,18 @@ import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.service.CategoryService;
-import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
-import com.picktoss.picktossserver.domain.event.service.EventService;
-import com.picktoss.picktossserver.domain.keypoint.service.KeyPointService;
+import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
-import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
-import com.picktoss.picktossserver.global.enums.CategoryTag;
-import com.picktoss.picktossserver.global.enums.MemberRole;
-import com.picktoss.picktossserver.global.enums.SocialPlatform;
+import com.picktoss.picktossserver.domain.star.service.StarService;
+import com.picktoss.picktossserver.global.enums.member.MemberRole;
+import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.AVAILABLE_AI_PICK_COUNT;
-import static com.picktoss.picktossserver.global.enums.CategoryTag.DEFAULT;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,12 +28,10 @@ public class AuthFacade {
 
     private final AuthService authService;
     private final MemberService memberService;
-    private final SubscriptionService subscriptionService;
-    private final EventService eventService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final CategoryService categoryService;
     private final DocumentService documentService;
-    private final KeyPointService keyPointService;
+    private final CategoryService categoryService;
+    private final StarService starService;
 
     @Transactional
     public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
@@ -65,16 +57,14 @@ public class AuthFacade {
                     .socialPlatform(SocialPlatform.GOOGLE)
                     .email(googleMemberDto.getEmail())
                     .isQuizNotificationEnabled(true)
-                    .aiPickCount(AVAILABLE_AI_PICK_COUNT)
+                    .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
                     .role(MemberRole.ROLE_USER)
                     .build();
 
             memberService.createMember(member);
-            subscriptionService.createSubscription(member);
-            eventService.createEvent(member);
+            starService.createStarBySignUp(member);
             Category category = categoryService.createDefaultCategory(member);
-            Document document = documentService.createDefaultDocument(category);
-            keyPointService.createDefaultKeyPoint(document);
+            documentService.createDefaultDocument(category);
             JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
             return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
@@ -93,16 +83,14 @@ public class AuthFacade {
                     .clientId(kakaoMemberDto.getId())
                     .socialPlatform(SocialPlatform.KAKAO)
                     .isQuizNotificationEnabled(false)
-                    .aiPickCount(AVAILABLE_AI_PICK_COUNT)
+                    .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
                     .role(MemberRole.ROLE_USER)
                     .build();
 
             memberService.createMember(member);
-            subscriptionService.createSubscription(member);
-            eventService.createEvent(member);
+            starService.createStarBySignUp(member);
             Category category = categoryService.createDefaultCategory(member);
-            Document document = documentService.createDefaultDocument(category);
-            keyPointService.createDefaultKeyPoint(document);
+            documentService.createDefaultDocument(category);
             JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
             return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
