@@ -3,7 +3,7 @@ package com.picktoss.picktossserver.domain.document.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
-import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -39,11 +39,9 @@ public class DocumentService {
     private String defaultDocumentS3Key;
 
     @Transactional
-    public Document createDocument(
-            String documentName, Category category, Long memberId, String s3Key, Integer starCount
-    ) {
+    public Document createDocument(String documentName, Directory directory, String s3Key) {
         Document document = Document.createDocument(
-                documentName, s3Key, UNPROCESSED, true, category
+                documentName, s3Key, UNPROCESSED, true, directory
         );
 
         documentRepository.save(document);
@@ -51,8 +49,8 @@ public class DocumentService {
     }
 
     @Transactional
-    public Document createDefaultDocument(Category category) {
-        Document document = Document.createDefaultDocument(defaultDocumentS3Key, category);
+    public Document createDefaultDocument(Directory directory) {
+        Document document = Document.createDefaultDocument(defaultDocumentS3Key, directory);
         documentRepository.save(document);
         return document;
     }
@@ -90,9 +88,9 @@ public class DocumentService {
             quizDtos.add(quizDto);
         }
 
-        GetSingleDocumentResponse.GetSingleDocumentCategoryDto categoryDto = GetSingleDocumentResponse.GetSingleDocumentCategoryDto.builder()
-                .id(document.getCategory().getId())
-                .name(document.getCategory().getName())
+        GetSingleDocumentResponse.GetSingleDocumentDirectoryDto directoryDto = GetSingleDocumentResponse.GetSingleDocumentDirectoryDto.builder()
+                .id(document.getDirectory().getId())
+                .name(document.getDirectory().getName())
                 .build();
 
         DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
@@ -101,7 +99,7 @@ public class DocumentService {
                 .id(document.getId())
                 .documentName(document.getName())
                 .status(documentStatus)
-                .category(categoryDto)
+                .directory(directoryDto)
                 .content(content)
                 .characterCount(characterCount)
                 .totalQuizCount(quizDtos.size())
@@ -110,19 +108,19 @@ public class DocumentService {
                 .build();
     }
 
-    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInCategory(
-            Long memberId, Long categoryId, DocumentSortOption documentSortOption, List<QuizSetQuiz> quizSetQuizzes
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInDirectory(
+            Long memberId, Long directoryId, DocumentSortOption documentSortOption, List<QuizSetQuiz> quizSetQuizzes
     ) {
         List<Document> documents;
 
-        if (categoryId == null) {
+        if (directoryId == null) {
             documents = (documentSortOption == DocumentSortOption.CREATED_AT)
                     ? documentRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId)
                     : documentRepository.findAllByMemberIdOrderByUpdatedAtDesc(memberId);
         } else {
             documents = (documentSortOption == DocumentSortOption.CREATED_AT)
-                    ? documentRepository.findAllByCategoryIdAndMemberIdOrderByCreatedAtDesc(categoryId, memberId)
-                    : documentRepository.findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(categoryId, memberId);
+                    ? documentRepository.findAllByDirectoryIdAndMemberIdOrderByCreatedAtDesc(directoryId, memberId)
+                    : documentRepository.findAllByDirectoryIdAndMemberIdOrderByUpdatedAtDesc(directoryId, memberId);
         }
 
         Map<Long, Integer> reviewNeededDocumentIdAndQuizCount = new HashMap<>();
@@ -141,10 +139,10 @@ public class DocumentService {
             String content = s3Provider.findFile(document.getS3Key());
             int characterCount = content.length();
 
-            Category category = document.getCategory();
-            GetAllDocumentsResponse.GetAllDocumentsCategoryDto categoryDto = GetAllDocumentsResponse.GetAllDocumentsCategoryDto.builder()
-                    .name(category.getName())
-                    .categoryTag(category.getTag())
+            Directory directory = document.getDirectory();
+            GetAllDocumentsResponse.GetAllDocumentsDirectoryDto directoryDto = GetAllDocumentsResponse.GetAllDocumentsDirectoryDto.builder()
+                    .name(directory.getName())
+                    .tag(directory.getTag())
                     .build();
 
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
@@ -156,7 +154,7 @@ public class DocumentService {
                     .createdAt(document.getCreatedAt())
                     .updatedAt(document.getUpdatedAt())
                     .reviewNeededQuizCount(reviewNeededQuizCount)
-                    .category(categoryDto)
+                    .directory(directoryDto)
                     .build();
 
             documentDtos.add(documentDto);
@@ -177,10 +175,10 @@ public class DocumentService {
     }
 
     @Transactional
-    public void moveDocumentToCategory(List<Long> documentIds, Long memberId, Category category) {
+    public void moveDocumentToDirectory(List<Long> documentIds, Long memberId, Directory directory) {
         List<Document> documents = documentRepository.findByDocumentIdsInAndMemberId(documentIds, memberId);
         for (Document document : documents) {
-            document.moveDocumentToCategory(category);
+            document.moveDocumentToDirectory(directory);
         }
     }
 
@@ -192,22 +190,22 @@ public class DocumentService {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
 
         for (Document document : documents) {
-            Category category = document.getCategory();
+            Directory directory = document.getDirectory();
             String content = s3Provider.findFile(document.getS3Key());
             String documentName = document.getName();
             if (content.toLowerCase().contains(keyword.toLowerCase())
                     || documentName.toLowerCase().contains(keyword.toLowerCase())
             ) {
-                SearchDocumentResponse.SearchDocumentCategoryDto categoryDto = SearchDocumentResponse.SearchDocumentCategoryDto.builder()
-                        .id(category.getId())
-                        .name(category.getName())
+                SearchDocumentResponse.SearchDocumentDirectoryDto directoryDto = SearchDocumentResponse.SearchDocumentDirectoryDto.builder()
+                        .id(directory.getId())
+                        .name(directory.getName())
                         .build();
 
                 SearchDocumentResponse.SearchDocumentDto documentDto = SearchDocumentResponse.SearchDocumentDto.builder()
                         .documentId(document.getId())
                         .documentName(document.getName())
                         .content(content)
-                        .category(categoryDto)
+                        .directory(directoryDto)
                         .build();
 
                 documentDtos.add(documentDto);
@@ -223,7 +221,7 @@ public class DocumentService {
                             .id(quiz.getId())
                             .question(quiz.getQuestion())
                             .answer(quiz.getAnswer())
-                            .categoryName(category.getName())
+                            .directoryName(directory.getName())
                             .documentName(document.getName())
                             .build();
 
@@ -259,18 +257,18 @@ public class DocumentService {
                 ));
 
         for (Document document : top5Documents.keySet()) {
-            Category category = document.getCategory();
+            Directory directory = document.getDirectory();
 
-            GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsCategoryDto categoryDto = GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsCategoryDto.builder()
-                    .id(category.getId())
-                    .name(category.getName())
+            GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDirectoryDto directoryDto = GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDirectoryDto.builder()
+                    .id(directory.getId())
+                    .name(directory.getName())
                     .build();
 
             GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDto documentDto = GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .reviewNeededQuizCount(top5Documents.get(document))
-                    .category(categoryDto)
+                    .directory(directoryDto)
                     .build();
 
             documentsDtos.add(documentDto);
@@ -311,28 +309,28 @@ public class DocumentService {
     }
 
     public IntegratedSearchResponse integratedSearchByKeyword(Long memberId, String keyword, List<Collection> collections) {
-        List<Document> documents = documentRepository.findAllWithCategoryAndQuizzes(memberId);
+        List<Document> documents = documentRepository.findAllWithDirectoryAndQuizzes(memberId);
         List<IntegratedSearchResponse.IntegratedSearchDocumentDto> documentDtos = new ArrayList<>();
         List<IntegratedSearchResponse.IntegratedSearchQuizDto> quizDtos = new ArrayList<>();
         List<IntegratedSearchResponse.IntegratedSearchCollectionDto> collectionDtos = new ArrayList<>();
 
         for (Document document : documents) {
-            Category category = document.getCategory();
+            Directory directory = document.getDirectory();
             String content = s3Provider.findFile(document.getS3Key());
             String documentName = document.getName();
             if (content.toLowerCase().contains(keyword.toLowerCase())
                     || documentName.toLowerCase().contains(keyword.toLowerCase())
             ) {
-                IntegratedSearchResponse.IntegratedSearchCategoryDto categoryDto = IntegratedSearchResponse.IntegratedSearchCategoryDto.builder()
-                        .id(category.getId())
-                        .name(category.getName())
+                IntegratedSearchResponse.IntegratedSearchDirectoryDto directoryDto = IntegratedSearchResponse.IntegratedSearchDirectoryDto.builder()
+                        .id(directory.getId())
+                        .name(directory.getName())
                         .build();
 
                 IntegratedSearchResponse.IntegratedSearchDocumentDto documentDto = IntegratedSearchResponse.IntegratedSearchDocumentDto.builder()
                         .documentId(document.getId())
                         .documentName(document.getName())
                         .content(content)
-                        .category(categoryDto)
+                        .directory(directoryDto)
                         .build();
 
                 documentDtos.add(documentDto);
@@ -348,7 +346,7 @@ public class DocumentService {
                             .id(quiz.getId())
                             .question(quiz.getQuestion())
                             .answer(quiz.getAnswer())
-                            .categoryName(category.getName())
+                            .directoryName(directory.getName())
                             .documentName(document.getName())
                             .build();
 

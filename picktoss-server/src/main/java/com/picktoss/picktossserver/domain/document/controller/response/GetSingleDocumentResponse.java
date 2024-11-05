@@ -21,12 +21,12 @@ public class GetSingleDocumentResponse {
     private int characterCount;
     private int totalQuizCount;
     private LocalDateTime updatedAt;
-    private GetSingleDocumentCategoryDto category;
+    private GetSingleDocumentDirectoryDto directory;
     private List<GetSingleDocumentQuizDto> quizzes;
 
     @Getter
     @Builder
-    public static class GetSingleDocumentCategoryDto {
+    public static class GetSingleDocumentDirectoryDto {
         private Long id;
         private String name;
     }

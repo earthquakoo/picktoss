@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.quiz.facade;
 
-import com.picktoss.picktossserver.domain.collection.service.CollectionService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -30,7 +29,6 @@ public class QuizFacade {
     private final QuizService quizService;
     private final MemberService memberService;
     private final StarService starService;
-    private final CollectionService collectionService;
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
         return quizService.findQuizSet(quizSetId, memberId);
@@ -86,8 +84,8 @@ public class QuizFacade {
         return quizService.findQuizSetRecordByMemberIdAndQuizSetId(memberId, quizSetId);
     }
 
-    public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysis(Long memberId, Long categoryId, LocalDate startWeekDate, LocalDate startMonthDate) {
-        return quizService.findQuizAnswerRateAnalysis(memberId, categoryId, startWeekDate, startMonthDate);
+    public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysis(Long memberId, Long directoryId, LocalDate startWeekDate, LocalDate startMonthDate) {
+        return quizService.findQuizAnswerRateAnalysis(memberId, directoryId, startWeekDate, startMonthDate);
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {

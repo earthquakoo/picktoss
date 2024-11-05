@@ -35,9 +35,9 @@ public class DocumentController {
             ) { 
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
-        Long categoryId = Long.valueOf(request.getCategoryId());
+        Long directoryId = Long.valueOf(request.getDirectoryId());
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, categoryId, request.getStar(), request.getQuizType());
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, request.getStar(), request.getQuizType());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -54,15 +54,15 @@ public class DocumentController {
     }
 
     @Operation(summary = "모든 문서 가져오기")
-    @GetMapping("/categories/documents")
+    @GetMapping("/directories/documents")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
-            @Schema(description = "Null 인 경우 전체 노트") @RequestParam(required = false, value = "category_id") Long categoryId,
+            @Schema(description = "Null 인 경우 전체 노트") @RequestParam(required = false, value = "directory-id") Long directoryId,
             @RequestParam(required = false, defaultValue = "CREATE_AT", value = "sort-option") DocumentSortOption documentSortOption) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocumentsInCategory(memberId, categoryId, documentSortOption);
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocumentsInDirectory(memberId, directoryId, documentSortOption);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
@@ -103,11 +103,11 @@ public class DocumentController {
     @Operation(summary = "문서 다른 폴더로 옮기기")
     @PatchMapping("/documents/move")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void moveDocumentToCategory(@Valid @RequestBody MoveDocumentToCategoryRequest request) {
+    public void moveDocumentToDirectory(@Valid @RequestBody MoveDocumentToDirectoryRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.moveDocumentToCategory(request.getDocumentIds(), memberId, request.getCategoryId());
+        documentFacade.moveDocumentToDirectory(request.getDocumentIds(), memberId, request.getDirectoryId());
     }
 
     @Operation(summary = "문서 내용 업데이트")
@@ -133,7 +133,6 @@ public class DocumentController {
 
         documentFacade.updateDocumentName(documentId, memberId, request.getName());
     }
-
 
     @Operation(summary = "오늘의 퀴즈 관리(문제를 가져올 노트 선택)")
     @PatchMapping("/documents/today-quiz-settings")

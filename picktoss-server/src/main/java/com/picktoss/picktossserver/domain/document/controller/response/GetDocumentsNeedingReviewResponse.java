@@ -19,12 +19,12 @@ public class GetDocumentsNeedingReviewResponse {
         private Long id;
         private String name;
         private Integer reviewNeededQuizCount;
-        private GetReviewNeededDocumentsCategoryDto category;
+        private GetReviewNeededDocumentsDirectoryDto directory;
     }
 
     @Getter
     @Builder
-    public static class GetReviewNeededDocumentsCategoryDto {
+    public static class GetReviewNeededDocumentsDirectoryDto {
         private Long id;
         private String name;
     }

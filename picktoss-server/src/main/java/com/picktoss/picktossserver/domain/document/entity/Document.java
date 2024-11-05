@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
-import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
@@ -38,42 +38,42 @@ public class Document extends AuditBase {
     private String s3Key;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "directory_id", nullable = false)
+    private Directory directory;
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
     private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Category category) {
+    public static Document createDocument(String name, String s3Key, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Directory directory) {
         return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
                 .status(documentStatus)
                 .isTodayQuizIncluded(isTodayQuizIncluded)
-                .category(category)
+                .directory(directory)
                 .build();
     }
 
-    public static Document createDefaultDocument(String s3Key, Category category) {
+    public static Document createDefaultDocument(String s3Key, Directory directory) {
         return Document.builder()
                 .name("예시 문서")
                 .s3Key(s3Key)
                 .status(DocumentStatus.DEFAULT_DOCUMENT)
                 .isTodayQuizIncluded(false)
-                .category(category)
+                .directory(directory)
                 .build();
     }
 
     // 연관관계 메서드
-    public void setCategory(Category category) {
-        this.category = category;
-        category.getDocuments().add(this);
+    public void setDirectory(Directory directory) {
+        this.directory = directory;
+        directory.getDocuments().add(this);
     }
 
     // Business Logics
-    public void moveDocumentToCategory(Category category) {
-        this.category = category;
+    public void moveDocumentToDirectory(Directory directory) {
+        this.directory = directory;
     }
 
     public void updateDocumentS3KeyByUpdatedContent(String s3Key) {
@@ -88,9 +88,6 @@ public class Document extends AuditBase {
         this.status = DocumentStatus.PROCESSING;
     }
 
-    public void updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument() {
-        this.status = DocumentStatus.KEYPOINT_UPDATE_POSSIBLE;
-    }
 
     public void updateDocumentIsTodayQuizIncluded(Boolean isTodayQuizIncluded) {
         this.isTodayQuizIncluded = isTodayQuizIncluded;

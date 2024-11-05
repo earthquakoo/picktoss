@@ -24,7 +24,7 @@ public class GetQuizSetResponse {
         private List<String> options;
         private QuizType quizType;
         private GetQuizSetDocumentDto document;
-        private GetQuizSetCategoryDto category;
+        private GetQuizSetDirectoryDto directory;
     }
 
     @Getter
@@ -36,7 +36,7 @@ public class GetQuizSetResponse {
 
     @Getter
     @Builder
-    public static class GetQuizSetCategoryDto {
+    public static class GetQuizSetDirectoryDto {
         private Long id;
         private String name;
     }

@@ -25,6 +25,6 @@ public class GetSingleQuizSetRecordResponse {
         private boolean isAnswer;
         private String choseAnswer;
         private String documentName;
-        private String categoryName;
+        private String directoryName;
     }
 }

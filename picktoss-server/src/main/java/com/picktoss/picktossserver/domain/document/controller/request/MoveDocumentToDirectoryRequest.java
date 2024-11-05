@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class MoveDocumentToCategoryRequest {
+public class MoveDocumentToDirectoryRequest {
     private List<Long> documentIds;
-    private Long categoryId;
+    private Long directoryId;
 }

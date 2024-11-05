@@ -6,8 +6,6 @@ import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.outbox.entity.Outbox;
 import com.picktoss.picktossserver.domain.outbox.service.OutboxService;
-import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
-import com.picktoss.picktossserver.domain.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -36,7 +34,6 @@ import java.util.List;
 public class TransactionOutboxJobConfig {
 
     private final OutboxService outboxService;
-    private final SubscriptionService subscriptionService;
     private final SQSEventMessagePublisher sqsEventMessagePublisher;
 
     private final String JOB_NAME = "transactionOutboxJob";
@@ -71,11 +68,10 @@ public class TransactionOutboxJobConfig {
                         return RepeatStatus.FINISHED;
                     }
                     Document document = outbox.getDocument();
-                    Member member = document.getCategory().getMember();
-                    Subscription subscription = subscriptionService.findCurrentSubscription(member.getId(), member);
+                    Member member = document.getDirectory().getMember();
                     document.updateDocumentStatusProcessingByGenerateAiPick();
                     outbox.addTryCountBySendMessage();
-                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(member.getId(), document.getS3Key(), document.getId(), subscription.getSubscriptionPlanType()));
+                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(member.getId(), document.getS3Key(), document.getId(), outbox.getCreatedQuizType(), outbox.getUsedStars()));
                 }
                 return RepeatStatus.FINISHED;
             }

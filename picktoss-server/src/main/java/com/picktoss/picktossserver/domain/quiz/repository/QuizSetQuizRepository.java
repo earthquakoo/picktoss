@@ -14,7 +14,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "JOIN FETCH qsq.quizSet qs " +
             "WHERE qs.id = :quizSetId " +
             "AND qs.member.id = :memberId")
@@ -27,7 +27,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quizSet qs " +
             "JOIN FETCH qsq.quiz q " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true")
     List<QuizSetQuiz> findAllByMemberIdAndSolvedTrue(
@@ -38,13 +38,13 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quizSet qs " +
             "JOIN FETCH qsq.quiz q " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "WHERE qs.member.id = :memberId " +
-            "AND c.id = :categoryId " +
+            "AND di.id = :directoryId " +
             "AND qs.solved = true")
-    List<QuizSetQuiz> findAllByMemberIdAndCategoryIdAndSolvedTrue(
+    List<QuizSetQuiz> findAllByMemberIdAndDirectoryIdAndSolvedTrue(
             @Param("memberId") Long memberId,
-            @Param("categoryId") Long categoryId
+            @Param("directoryId") Long directoryId
     );
 
     @Query("SELECT qsq FROM QuizSetQuiz qsq " +
@@ -71,15 +71,4 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             @Param("memberId") Long memberId,
             @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
     );
-
-//    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
-//            "JOIN FETCH qsq.quizSet qs " +
-//            "JOIN FETCH qsq.quiz q " +
-//            "JOIN FETCH q.document d " +
-//            "WHERE qs.member.id = :memberId " +
-//            "AND qsq.isReview = false " +
-//            "ORDER BY qsq.updatedAt DESC")
-//    List<QuizSetQuiz> findAllByMemberIdAndIsReviewOrderByUpdatedAt(
-//            @Param("memberId") Long memberId
-//    );
 }

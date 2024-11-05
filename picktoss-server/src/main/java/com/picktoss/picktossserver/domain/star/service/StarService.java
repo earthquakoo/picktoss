@@ -36,7 +36,6 @@ public class StarService {
         Integer changeStarCount = curStarCount - starCount;
 
         StarHistory starHistory = StarHistory.createStarHistory("문서 생성으로 인한 지출", starCount, changeStarCount, TransactionType.WITHDRAWAL, Source.SERVICE, star);
-
         starHistoryRepository.save(starHistory);
     }
 

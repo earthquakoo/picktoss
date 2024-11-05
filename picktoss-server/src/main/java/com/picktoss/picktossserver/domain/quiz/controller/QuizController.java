@@ -116,14 +116,14 @@ public class QuizController {
     @GetMapping("/quiz-analysis")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysis(
-            @RequestParam(required = false, value = "category-id") Long categoryId,
+            @RequestParam(required = false, value = "directory-id") Long directoryId,
             @RequestParam(required = false, value = "week") LocalDate startWeekDate,
             @RequestParam(required = false, value = "month") LocalDate startMonthDate
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysis(memberId, categoryId, startWeekDate, startMonthDate);
+        GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysis(memberId, directoryId, startWeekDate, startMonthDate);
         return ResponseEntity.ok().body(response);
     }
 
