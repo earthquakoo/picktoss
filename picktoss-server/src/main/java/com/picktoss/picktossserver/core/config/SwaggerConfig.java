@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Configuration;
                         variables = {
                                 @ServerVariable(name = "port", defaultValue = "444")
                         }
+                ),
+                @Server(url = "http://localhost:8181",
+                        description = "Local API Server"
                 )
         }
 )

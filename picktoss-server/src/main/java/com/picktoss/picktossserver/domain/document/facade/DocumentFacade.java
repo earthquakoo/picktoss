@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR;
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.MAX_POSSESS_DOCUMENT_COUNT;
 
 @Service
@@ -57,7 +57,7 @@ public class DocumentFacade {
         int possessDocumentCount = documents.size();
 
         if (possessDocumentCount >= MAX_POSSESS_DOCUMENT_COUNT) {
-            throw new CustomException(FREE_PLAN_CURRENT_SUBSCRIPTION_DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+            throw new CustomException(DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
         }
 
         Category category = categoryService.findCategoryWithMemberAndStarAndStarHistoryByCategoryIdAndMemberId(categoryId, memberId);
