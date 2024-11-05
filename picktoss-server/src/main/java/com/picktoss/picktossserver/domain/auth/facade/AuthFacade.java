@@ -6,8 +6,8 @@ import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
-import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.directory.service.DirectoryService;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -30,7 +30,7 @@ public class AuthFacade {
     private final MemberService memberService;
     private final JwtTokenProvider jwtTokenProvider;
     private final DocumentService documentService;
-    private final CategoryService categoryService;
+    private final DirectoryService directoryService;
     private final StarService starService;
 
     @Transactional
@@ -63,8 +63,8 @@ public class AuthFacade {
 
             memberService.createMember(member);
             starService.createStarBySignUp(member);
-            Category category = categoryService.createDefaultCategory(member);
-            documentService.createDefaultDocument(category);
+            Directory directory = directoryService.createDefaultDirectory(member);
+            documentService.createDefaultDocument(directory);
             JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
             return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }
@@ -89,8 +89,8 @@ public class AuthFacade {
 
             memberService.createMember(member);
             starService.createStarBySignUp(member);
-            Category category = categoryService.createDefaultCategory(member);
-            documentService.createDefaultDocument(category);
+            Directory directory = directoryService.createDefaultDirectory(member);
+            documentService.createDefaultDocument(directory);
             JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
             return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
         }

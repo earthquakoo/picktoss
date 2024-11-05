@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CreateDocumentRequest {
 
     private MultipartFile file;
-    private String categoryId;
+    private String directoryId;
     private String documentName;
     private Integer star;
     private QuizType quizType;

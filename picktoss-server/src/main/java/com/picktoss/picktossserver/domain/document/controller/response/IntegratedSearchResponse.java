@@ -21,12 +21,12 @@ public class IntegratedSearchResponse {
         private Long documentId;
         private String documentName;
         private String content;
-        private IntegratedSearchCategoryDto category;
+        private IntegratedSearchDirectoryDto directory;
     }
 
     @Getter
     @Builder
-    public static class IntegratedSearchCategoryDto {
+    public static class IntegratedSearchDirectoryDto {
         private Long id;
         private String name;
     }
@@ -38,7 +38,7 @@ public class IntegratedSearchResponse {
         private String question;
         private String answer;
         private String documentName;
-        private String categoryName;
+        private String directoryName;
     }
 
     @Getter

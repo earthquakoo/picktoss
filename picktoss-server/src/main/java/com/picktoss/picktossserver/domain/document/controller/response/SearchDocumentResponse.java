@@ -19,12 +19,12 @@ public class SearchDocumentResponse {
         private Long documentId;
         private String documentName;
         private String content;
-        private SearchDocumentCategoryDto category;
+        private SearchDocumentDirectoryDto directory;
     }
 
     @Getter
     @Builder
-    public static class SearchDocumentCategoryDto {
+    public static class SearchDocumentDirectoryDto {
         private Long id;
         private String name;
     }
@@ -36,6 +36,6 @@ public class SearchDocumentResponse {
         private String question;
         private String answer;
         private String documentName;
-        private String categoryName;
+        private String directoryName;
     }
 }

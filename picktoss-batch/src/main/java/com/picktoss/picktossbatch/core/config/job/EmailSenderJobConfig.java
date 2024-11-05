@@ -3,7 +3,7 @@ package com.picktoss.picktossbatch.core.config.job;
 import com.picktoss.picktossbatch.core.config.listener.JobListener;
 import com.picktoss.picktossbatch.core.config.listener.StepListener;
 import com.picktoss.picktossbatch.core.config.partitioner.CustomPartitioner;
-import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -126,12 +126,12 @@ public class EmailSenderJobConfig {
                 members.add(member);
 
                 List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
-                List<Category> categories = member.getCategories();
-                for (Category category : categories) {
-                    if (category.getDocuments() == null) {
+                List<Directory> categories = member.getCategories();
+                for (Directory directory : categories) {
+                    if (directory.getDocuments() == null) {
                         continue;
                     }
-                    Set<Document> documents = category.getDocuments();
+                    Set<Document> documents = directory.getDocuments();
                     for (Document document : documents) {
                         if (document.getQuizzes() == null) {
                             continue;

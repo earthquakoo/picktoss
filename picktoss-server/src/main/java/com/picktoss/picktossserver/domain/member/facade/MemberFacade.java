@@ -2,8 +2,8 @@ package com.picktoss.picktossserver.domain.member.facade;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
-import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.directory.service.DirectoryService;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
@@ -26,7 +26,7 @@ public class MemberFacade {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
     private final DocumentService documentService;
-    private final CategoryService categoryService;
+    private final DirectoryService directoryService;
     private final StarService starService;
 
     @Transactional
@@ -37,8 +37,8 @@ public class MemberFacade {
             Member member = memberInfoDto.toEntity();
             memberService.createMember(member);
             starService.createStarBySignUp(member);
-            Category category = categoryService.createDefaultCategory(member);
-            documentService.createDefaultDocument(category);
+            Directory directory = directoryService.createDefaultDirectory(member);
+            documentService.createDefaultDocument(directory);
             return jwtTokenProvider.generateToken(member);
         }
         Member member = optionalMember.get();

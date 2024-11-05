@@ -1,10 +1,10 @@
 package com.picktoss.picktossserver.domain.member.entity;
 
 
-import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
@@ -60,7 +60,7 @@ public class Member extends AuditBase {
     private Star star;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Category> categories = new ArrayList<>();
+    private List<Directory> directories = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSet> quizSets = new ArrayList<>();

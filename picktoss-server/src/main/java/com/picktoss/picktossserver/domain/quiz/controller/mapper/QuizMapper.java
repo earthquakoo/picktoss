@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.mapper;
 
-import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
@@ -18,7 +18,7 @@ public class QuizMapper {
 
         for (Quiz quiz : quizzes) {
             Document document = quiz.getDocument();
-            Category category = document.getCategory();
+            Directory directory = document.getDirectory();
 
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
@@ -34,8 +34,8 @@ public class QuizMapper {
                     .build();
 
             QuizResponseDto.CategoryDto categoryDto = QuizResponseDto.CategoryDto.builder()
-                    .id(category.getId())
-                    .name(category.getName())
+                    .id(directory.getId())
+                    .name(directory.getName())
                     .build();
 
             QuizResponseDto.QuizDto quizDto = QuizResponseDto.QuizDto.builder()

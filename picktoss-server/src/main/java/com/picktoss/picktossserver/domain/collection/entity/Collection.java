@@ -31,7 +31,7 @@ public class Collection extends AuditBase {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "collection_domain")
+    @Column(name = "collection_field")
     private CollectionField collectionField;
 
     @ManyToOne(fetch = FetchType.LAZY)

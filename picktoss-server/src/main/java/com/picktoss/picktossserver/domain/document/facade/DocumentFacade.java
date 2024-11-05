@@ -7,8 +7,8 @@ import com.picktoss.picktossserver.core.event.publisher.s3.S3DeletePublisher;
 import com.picktoss.picktossserver.core.event.publisher.s3.S3UploadPublisher;
 import com.picktoss.picktossserver.core.event.publisher.sqs.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.category.service.CategoryService;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.directory.service.DirectoryService;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
 import com.picktoss.picktossserver.domain.document.controller.response.*;
@@ -40,7 +40,7 @@ import static com.picktoss.picktossserver.domain.document.constant.DocumentConst
 public class DocumentFacade {
 
     private final DocumentService documentService;
-    private final CategoryService categoryService;
+    private final DirectoryService directoryService;
     private final OutboxService outboxService;
     private final CollectionService collectionService;
     private final StarService starService;
@@ -52,7 +52,7 @@ public class DocumentFacade {
 
     @Transactional
     public Long createDocument(
-            String documentName, MultipartFile file, Long memberId, Long categoryId, Integer starCount, QuizType quizType) {
+            String documentName, MultipartFile file, Long memberId, Long directoryId, Integer starCount, QuizType quizType) {
         List<Document> documents = documentService.findAllByMemberId(memberId);
         int possessDocumentCount = documents.size();
 
@@ -60,12 +60,12 @@ public class DocumentFacade {
             throw new CustomException(DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
         }
 
-        Category category = categoryService.findCategoryWithMemberAndStarAndStarHistoryByCategoryIdAndMemberId(categoryId, memberId);
-        Star star = category.getMember().getStar();
+        Directory directory = directoryService.findDirectoryWithMemberAndStarAndStarHistoryByDirectoryIdAndMemberId(directoryId, memberId);
+        Star star = directory.getMember().getStar();
         starService.withdrawalStarByCreateDocument(star, starCount);
 
         String s3Key = UUID.randomUUID().toString();
-        Document document = documentService.createDocument(documentName, category, memberId, s3Key, starCount);
+        Document document = documentService.createDocument(documentName, directory, s3Key);
 
         outboxService.createOutbox(OutboxStatus.WAITING, document);
         s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));
@@ -78,9 +78,9 @@ public class DocumentFacade {
         return documentService.findSingleDocument(memberId, documentId);
     }
 
-    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInCategory(Long memberId, Long categoryId, DocumentSortOption documentSortOption) {
+    public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInDirectory(Long memberId, Long directoryId, DocumentSortOption documentSortOption) {
         List<QuizSetQuiz> quizSetQuizzes = quizService.findQuizSetQuizzesByMemberIdAndCreatedAtAfter(memberId);
-        return documentService.findAllDocumentsInCategory(memberId, categoryId, documentSortOption, quizSetQuizzes);
+        return documentService.findAllDocumentsInDirectory(memberId, directoryId, documentSortOption, quizSetQuizzes);
     }
 
     @Transactional
@@ -92,9 +92,9 @@ public class DocumentFacade {
     }
 
     @Transactional
-    public void moveDocumentToCategory(List<Long> documentIds, Long memberId, Long categoryId) {
-        Category category = categoryService.findByCategoryIdAndMemberId(categoryId, memberId);
-        documentService.moveDocumentToCategory(documentIds, memberId, category);
+    public void moveDocumentToDirectory(List<Long> documentIds, Long memberId, Long directoryId) {
+        Directory directory = directoryService.findByDirectoryIdAndMemberId(directoryId, memberId);
+        documentService.moveDocumentToDirectory(documentIds, memberId, directory);
     }
 
     public SearchDocumentResponse searchDocumentByKeyword(String keyword, Long memberId) {

@@ -21,11 +21,11 @@ public enum ErrorInfo {
     FILE_UPLOAD_ERROR(400, "FILE_UPLOAD_ERROR", "There was a problem uploading the file."),
 
     /**
-     * Category
+     * Directory
      **/
-    DUPLICATE_CATEGORY(400, "DUPLICATE_CATEGORY", "Parent category cannot have multiple child categories with the same name"),
-    CATEGORY_NOT_FOUND(400, "CATEGORY_NOT_FOUND", "Category with the given id is not found"),
-    EMPTY_CATEGORY_NAME(400, "EMPTY_CATEGORY_NAME", "Category name cannot be empty."),
+    DUPLICATE_DIRECTORY(400, "DUPLICATE_DIRECTORY", "Parent directory cannot have multiple child directories with the same name"),
+    DIRECTORY_NOT_FOUND(400, "DIRECTORY_NOT_FOUND", "Directory with the given id is not found"),
+    EMPTY_DIRECTORY_NAME(400, "EMPTY_DIRECTORY_NAME", "Directory name cannot be empty."),
 
     /**
      * Document

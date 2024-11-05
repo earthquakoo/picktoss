@@ -3,7 +3,7 @@ package com.picktoss.picktossserver.domain.quiz.service;
 import com.picktoss.picktossserver.core.event.event.email.EmailSenderEvent;
 import com.picktoss.picktossserver.core.event.publisher.email.EmailSenderPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecordDetail;
@@ -74,11 +74,11 @@ public class QuizService {
                     .build();
 
 
-            Category category = document.getCategory();
+            Directory directory = document.getDirectory();
 
-            GetQuizSetResponse.GetQuizSetCategoryDto categoryDto = GetQuizSetResponse.GetQuizSetCategoryDto.builder()
-                    .id(category.getId())
-                    .name(category.getName())
+            GetQuizSetResponse.GetQuizSetDirectoryDto directoryDto = GetQuizSetResponse.GetQuizSetDirectoryDto.builder()
+                    .id(directory.getId())
+                    .name(directory.getName())
                     .build();
 
             GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
@@ -89,7 +89,7 @@ public class QuizService {
                     .options(optionList)
                     .quizType(quiz.getQuizType())
                     .document(documentDto)
-                    .category(categoryDto)
+                    .directory(directoryDto)
                     .build();
 
             quizDtos.add(quizDto);
@@ -226,14 +226,14 @@ public class QuizService {
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysis(
-            Long memberId, Long categoryId, LocalDate startWeekDate, LocalDate startMonthDate
+            Long memberId, Long directoryId, LocalDate startWeekDate, LocalDate startMonthDate
     ) {
         List<QuizSetQuiz> quizSetQuizzes;
 
-        if (categoryId == null) {
+        if (directoryId == null) {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrue(memberId);
         } else {
-            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCategoryIdAndSolvedTrue(memberId, categoryId);
+            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndDirectoryIdAndSolvedTrue(memberId, directoryId);
         }
         if (startMonthDate != null) {
             return quizAnalysisByMonth(quizSetQuizzes, startMonthDate);
@@ -370,7 +370,7 @@ public class QuizService {
             elapsedTimeMs += quizSetQuiz.getElapsedTimeMs();
             Quiz quiz = quizSetQuiz.getQuiz();
             Document document = quiz.getDocument();
-            Category category = document.getCategory();
+            Directory directory = document.getDirectory();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                 List<Option> options = quiz.getOptions();
@@ -390,7 +390,7 @@ public class QuizService {
                     .choseAnswer(quizSetQuiz.getChoseAnswer())
                     .isAnswer(quizSetQuiz.getIsAnswer())
                     .documentName(document.getName())
-                    .categoryName(category.getName())
+                    .directoryName(directory.getName())
                     .build();
 
             quizSetRecordDtos.add(quizSetRecordDto);

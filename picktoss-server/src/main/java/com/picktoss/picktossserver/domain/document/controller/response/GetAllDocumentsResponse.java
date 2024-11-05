@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.document.controller.response;
 
-import com.picktoss.picktossserver.global.enums.category.CategoryTag;
+import com.picktoss.picktossserver.global.enums.directory.DirectoryTag;
 import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,13 +26,13 @@ public class GetAllDocumentsResponse {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private Integer reviewNeededQuizCount;
-        private GetAllDocumentsCategoryDto category;
+        private GetAllDocumentsDirectoryDto directory;
     }
 
     @Getter
     @Builder
-    public static class GetAllDocumentsCategoryDto {
+    public static class GetAllDocumentsDirectoryDto {
         private String name;
-        private CategoryTag categoryTag;
+        private DirectoryTag tag;
     }
 }

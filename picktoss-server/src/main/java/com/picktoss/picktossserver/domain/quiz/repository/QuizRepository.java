@@ -14,9 +14,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "WHERE d.id = :documentId " +
-            "AND c.member.id = :memberId")
+            "AND di.member.id = :memberId")
     List<Quiz> findAllByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
             @Param("memberId") Long memberId
@@ -25,10 +25,10 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "WHERE d.id = :documentId " +
             "AND q.quizType = :quizType " +
-            "AND c.member.id = :memberId")
+            "AND di.member.id = :memberId")
     List<Quiz> findAllByDocumentIdAndQuizTypeAndMemberId(
             @Param("documentId") Long documentId,
             @Param("quizType") QuizType quizType,
@@ -38,8 +38,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
-            "WHERE c.member.id = :memberId")
+            "JOIN FETCH d.directory di " +
+            "WHERE di.member.id = :memberId")
     List<Quiz> findAllByMemberId(
             @Param("memberId") Long memberId
     );
@@ -56,9 +56,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     @Query("SELECT q FROM Quiz q " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "WHERE q.id = :quizId " +
-            "AND c.member.id = :memberId")
+            "AND di.member.id = :memberId")
     Optional<Quiz> findByQuizIdAndMemberId(
             @Param("quizId") Long quizId,
             @Param("memberId") Long memberId
@@ -67,9 +67,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory di " +
             "WHERE d.id = :documentId " +
-            "AND c.member.id = :memberId")
+            "AND di.member.id = :memberId")
     List<Quiz> findByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
             @Param("memberId") Long memberId
@@ -79,8 +79,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN q.document d " +
-            "JOIN d.category c " +
-            "WHERE c.member.id = :memberId " +
+            "JOIN d.directory di " +
+            "WHERE di.member.id = :memberId " +
             "ORDER BY q.deliveredCount ASC")
     List<Quiz> findAllByMemberIdForTest(
             @Param("memberId") Long memberId
@@ -90,8 +90,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN q.document d " +
-            "JOIN d.category c " +
-            "WHERE c.member.id = :memberId " +
+            "JOIN d.directory di " +
+            "WHERE di.member.id = :memberId " +
             "AND q.id IN :ids")
     List<Quiz> findQuizzesByQuizIds(
             @Param("memberId") Long memberId,

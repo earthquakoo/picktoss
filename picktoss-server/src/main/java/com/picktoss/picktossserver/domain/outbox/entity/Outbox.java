@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.outbox.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.global.enums.outbox.OutboxStatus;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +24,12 @@ public class Outbox {
 
     @Column(name = "try_count", nullable = false)
     private int tryCount;
+
+    @Column(name = "created_quiz_type", nullable = false)
+    private QuizType createdQuizType;
+
+    @Column(name = "used_stars", nullable = false)
+    private Integer usedStars;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
