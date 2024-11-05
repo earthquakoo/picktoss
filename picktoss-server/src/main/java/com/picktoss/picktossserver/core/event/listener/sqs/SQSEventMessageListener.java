@@ -23,6 +23,6 @@ public class SQSEventMessageListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void sendMessageHandler(SQSMessageEvent event) {
         log.info("TransactionPhase.AFTER_COMMIT ---> {}", event);
-        sqsProvider.sendMessage(event.getMemberId(), event.getS3Key(), event.getDocumentId());
+        sqsProvider.sendMessage(event.getMemberId(), event.getS3Key(), event.getDocumentId(), event.getQuizType(), event.getQuizCount());
     }
 }
