@@ -85,9 +85,9 @@ public class DocumentFacade {
     @Transactional
     public void deleteDocument(Long memberId, List<Long> documentIds) {
         List<Document> documents = documentService.deleteDocument(memberId, documentIds);
-        for (Document document : documents) {
-            s3DeletePublisher.s3DeletePublisher(new S3DeleteEvent(document.getS3Key()));
-        }
+//        for (Document document : documents) {
+//            s3DeletePublisher.s3DeletePublisher(new S3DeleteEvent(document.getS3Key()));
+//        }
     }
 
     @Transactional

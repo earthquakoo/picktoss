@@ -31,7 +31,7 @@ public class DirectoryFacade {
     @Transactional
     public Long createDirectory(Long memberId, String name, String emoji) {
         Member member = memberService.findMemberById(memberId);
-        return directoryService.createDirectory(name, memberId, member, emoji);
+        return directoryService.createDirectory(name, member, emoji);
     }
 
     @Transactional

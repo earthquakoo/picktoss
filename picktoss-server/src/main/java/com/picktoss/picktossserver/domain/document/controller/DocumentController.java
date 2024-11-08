@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.document.controller;
 
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.domain.document.controller.request.*;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+
 @Tag(name = "Document")
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +33,8 @@ public class DocumentController {
 
     @Operation(summary = "문서 생성")
     @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
+    @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR})
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateDocumentResponse> createDocument(
             CreateDocumentRequest request
             ) { 
@@ -43,6 +48,7 @@ public class DocumentController {
 
     @Operation(summary = "document_id로 문서 가져오기")
     @GetMapping("/documents/{document_id}")
+    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
             @PathVariable(name = "document_id") Long documentId) {
@@ -55,6 +61,7 @@ public class DocumentController {
 
     @Operation(summary = "모든 문서 가져오기")
     @GetMapping("/directories/documents")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
             @Schema(description = "Null 인 경우 전체 노트") @RequestParam(required = false, value = "directory-id") Long directoryId,
@@ -79,6 +86,7 @@ public class DocumentController {
 
     @Operation(summary = "문서 검색")
     @PostMapping("/documents/search")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<SearchDocumentResponse> searchDocumentByKeyword(@Valid @RequestBody SearchRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -90,6 +98,7 @@ public class DocumentController {
 
     @Operation(summary = "문서 삭제")
     @DeleteMapping("/documents/delete-documents")
+    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDocument(
             @Valid @RequestBody DeleteDocumentRequest request
@@ -102,6 +111,7 @@ public class DocumentController {
 
     @Operation(summary = "문서 다른 폴더로 옮기기")
     @PatchMapping("/documents/move")
+    @ApiErrorCodeExample(DIRECTORY_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void moveDocumentToDirectory(@Valid @RequestBody MoveDocumentToDirectoryRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -112,6 +122,7 @@ public class DocumentController {
 
     @Operation(summary = "문서 내용 업데이트")
     @PatchMapping(value = "/documents/{document_id}/update-content", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changeDocumentContent(
             @PathVariable(name = "document_id") Long documentId,
@@ -124,6 +135,7 @@ public class DocumentController {
 
     @Operation(summary = "문서 이름 변경")
     @PatchMapping("/documents/{document_id}/update-name")
+    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateDocumentName(
             @PathVariable(name = "document_id") Long documentId,
@@ -148,6 +160,7 @@ public class DocumentController {
 
     @Operation(summary = "통합(문서, 컬렉션, 퀴즈) 검색")
     @PostMapping("/integrated-search")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<IntegratedSearchResponse> integratedSearchByKeyword(
             @Valid @RequestBody SearchRequest request

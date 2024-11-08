@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.feedback.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.feedback.controller.request.CreateFeedbackRequest;
 import com.picktoss.picktossserver.domain.feedback.facade.FeedbackFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.AMAZON_SERVICE_EXCEPTION;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
+
 @Tag(name = "Feedback")
 @RestController
 @RequiredArgsConstructor
@@ -25,7 +29,8 @@ public class FeedbackController {
 
     @Operation(summary = "Create Feedback")
     @PostMapping(value = "/feedback", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
+    @ResponseStatus(HttpStatus.CREATED)
     public void createFeedback(CreateFeedbackRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();

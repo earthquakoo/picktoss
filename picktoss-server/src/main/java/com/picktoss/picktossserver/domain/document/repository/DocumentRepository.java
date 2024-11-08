@@ -23,7 +23,9 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "JOIN FETCH d.directory di " +
             "WHERE di.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
-    List<Document> findAllByMemberId(@Param("memberId") Long memberId);
+    List<Document> findAllByMemberId(
+            @Param("memberId") Long memberId
+    );
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory di " +

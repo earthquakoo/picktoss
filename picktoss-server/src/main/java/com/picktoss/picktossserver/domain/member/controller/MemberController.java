@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.member.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateInterestCollectionFieldsRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateMemberNameRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateQuizNotificationRequest;
@@ -17,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
+
 @Tag(name = "Member")
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class MemberController {
 
     @Operation(summary = "Get member info")
     @GetMapping("/members/info")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetMemberInfoResponse> getMemberInfo() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -39,6 +43,7 @@ public class MemberController {
 
     @Operation(summary = "Update member name")
     @PatchMapping("/members/update-name")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateMemberName(@Valid @RequestBody UpdateMemberNameRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -49,6 +54,7 @@ public class MemberController {
 
     @Operation(summary = "Update quiz notification")
     @PatchMapping("/members/update-quiz-notification")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateQuizNotification(@Valid @RequestBody UpdateQuizNotificationRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -59,6 +65,7 @@ public class MemberController {
 
     @Operation(summary = "관심분야 태그 설정")
     @PatchMapping("/members/update-collection-fields")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateInterestCollectionFields(@Valid @RequestBody UpdateInterestCollectionFieldsRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -69,6 +76,7 @@ public class MemberController {
 
     @Operation(summary = "오늘의 퀴즈 관리(오늘의 퀴즈 개수 설정)")
     @PatchMapping("/members/update-today-quiz-count")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateTodayQuizCount(@Valid @RequestBody UpdateTodayQuizCountRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();

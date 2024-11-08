@@ -17,12 +17,12 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+    public ResponseEntity<ErrorResponseDto> handleCustomException(CustomException e) {
         // Extract error info
         ErrorInfo errorInfo = e.getErrorInfo();
 
         // Build response body
-        ErrorResponse errorResponse = new ErrorResponse(
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
                 errorInfo.getStatusCode(),
                 errorInfo.getErrorCode(),
                 e.getMessage()
@@ -31,19 +31,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorInfo.getStatusCode())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(errorResponse);
+                .body(errorResponseDto);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResponseDto> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json;charset=UTF-8");
 
         // Check for class-level constraint violations
         if (!e.getBindingResult().getGlobalErrors().isEmpty()) {
             String globalErrorMessage = e.getBindingResult().getGlobalErrors().get(0).getDefaultMessage();
-            ErrorResponse errorResponse = new ErrorResponse(400, "INVALID_ARGUMENT", globalErrorMessage);
-            return new ResponseEntity<>(errorResponse, headers, HttpStatus.BAD_REQUEST);
+            ErrorResponseDto errorResponseDto = new ErrorResponseDto(400, "INVALID_ARGUMENT", globalErrorMessage);
+            return new ResponseEntity<>(errorResponseDto, headers, HttpStatus.BAD_REQUEST);
         }
 
         FieldError fieldError = e.getBindingResult().getFieldError();
@@ -53,37 +53,37 @@ public class GlobalExceptionHandler {
         }
 
         String messageCode = fieldError != null && fieldError.getCode() != null ? fieldError.getCode() : "";
-        ErrorResponse errorResponse = getErrorResponse(messageCode, errorMessage);
-        return new ResponseEntity<>(errorResponse, headers, BAD_REQUEST);
+        ErrorResponseDto errorResponseDto = getErrorResponse(messageCode, errorMessage);
+        return new ResponseEntity<>(errorResponseDto, headers, BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+    public ResponseEntity<ErrorResponseDto> handleConstraintViolationException(ConstraintViolationException e) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json;charset=UTF-8");
 
-        ErrorResponse errorResponse = new ErrorResponse(400, "INVALID_INPUT_FORMAT", e.getMessage());
-        return new ResponseEntity<>(errorResponse, headers, BAD_REQUEST);
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(400, "INVALID_INPUT_FORMAT", e.getMessage());
+        return new ResponseEntity<>(errorResponseDto, headers, BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
+    public ResponseEntity<ErrorResponseDto> handleRuntimeException(RuntimeException e) {
         System.out.println("e.getClass().getName() = " + e.getClass().getName());
         e.printStackTrace();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json;charset=UTF-8");
 
-        ErrorResponse errorResponse = new ErrorResponse(500, "INTERNAL_ERROR", e.getMessage());
-        return new ResponseEntity<>(errorResponse, headers, INTERNAL_SERVER_ERROR);
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(500, "INTERNAL_ERROR", e.getMessage());
+        return new ResponseEntity<>(errorResponseDto, headers, INTERNAL_SERVER_ERROR);
     }
 
-    public ErrorResponse getErrorResponse(String originCode, String message) {
+    public ErrorResponseDto getErrorResponse(String originCode, String message) {
         return switch (originCode) {
-            case "NotBlank" -> new ErrorResponse(BAD_REQUEST.value(), "EMPTY_FIELD", message);
-            case "Email" -> new ErrorResponse(BAD_REQUEST.value(), "INVALID_EMAIL_FORMAT", message);
-            case "Pattern" -> new ErrorResponse(BAD_REQUEST.value(), "INVALID_INPUT_FORMAT", message);
-            case "Max", "Min", "Size" -> new ErrorResponse(BAD_REQUEST.value(), "INVALID_FIELD_SIZE", message);
-            default -> new ErrorResponse(BAD_REQUEST.value(), "INVALID_ARGUMENT", message);
+            case "NotBlank" -> new ErrorResponseDto(BAD_REQUEST.value(), "EMPTY_FIELD", message);
+            case "Email" -> new ErrorResponseDto(BAD_REQUEST.value(), "INVALID_EMAIL_FORMAT", message);
+            case "Pattern" -> new ErrorResponseDto(BAD_REQUEST.value(), "INVALID_INPUT_FORMAT", message);
+            case "Max", "Min", "Size" -> new ErrorResponseDto(BAD_REQUEST.value(), "INVALID_FIELD_SIZE", message);
+            default -> new ErrorResponseDto(BAD_REQUEST.value(), "INVALID_ARGUMENT", message);
         };
     }
 
