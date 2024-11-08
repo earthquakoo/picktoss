@@ -16,8 +16,8 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
 
     @Transactional
-    public void createFeedback(String title, String content, FeedbackType type, Member member) {
-        Feedback feedback = Feedback.createFeedback(title, content, type, member);
+    public void createFeedback(String title, String content, String s3Key, FeedbackType type, String email, Member member) {
+        Feedback feedback = Feedback.createFeedback(title, content, s3Key, type, email, member);
         feedbackRepository.save(feedback);
     }
 }

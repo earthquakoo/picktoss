@@ -23,22 +23,27 @@ public class Feedback {
     @Column(name = "content")
     private String content;
 
+    @Column(name = "s3_key", nullable = false)
+    private String s3Key;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private FeedbackType type;
 
-//    @Column(name = "email")
-//    private String email;
+    @Column(name = "email", nullable = false)
+    private String email;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Feedback createFeedback(String title, String content, FeedbackType type, Member member) {
+    public static Feedback createFeedback(String title, String content, String s3Key, FeedbackType type, String email, Member member) {
         return Feedback.builder()
                 .title(title)
                 .content(content)
+                .s3Key(s3Key)
                 .type(type)
+                .email(email)
                 .member(member)
                 .build();
     }

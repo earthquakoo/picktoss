@@ -36,10 +36,12 @@ public class Outbox {
     private Document document;
 
     // Constructor methods
-    public static Outbox createOutbox(OutboxStatus status, Document document) {
+    public static Outbox createOutbox(OutboxStatus status, QuizType createdQuizType, Integer usedStars, Document document) {
         return Outbox.builder()
                 .status(status)
                 .tryCount(0)
+                .createdQuizType(createdQuizType)
+                .usedStars(usedStars)
                 .document(document)
                 .build();
     }
