@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.auth.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
@@ -19,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Tag(name = "Auth")
 @RestController
@@ -73,6 +76,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/verification/check")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, EMAIL_VERIFICATION_NOT_FOUND, EMAIL_ALREADY_VERIFIED, INVALID_VERIFICATION_CODE, VERIFICATION_CODE_EXPIRED})
     @ResponseStatus(HttpStatus.OK)
     public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();

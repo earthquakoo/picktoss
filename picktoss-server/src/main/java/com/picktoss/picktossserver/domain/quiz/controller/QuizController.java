@@ -3,6 +3,9 @@ package com.picktoss.picktossserver.domain.quiz.controller;
 import com.lowagie.text.DocumentException;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.pdfgenerator.PdfGenerator;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
 import com.picktoss.picktossserver.domain.quiz.controller.request.CreateQuizzesByDocumentRequest;
@@ -12,7 +15,6 @@ import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
-import com.picktoss.picktossserver.core.pdfgenerator.PdfGenerator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Tag(name = "Quiz")
 @RestController
@@ -103,6 +107,7 @@ public class QuizController {
 
     @Operation(summary = "퀴즈 결과 업데이트")
     @PatchMapping("/quiz/result")
+    @ApiErrorCodeExample(QUIZ_SET_NOT_FOUND_ERROR)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UpdateQuizResultResponse> updateQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -129,6 +134,7 @@ public class QuizController {
 
     @Operation(summary = "퀴즈 삭제")
     @DeleteMapping("/quizzes/{quiz_id}/delete-quiz")
+    @ApiErrorCodeExample(QUIZ_NOT_FOUND_ERROR)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteQuiz(@PathVariable("quiz_id") Long quizId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -139,6 +145,7 @@ public class QuizController {
 
     @Operation(summary = "잘못된 퀴즈 삭제")
     @DeleteMapping("/quizzes/{quiz_id}/delete-invalid-quiz")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteInvalidQuiz(
             @PathVariable("quiz_id") Long quizId,
@@ -152,6 +159,7 @@ public class QuizController {
 
     @Operation(summary = "사용자가 생성한 문서에서 직접 퀴즈 생성(랜덤, OX, 객관식)")
     @PostMapping("/quizzes/documents/{document_id}/create-quizzes")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_COUNT_EXCEEDED})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CreateQuizzesResponse> createQuizzesByDocument(
             @PathVariable("document_id") Long documentId,
@@ -166,6 +174,7 @@ public class QuizController {
 
     @Operation(summary = "전체 퀴즈 기록")
     @GetMapping("/quizzes/quiz-records")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizRecordResponse> getAllQuizzesAndCollectionRecords() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -177,6 +186,7 @@ public class QuizController {
 
     @Operation(summary = "퀴즈 세트에 대한 상세 기록")
     @GetMapping("/quizzes/{quiz_set_id}/quiz-record")
+    @ApiErrorCodeExample(QUIZ_SET_NOT_FOUND_ERROR)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleQuizSetRecordResponse> getSingleQuizSetRecord(
             @PathVariable("quiz_set_id") String quizSetId

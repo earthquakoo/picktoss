@@ -2,6 +2,8 @@ package com.picktoss.picktossserver.domain.collection.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.collection.controller.dto.CollectionResponseDto;
 import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionMapper;
 import com.picktoss.picktossserver.domain.collection.controller.request.*;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+
 @Tag(name = "Collection")
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +38,8 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 생성")
     @PostMapping(value = "/collections")
-    @ResponseStatus(HttpStatus.OK)
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
+    @ResponseStatus(HttpStatus.CREATED)
     public void createCollection(@Valid @RequestBody CreateCollectionRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
@@ -86,6 +91,7 @@ public class CollectionController {
     // collection 상세 정보
     @Operation(summary = "만든 컬렉션 상세 정보 가져오기")
     @GetMapping("/collections/{collection_id}/collection_info")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleCollectionResponse> findCollectionByCollectionId(
             @PathVariable(name = "collection_id") Long collectionId
@@ -99,6 +105,7 @@ public class CollectionController {
 
     @Operation(summary = "퀴즈를 푼 컬렉션의 상세 기록")
     @GetMapping("/collections/{collection_id}/record")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetCollectionSolvedRecordResponse> getCollectionRecord(
             @PathVariable("collection_id") Long collectionId
@@ -126,6 +133,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 삭제")
     @DeleteMapping("/collections/{collection_id}/delete-collection")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCollection(
             @PathVariable(name = "collection_id") Long collectionId
@@ -138,6 +146,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션을 풀었을 때 결과 업데이트")
     @PatchMapping("/collections/{collection_id}/update-collection-result")
+    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, MEMBER_NOT_FOUND})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCollectionQuizResult(
             @PathVariable(name = "collection_id") Long collectionId,
@@ -151,6 +160,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 정보 수정")
     @PatchMapping("/collections/{collection_id}/update-info")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCollectionInfo(
             @PathVariable(name = "collection_id") Long collectionId,
@@ -164,6 +174,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션에 퀴즈 추가", description = "노트 상세에서 특정 퀴즈를 특정 컬렉션에 추가")
     @PatchMapping("/collection/{collection_id}/add-quiz")
+    @ApiErrorCodeExamples({QUIZ_NOT_FOUND_ERROR, COLLECTION_NOT_FOUND, DUPLICATE_QUIZ_IN_COLLECTION})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addQuizToCollection(
             @PathVariable(name = "collection_id") Long collectionId,
@@ -177,6 +188,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 문제 편집")
     @PatchMapping("/collections/{collection_id}/update-quizzes")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCollectionQuizzes(
             @PathVariable(name = "collection_id") Long collectionId,
@@ -201,6 +213,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 북마크하기")
     @PostMapping("/collections/{collection_id}/create-bookmark")
+    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, OWN_COLLECTION_CANT_BOOKMARK, MEMBER_NOT_FOUND})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createCollectionBookmark(
             @PathVariable("collection_id") Long collectionId
@@ -213,6 +226,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 북마크 취소하기")
     @DeleteMapping("/collections/{collection_id}/delete-bookmark")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCollectionBookmark(
             @PathVariable("collection_id") Long collectionId
@@ -225,6 +239,7 @@ public class CollectionController {
 
     @Operation(summary = "사용자 관심 분야 컬렉션 가져오기")
     @GetMapping("/collections/interest-field-collection")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CollectionResponseDto> getInterestFieldCollections() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();

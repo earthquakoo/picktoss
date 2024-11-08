@@ -3,8 +3,8 @@ package com.picktoss.picktossserver.domain.document.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
-import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
@@ -281,10 +281,6 @@ public class DocumentService {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
-        if (!document.getS3Key().equals(defaultDocumentS3Key)) {
-            s3Provider.deleteFile(document.getS3Key());
-        }
-
         document.updateDocumentS3KeyByUpdatedContent(s3Key);
         document.updateDocumentName(name);
     }
@@ -296,7 +292,6 @@ public class DocumentService {
 
         document.updateDocumentName(documentName);
     }
-
 
     @Transactional
     public void selectDocumentToNotGenerateByTodayQuiz(Map<Long, Boolean> documentIdTodayQuizMap, Long memberId) {

@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.collection.controller.request;
 
 import com.picktoss.picktossserver.global.enums.collection.CollectionField;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -21,7 +20,7 @@ public class CreateCollectionRequest {
     @Schema(example = "컬렉션 설명")
     private String description;
 
-    @ArraySchema(schema = @Schema(implementation = CollectionField.class, example = "IT, LAW, BUSINESS_ECONOMY, SOCIETY_POLITICS, LANGUAGE, MEDICINE_PHARMACY, ART, SCIENCE_ENGINEERING, HISTORY_PHILOSOPHY, OTHER"))
+    @Schema(implementation = CollectionField.class, example = "IT, LAW, BUSINESS_ECONOMY, SOCIETY_POLITICS, LANGUAGE, MEDICINE_PHARMACY, ART, SCIENCE_ENGINEERING, HISTORY_PHILOSOPHY, OTHER")
     private CollectionField collectionField;
 
     private List<Long> quizzes;

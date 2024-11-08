@@ -13,9 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.DIRECTORY_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.UNAUTHORIZED_OPERATION_EXCEPTION;
 
 @Service
 @RequiredArgsConstructor
@@ -54,12 +54,7 @@ public class DirectoryService {
     }
 
     @Transactional
-    public Long createDirectory(String name, Long memberId, Member member, String emoji) {
-        Optional<Directory> optionalDirectory = directoryRepository.findByNameAndMemberId(name, memberId);
-        if (optionalDirectory.isPresent()) {
-            throw new CustomException(DUPLICATE_DIRECTORY);
-        }
-
+    public Long createDirectory(String name, Member member, String emoji) {
         Directory directory = Directory.createDirectory(member, name, emoji);
         directoryRepository.save(directory);
         return directory.getId();
