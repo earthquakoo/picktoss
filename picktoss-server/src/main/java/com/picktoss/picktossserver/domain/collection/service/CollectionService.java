@@ -146,7 +146,7 @@ public class CollectionService {
 
         List<GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto> collectionSolvedRecordDtos = new ArrayList<>();
 
-        List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
+        Set<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
         int totalElapsedTimeMs = 0;
         for (CollectionSolvedRecordDetail collectionSolvedRecordDetail : collectionSolvedRecordDetails) {
             totalElapsedTimeMs += collectionSolvedRecordDetail.getElapsedTime();

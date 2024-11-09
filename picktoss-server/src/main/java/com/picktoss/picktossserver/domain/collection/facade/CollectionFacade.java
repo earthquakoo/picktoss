@@ -1,7 +1,8 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
+import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizResultRequest;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
@@ -20,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_FOUND_ERROR;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -33,6 +36,9 @@ public class CollectionFacade {
     public void createCollection(
             List<Long> quizIds, String name, String description, String emoji, CollectionField collectionType, Long memberId) {
         List<Quiz> quizzes = quizService.findQuizzesByQuizIds(quizIds, memberId);
+        if (quizzes.isEmpty()) {
+            throw new CustomException(QUIZ_NOT_FOUND_ERROR);
+        }
         Member member = memberService.findMemberById(memberId);
         collectionService.createCollection(quizzes, name, description, emoji, collectionType, member);
     }
@@ -98,6 +104,9 @@ public class CollectionFacade {
     public void updateCollectionQuizzes(
             List<Long> quizIds, Long collectionId, Long memberId) {
         List<Quiz> quizzes = quizService.findQuizzesByQuizIds(quizIds, memberId);
+        if (quizzes.isEmpty()) {
+            throw new CustomException(QUIZ_NOT_FOUND_ERROR);
+        }
         collectionService.updateCollectionQuizzes(quizzes, collectionId, memberId);
     }
 

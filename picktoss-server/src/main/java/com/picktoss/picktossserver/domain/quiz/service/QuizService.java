@@ -336,7 +336,7 @@ public class QuizService {
             int quizCount = collection.getCollectionQuizzes().size();
             int score = quizCount;
 
-            List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
+            Set<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
             for (CollectionSolvedRecordDetail collectionSolvedRecordDetail : collectionSolvedRecordDetails) {
                 if (!collectionSolvedRecordDetail.getIsAnswer()) {
                     score -= 1;

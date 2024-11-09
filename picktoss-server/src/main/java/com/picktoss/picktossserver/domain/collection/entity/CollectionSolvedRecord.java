@@ -5,8 +5,8 @@ import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -29,7 +29,7 @@ public class CollectionSolvedRecord extends AuditBase {
     private Member member;
 
     @OneToMany(mappedBy = "collectionSolvedRecord", orphanRemoval = true)
-    private List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = new ArrayList<>();
+    private Set<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = new HashSet<>();
 
     public static CollectionSolvedRecord createCollectionSolvedRecord(Collection collection, Member member) {
         return CollectionSolvedRecord.builder()

@@ -38,7 +38,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 생성")
     @PostMapping(value = "/collections")
-    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
     @ResponseStatus(HttpStatus.CREATED)
     public void createCollection(@Valid @RequestBody CreateCollectionRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -188,7 +188,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 문제 편집")
     @PatchMapping("/collections/{collection_id}/update-quizzes")
-    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
+    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCollectionQuizzes(
             @PathVariable(name = "collection_id") Long collectionId,
