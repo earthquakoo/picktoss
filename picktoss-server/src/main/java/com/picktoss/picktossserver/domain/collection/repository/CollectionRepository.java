@@ -12,10 +12,14 @@ import java.util.Optional;
 public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
+            "LEFT JOIN FETCH c.collectionBookmarks " +
+            "JOIN FETCH c.collectionQuizzes cq " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllOrderByUpdatedAtDesc();
 
     @Query("SELECT c FROM Collection c " +
+            "LEFT JOIN FETCH c.collectionBookmarks " +
+            "JOIN FETCH c.collectionQuizzes cq " +
             "WHERE c.collectionField IN :collectionFields " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllByCollectionDomainsAndUpdatedAt(
@@ -45,7 +49,10 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     );
 
     @Query("SELECT c FROM Collection c " +
-            "WHERE c.member.id = :memberId")
+            "LEFT JOIN FETCH c.collectionBookmarks " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH c.member m " +
+            "WHERE m.id = :memberId")
     List<Collection> findAllByMemberId(
             @Param("memberId") Long memberId
     );
