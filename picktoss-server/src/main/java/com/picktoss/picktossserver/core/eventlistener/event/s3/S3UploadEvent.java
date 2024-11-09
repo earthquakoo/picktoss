@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.core.event.event.s3;
+package com.picktoss.picktossserver.core.eventlistener.event.s3;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

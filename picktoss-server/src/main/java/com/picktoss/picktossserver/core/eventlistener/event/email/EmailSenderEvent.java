@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.core.event.event.email;
+package com.picktoss.picktossserver.core.eventlistener.event.email;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import lombok.Getter;

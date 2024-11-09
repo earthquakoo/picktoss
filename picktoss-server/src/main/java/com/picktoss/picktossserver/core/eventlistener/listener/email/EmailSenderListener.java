@@ -1,7 +1,7 @@
-package com.picktoss.picktossserver.core.event.listener.email;
+package com.picktoss.picktossserver.core.eventlistener.listener.email;
 
 import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
-import com.picktoss.picktossserver.core.event.event.email.EmailSenderEvent;
+import com.picktoss.picktossserver.core.eventlistener.event.email.EmailSenderEvent;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

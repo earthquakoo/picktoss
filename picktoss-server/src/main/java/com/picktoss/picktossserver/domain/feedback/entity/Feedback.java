@@ -5,6 +5,9 @@ import com.picktoss.picktossserver.global.enums.feedback.FeedbackType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Table(name = "feedback")
@@ -23,9 +26,6 @@ public class Feedback {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "s3_key", nullable = false)
-    private String s3Key;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private FeedbackType type;
@@ -37,11 +37,13 @@ public class Feedback {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Feedback createFeedback(String title, String content, String s3Key, FeedbackType type, String email, Member member) {
+    @OneToMany(mappedBy = "feedback", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FeedbackFile> feedbackFiles = new ArrayList<>();
+
+    public static Feedback createFeedback(String title, String content, FeedbackType type, String email, Member member) {
         return Feedback.builder()
                 .title(title)
                 .content(content)
-                .s3Key(s3Key)
                 .type(type)
                 .email(email)
                 .member(member)
