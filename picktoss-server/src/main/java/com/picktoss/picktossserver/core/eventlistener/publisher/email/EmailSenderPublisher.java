@@ -1,17 +1,17 @@
-package com.picktoss.picktossserver.core.event.publisher.s3;
+package com.picktoss.picktossserver.core.eventlistener.publisher.email;
 
-import com.picktoss.picktossserver.core.event.event.s3.S3UploadEvent;
+import com.picktoss.picktossserver.core.eventlistener.event.email.EmailSenderEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class S3UploadPublisher {
+public class EmailSenderPublisher {
 
     private final ApplicationEventPublisher publisher;
 
-    public void s3UploadPublisher(S3UploadEvent event) {
+    public void emailSenderPublisher(EmailSenderEvent event) {
         publisher.publishEvent(event);
     }
 }

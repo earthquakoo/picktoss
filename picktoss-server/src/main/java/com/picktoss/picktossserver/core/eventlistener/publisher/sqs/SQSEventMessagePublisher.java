@@ -1,17 +1,17 @@
-package com.picktoss.picktossserver.core.event.publisher.s3;
+package com.picktoss.picktossserver.core.eventlistener.publisher.sqs;
 
-import com.picktoss.picktossserver.core.event.event.s3.S3DeleteEvent;
+import com.picktoss.picktossserver.core.eventlistener.event.sqs.SQSMessageEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class S3DeletePublisher {
+public class SQSEventMessagePublisher {
 
     private final ApplicationEventPublisher publisher;
 
-    public void s3DeletePublisher(S3DeleteEvent event) {
+    public void sqsEventMessagePublisher(SQSMessageEvent event) {
         publisher.publishEvent(event);
     }
 }

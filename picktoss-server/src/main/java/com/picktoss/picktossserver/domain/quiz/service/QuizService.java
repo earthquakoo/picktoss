@@ -1,7 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
-import com.picktoss.picktossserver.core.event.event.email.EmailSenderEvent;
-import com.picktoss.picktossserver.core.event.publisher.email.EmailSenderPublisher;
+import com.picktoss.picktossserver.core.eventlistener.event.email.EmailSenderEvent;
+import com.picktoss.picktossserver.core.eventlistener.publisher.email.EmailSenderPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;

@@ -1,6 +1,6 @@
-package com.picktoss.picktossserver.core.event.listener.sqs;
+package com.picktoss.picktossserver.core.eventlistener.listener.sqs;
 
-import com.picktoss.picktossserver.core.event.event.sqs.SQSMessageEvent;
+import com.picktoss.picktossserver.core.eventlistener.event.sqs.SQSMessageEvent;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

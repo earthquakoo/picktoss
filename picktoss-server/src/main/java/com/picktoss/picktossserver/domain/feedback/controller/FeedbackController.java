@@ -7,13 +7,11 @@ import com.picktoss.picktossserver.domain.feedback.controller.request.CreateFeed
 import com.picktoss.picktossserver.domain.feedback.facade.FeedbackFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.AMAZON_SERVICE_EXCEPTION;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
@@ -31,10 +29,10 @@ public class FeedbackController {
     @PostMapping(value = "/feedback", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiErrorCodeExamples({MEMBER_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.CREATED)
-    public void createFeedback(CreateFeedbackRequest request) {
+    public void createFeedback(@Valid @ModelAttribute CreateFeedbackRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        feedbackFacade.createFeedback(request.getFile(), request.getTitle(), request.getContent(), request.getType(), request.getEmail(), memberId);
+        feedbackFacade.createFeedback(request.getFiles(), request.getTitle(), request.getContent(), request.getType(), request.getEmail(), memberId);
     }
 }

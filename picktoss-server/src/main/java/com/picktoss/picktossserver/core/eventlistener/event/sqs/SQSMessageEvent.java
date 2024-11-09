@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.core.event.event.sqs;
+package com.picktoss.picktossserver.core.eventlistener.event.sqs;
 
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
