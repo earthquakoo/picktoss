@@ -8,6 +8,7 @@ import com.picktoss.picktossserver.domain.quiz.constant.QuizConstant;
 import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.star.service.StarService;
@@ -60,7 +61,8 @@ public class QuizFacade {
     public UpdateQuizResultResponse updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
         boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
         if (isTodayQuizSet) {
-            int currentConsecutiveTodayQuizDate = quizService.checkCurrentConsecutiveTodayQuiz(memberId);
+            List<QuizSet> quizSets = quizService.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+            int currentConsecutiveTodayQuizDate = quizService.checkCurrentConsecutiveTodayQuiz(quizSets);
             if (currentConsecutiveTodayQuizDate % 5 == 0) {
                 return new UpdateQuizResultResponse(QuizConstant.FIVE_DAYS_CONSECUTIVE_REWARD, currentConsecutiveTodayQuizDate);
             }

@@ -6,12 +6,14 @@ import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
+import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class PdfGenerator {
@@ -26,8 +28,14 @@ public class PdfGenerator {
         document.open();
 
         for (Quiz quiz : quizzes) {
-            document.add(new Paragraph("Quiz Question: " + quiz.getQuestion(), font));
-            document.add(new Paragraph("Options: " + quiz.getOptions().toString(), font));
+            document.add(new Paragraph("Question: " + quiz.getQuestion(), font));
+            Set<Option> options = quiz.getOptions();
+            if (!options.isEmpty()) {
+                document.add(new Paragraph("Options:", font));
+                for (Option option : options) {
+                    document.add(new Paragraph("- " + option.getOption(), font));
+                }
+            }
             document.add(new Paragraph("Answer: " + quiz.getAnswer(), font));
             document.add(new Paragraph("Explanation: " + quiz.getExplanation(), font));
             document.add(new Paragraph("\n"));

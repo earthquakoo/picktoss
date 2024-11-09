@@ -10,31 +10,25 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DirectoryRepository extends JpaRepository<Directory, Long> {
-    @Query("SELECT d FROM Directory d " +
-            "LEFT JOIN FETCH d.documents " +
-            "WHERE d.member.id = :memberId")
+    @Query("SELECT dir FROM Directory dir " +
+            "LEFT JOIN FETCH dir.documents " +
+            "WHERE dir.member.id = :memberId")
     List<Directory> findAllByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT d FROM Directory d " +
-            "WHERE d.id = :directoryId " +
-            "AND d.member.id = :memberId")
+    @Query("SELECT dir FROM Directory dir " +
+            "WHERE dir.id = :directoryId " +
+            "AND dir.member.id = :memberId")
     Optional<Directory> findByDirectoryIdAndMemberId(
             @Param("directoryId") Long directoryId,
             @Param("memberId") Long memberId
     );
 
-    @Query("SELECT d FROM Directory d WHERE d.name = :name AND d.member.id = :memberId")
-    Optional<Directory> findByNameAndMemberId(
-            @Param("name") String name,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT d FROM Directory d " +
-            "JOIN FETCH d.member m " +
+    @Query("SELECT dir FROM Directory dir " +
+            "JOIN FETCH dir.member m " +
             "JOIN FETCH m.star s " +
             "LEFT JOIN FETCH s.starHistories sh " +
-            "WHERE d.id = :directoryId " +
-            "AND d.member.id = :memberId")
+            "WHERE dir.id = :directoryId " +
+            "AND dir.member.id = :memberId")
     Optional<Directory> findDirectoryWithMemberAndStarAndStarHistoryByDirectoryIdAndMemberId(
             @Param("directoryId") Long directoryId,
             @Param("memberId") Long memberId

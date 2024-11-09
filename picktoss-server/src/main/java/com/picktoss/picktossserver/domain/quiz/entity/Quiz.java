@@ -8,7 +8,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -46,7 +48,7 @@ public class Quiz extends AuditBase {
     private Document document;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Option> options = new ArrayList<>();
+    private Set<Option> options = new HashSet<>();
 
     @OneToMany(mappedBy = "quiz", orphanRemoval = true)
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();

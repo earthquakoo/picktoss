@@ -60,7 +60,7 @@ public class QuizService {
             Quiz quiz = quizzes.getQuiz();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 for (Option option : options) {
                     optionList.add(option.getOption());
                 }
@@ -169,7 +169,7 @@ public class QuizService {
             }
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 if (options.isEmpty()) {
                     continue;
                 }
@@ -296,14 +296,15 @@ public class QuizService {
     }
 
     public GetQuizRecordResponse findAllQuizAndCollectionRecords(Member member, List<CollectionSolvedRecord> collectionSolvedRecords) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(member.getId());
-        int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(member.getId());
-        int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(member.getId());
+        List<QuizSet> SolvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(member.getId());
+        List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(member.getId());
+        int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
+        int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
 
         List<GetQuizRecordResponse.GetQuizRecordDto> quizRecordDtos = new ArrayList<>();
         List<GetQuizRecordResponse.GetCollectionRecordDto> collectionRecordDtos = new ArrayList<>();
 
-        for (QuizSet quizSet : quizSets) {
+        for (QuizSet quizSet : SolvedQuizSets) {
             int quizCount = quizSet.getQuizSetQuizzes().size();
             int score = quizCount;
             List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
@@ -362,6 +363,10 @@ public class QuizService {
         QuizSet quizSet = quizSetRepository.findQuizSetByMemberIdAndQuizSetId(memberId, quizSetId)
                 .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
 
+        if (!quizSet.isSolved()) {
+            throw new CustomException(UNRESOLVED_QUIZ_SET);
+        }
+
         List<GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto> quizSetRecordDtos = new ArrayList<>();
 
         int elapsedTimeMs = 0;
@@ -373,7 +378,7 @@ public class QuizService {
             Directory directory = document.getDirectory();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 if (options.isEmpty()) {
                     continue;
                 }
@@ -400,8 +405,9 @@ public class QuizService {
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {
-        int currentConsecutiveTodayQuizDate = checkCurrentConsecutiveTodayQuiz(memberId);
-        int maxConsecutiveTodayQuizDate = checkMaxConsecutiveTodayQuiz(memberId);
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+        int currentConsecutiveTodayQuizDate = checkCurrentConsecutiveTodayQuiz(quizSets);
+        int maxConsecutiveTodayQuizDate = checkMaxConsecutiveTodayQuiz(quizSets);
 
         return new GetCurrentTodayQuizInfo(currentConsecutiveTodayQuizDate, maxConsecutiveTodayQuizDate);
     }
@@ -410,8 +416,7 @@ public class QuizService {
         return quizRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
     }
 
-    public int checkCurrentConsecutiveTodayQuiz(Long memberId) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+    public int checkCurrentConsecutiveTodayQuiz(List<QuizSet> quizSets) {
         if (quizSets.isEmpty()) {
             return 0;
         }
@@ -440,8 +445,7 @@ public class QuizService {
         return currentConsecutiveDays;
     }
 
-    public int checkMaxConsecutiveTodayQuiz(Long memberId) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+    public int checkMaxConsecutiveTodayQuiz(List<QuizSet> quizSets) {
         if (quizSets.isEmpty()) {
             return 0;
         }
@@ -542,10 +546,13 @@ public class QuizService {
     }
 
     // 7일 이내에 발생한 quizSet by memberId
-    public List<QuizSetQuiz> findQuizSetQuizzesByMemberIdAndCreatedAtAfter(Long memberId) {
+    public List<QuizSetQuiz> findQuizSetQuizzesByMemberIdAndCreatedAtAfterSevenDaysAgo(Long memberId) {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        System.out.println("sevenDaysAgo = " + sevenDaysAgo);
         return quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
+    }
+
+    public List<QuizSet> findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(Long memberId) {
+        return quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
     }
 
     private static String createQuizSetId() {
