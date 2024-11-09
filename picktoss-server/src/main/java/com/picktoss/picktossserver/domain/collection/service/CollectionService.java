@@ -114,7 +114,7 @@ public class CollectionService {
             Quiz quiz = collectionQuiz.getQuiz();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 for (Option option : options) {
                     optionList.add(option.getOption());
                 }
@@ -153,7 +153,7 @@ public class CollectionService {
             Quiz quiz = collectionSolvedRecordDetail.getQuiz();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 if (options.isEmpty()) {
                     continue;
                 }

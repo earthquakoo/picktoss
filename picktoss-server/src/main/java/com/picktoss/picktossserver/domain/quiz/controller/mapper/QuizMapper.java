@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class QuizMapper {
 
@@ -22,7 +23,7 @@ public class QuizMapper {
 
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 for (Option option : options) {
                     optionList.add(option.getOption());
                 }

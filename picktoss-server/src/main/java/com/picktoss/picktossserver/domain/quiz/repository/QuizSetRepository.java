@@ -31,8 +31,9 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
     @Query("SELECT qs FROM QuizSet qs " +
             "JOIN FETCH qs.quizSetQuizzes qsq " +
             "JOIN FETCH qsq.quiz q " +
+            "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.directory id " +
+            "JOIN FETCH d.directory dir " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.id = :quizSetId")
     Optional<QuizSet> findQuizSetByMemberIdAndQuizSetId(

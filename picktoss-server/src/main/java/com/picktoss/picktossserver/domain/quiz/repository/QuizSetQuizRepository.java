@@ -14,7 +14,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quiz q " +
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.directory di " +
+            "JOIN FETCH d.directory dir " +
             "JOIN FETCH qsq.quizSet qs " +
             "WHERE qs.id = :quizSetId " +
             "AND qs.member.id = :memberId")
@@ -27,7 +27,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quizSet qs " +
             "JOIN FETCH qsq.quiz q " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.directory di " +
+            "JOIN FETCH d.directory dir " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true")
     List<QuizSetQuiz> findAllByMemberIdAndSolvedTrue(
@@ -38,9 +38,9 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quizSet qs " +
             "JOIN FETCH qsq.quiz q " +
             "JOIN FETCH q.document d " +
-            "JOIN FETCH d.directory di " +
+            "JOIN FETCH d.directory dir " +
             "WHERE qs.member.id = :memberId " +
-            "AND di.id = :directoryId " +
+            "AND dir.id = :directoryId " +
             "AND qs.solved = true")
     List<QuizSetQuiz> findAllByMemberIdAndDirectoryIdAndSolvedTrue(
             @Param("memberId") Long memberId,

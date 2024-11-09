@@ -78,16 +78,16 @@ public class DocumentFacade {
     }
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInDirectory(Long memberId, Long directoryId, DocumentSortOption documentSortOption) {
-        List<QuizSetQuiz> quizSetQuizzes = quizService.findQuizSetQuizzesByMemberIdAndCreatedAtAfter(memberId);
+        List<QuizSetQuiz> quizSetQuizzes = quizService.findQuizSetQuizzesByMemberIdAndCreatedAtAfterSevenDaysAgo(memberId);
         return documentService.findAllDocumentsInDirectory(memberId, directoryId, documentSortOption, quizSetQuizzes);
     }
 
     @Transactional
     public void deleteDocument(Long memberId, List<Long> documentIds) {
         List<Document> documents = documentService.deleteDocument(memberId, documentIds);
-//        for (Document document : documents) {
-//            s3DeletePublisher.s3DeletePublisher(new S3DeleteEvent(document.getS3Key()));
-//        }
+        for (Document document : documents) {
+            s3DeletePublisher.s3DeletePublisher(new S3DeleteEvent(document.getS3Key()));
+        }
     }
 
     @Transactional
@@ -101,7 +101,7 @@ public class DocumentFacade {
     }
 
     public GetDocumentsNeedingReviewResponse findDocumentsNeedingReview(Long memberId) {
-        List<QuizSetQuiz> quizSetQuizzes = quizService.findQuizSetQuizzesByMemberIdAndCreatedAtAfter(memberId);
+        List<QuizSetQuiz> quizSetQuizzes = quizService.findQuizSetQuizzesByMemberIdAndCreatedAtAfterSevenDaysAgo(memberId);
         return documentService.findDocumentsNeedingReview(memberId, quizSetQuizzes);
     }
 

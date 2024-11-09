@@ -186,7 +186,7 @@ public class QuizController {
 
     @Operation(summary = "퀴즈 세트에 대한 상세 기록")
     @GetMapping("/quizzes/{quiz_set_id}/quiz-record")
-    @ApiErrorCodeExample(QUIZ_SET_NOT_FOUND_ERROR)
+    @ApiErrorCodeExamples({QUIZ_SET_NOT_FOUND_ERROR, UNRESOLVED_QUIZ_SET})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleQuizSetRecordResponse> getSingleQuizSetRecord(
             @PathVariable("quiz_set_id") String quizSetId

@@ -1,9 +1,9 @@
 package com.picktoss.picktossserver.domain.document.controller;
 
-import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
-import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.document.controller.request.*;
 import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
@@ -36,13 +36,12 @@ public class DocumentController {
     @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateDocumentResponse> createDocument(
-            CreateDocumentRequest request
-            ) { 
+            @Valid @ModelAttribute CreateDocumentRequest request
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
-        Long directoryId = Long.valueOf(request.getDirectoryId());
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, request.getStar(), request.getQuizType());
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, request.getDirectoryId(), request.getStar(), request.getQuizType());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -146,7 +145,7 @@ public class DocumentController {
         documentFacade.updateDocumentName(documentId, memberId, request.getName());
     }
 
-    @Operation(summary = "오늘의 퀴즈 관리(문제를 가져올 노트 선택)")
+    @Operation(summary = "오늘의 퀴즈 관리(문제를 가져올 노트 선택)", description = "Request map에서 key값은 number, value값은 boolean입니다.")
     @PatchMapping("/documents/today-quiz-settings")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void selectDocumentToNotGenerateByTodayQuiz(

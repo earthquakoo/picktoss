@@ -10,6 +10,7 @@ import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
@@ -56,7 +57,7 @@ public class DocumentService {
     }
 
     public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
-        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+        Document document = documentRepository.findDocumentWithQuizzesByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         String content = s3Provider.findFile(document.getS3Key());
@@ -67,7 +68,7 @@ public class DocumentService {
         for (Quiz quiz : quizzes) {
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                List<Option> options = quiz.getOptions();
+                Set<Option> options = quiz.getOptions();
                 if (options.isEmpty()) {
                     continue;
                 }
@@ -124,7 +125,22 @@ public class DocumentService {
         }
 
         Map<Long, Integer> reviewNeededDocumentIdAndQuizCount = new HashMap<>();
+        Set<Long> processedQuizIds = new HashSet<>(); // 이미 처리된 Quiz ID를 추적하는 Set
+
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            QuizSet quizSet = quizSetQuiz.getQuizSet();
+            if (!quizSet.isSolved()) {
+                continue;
+            }
+
+            Long quizId = quizSetQuiz.getQuiz().getId();
+            if (processedQuizIds.contains(quizId)) {
+                continue; // 이미 처리된 퀴즈인 경우 if 문을 생략하고 다음 퀴즈로 넘어감
+            }
+
+            // 퀴즈가 처리된 것으로 표시
+            processedQuizIds.add(quizId);
+
             // 정답이 아니거나 문제를 푸는데 20초이상 걸렸다면
             if (!quizSetQuiz.getIsAnswer() || quizSetQuiz.getElapsedTimeMs() >= 20000) {
                 Long documentId = quizSetQuiz.getQuiz().getDocument().getId();
@@ -238,7 +254,22 @@ public class DocumentService {
         for (Document document : documents) {
             documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.getOrDefault(document, 0));
         }
+
+        Set<Long> processedQuizIds = new HashSet<>(); // 이미 처리된 Quiz ID를 추적하는 Set
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            QuizSet quizSet = quizSetQuiz.getQuizSet();
+            if (!quizSet.isSolved()) {
+                continue;
+            }
+
+            Long quizId = quizSetQuiz.getQuiz().getId();
+            if (processedQuizIds.contains(quizId)) {
+                continue; // 이미 처리된 퀴즈인 경우 if 문을 생략하고 다음 퀴즈로 넘어감
+            }
+
+            // 퀴즈가 처리된 것으로 표시
+            processedQuizIds.add(quizId);
+
             if (!quizSetQuiz.getIsAnswer() || quizSetQuiz.getElapsedTimeMs() >= 20000) {
                 Document document = quizSetQuiz.getQuiz().getDocument();
                 documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.get(document) + 1);

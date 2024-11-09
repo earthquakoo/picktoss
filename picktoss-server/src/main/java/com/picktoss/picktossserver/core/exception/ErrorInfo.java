@@ -66,6 +66,7 @@ public enum ErrorInfo {
      */
     QUIZ_NOT_FOUND_ERROR(400, "QUIZ_NOT_FOUND", "해당 id의 퀴즈를 찾을 수 없습니다."),
     QUIZ_COUNT_EXCEEDED(400, "QUIZ_COUNT_EXCEEDED", "생성된 퀴즈 수보다 더 많은 퀴즈를 생성할 수 없습니다."),
+    UNRESOLVED_QUIZ_SET(400, "UNRESOLVED_QUIZ_SET", "풀지 않은 퀴즈셋입니다."),
     QUIZ_SET_NOT_FOUND_ERROR(400, "QUIZ_SET_NOT_FOUND", "해당 id의 퀴즈셋을 찾을 수 없습니다.");
 
 
