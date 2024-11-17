@@ -12,6 +12,6 @@ public class CreateDocumentRequest {
     private MultipartFile file;
     private String directoryId;
     private String documentName;
-    private Integer star;
+    private String star;
     private QuizType quizType;
 }
