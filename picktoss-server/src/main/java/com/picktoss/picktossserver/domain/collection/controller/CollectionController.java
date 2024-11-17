@@ -52,7 +52,7 @@ public class CollectionController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CollectionResponseDto> findAllCollections(
             @RequestParam(required = false, defaultValue = "POPULARITY", value = "collection-sort-option") CollectionSortOption collectionSortOption,
-            @RequestParam(required = false, value = "collection-domain-option") List<CollectionField> collectionFieldOption,
+            @RequestParam(required = false, value = "collection-field") List<CollectionField> collectionFieldOption,
             @RequestParam(required = false, value = "quiz-type") QuizType quizType,
             @RequestParam(required = false, value = "quiz-count") Integer quizCount
     ) {
@@ -68,6 +68,20 @@ public class CollectionController {
     @GetMapping("/collections/bookmarked-collections")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CollectionResponseDto> findAllByMemberIdAndBookmarked() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<Collection> collections = collectionFacade.findAllByMemberIdAndBookmarked(memberId);
+        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "북마크한 컬렉션의 카테고리별로 모든 퀴즈 가져오기")
+    @GetMapping("/collections/quizzes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<CollectionResponseDto> findCollectionInQuizzesByMemberIdAndBookmarked(
+            @RequestParam(value = "collection-option") CollectionField collectionField
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 

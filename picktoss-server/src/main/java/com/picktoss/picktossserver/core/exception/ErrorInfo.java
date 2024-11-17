@@ -12,6 +12,7 @@ public enum ErrorInfo {
     EMAIL_ALREADY_VERIFIED(400, "EMAIL_ALREADY_VERIFIED", "이메일이 이미 인증되었습니다."),
     INVALID_VERIFICATION_CODE(400, "INVALID_VERIFICATION_CODE", "잘못된 인증 코드입니다."),
     VERIFICATION_CODE_EXPIRED(400, "VERIFICATION_CODE_EXPIRED", "이메일 인증 코드가 만료되었습니다."),
+    INVALID_SOCIAL_PLATFORM(400, "INVALID_SOCIAL_PLATFORM", "잘못된 소셜 플랫폼입니다."),
 
     /**
      * AWS Exception

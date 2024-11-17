@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
@@ -73,7 +74,30 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<CollectionSolvedRecord> collectionSolvedRecords = new ArrayList<>();
-    
+
+    public static Member createGoogleMember(String name, String clientId, String email) {
+        return Member.builder()
+                .name(name)
+                .clientId(clientId)
+                .socialPlatform(SocialPlatform.GOOGLE)
+                .email(email)
+                .isQuizNotificationEnabled(true)
+                .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
+                .role(MemberRole.ROLE_USER)
+                .build();
+    }
+
+    public static Member createKakaoMember(String name, String clientId) {
+        return Member.builder()
+                .name(name)
+                .clientId(clientId)
+                .socialPlatform(SocialPlatform.KAKAO)
+                .isQuizNotificationEnabled(false)
+                .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
+                .role(MemberRole.ROLE_USER)
+                .build();
+    }
+
     public void updateMemberName(String name) {
         this.name = name;
     }

@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.member.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
@@ -35,6 +36,16 @@ public class MemberService {
     public Long createMember(Member member) {
         memberRepository.save(member);
         return member.getId();
+    }
+
+    @Transactional
+    public Member createGoogleMember(String name, String clientId, String email) {
+        return Member.createGoogleMember(name, clientId, email);
+    }
+
+    @Transactional
+    public Member createKakaoMember(String name, String clientId) {
+        return Member.createKakaoMember(name, clientId);
     }
 
     public GetMemberInfoResponse findMemberInfo(

@@ -65,7 +65,7 @@ public class QuizController {
         return ResponseEntity.ok().body(quizSetToday);
     }
 
-    @Operation(summary = "생성된 모든 퀴즈 가져오기(전체 문서)")
+    @Operation(summary = "생성된 모든 퀴즈 가져오기(랜덤 퀴즈)")
     @GetMapping("/quizzes")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<QuizResponseDto> getAllQuizzesByMemberId() {

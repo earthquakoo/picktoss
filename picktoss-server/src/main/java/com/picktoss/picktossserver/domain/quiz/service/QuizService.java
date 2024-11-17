@@ -135,7 +135,9 @@ public class QuizService {
     }
 
     public List<Quiz> findAllByMemberId(Long memberId) {
-        return quizRepository.findAllByMemberId(memberId);
+        List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
+        Collections.shuffle(quizzes);
+        return quizzes;
     }
 
     public List<Quiz> findAllGeneratedQuizzesByDocumentId(Long documentId, QuizType quizType, Long memberId) {
