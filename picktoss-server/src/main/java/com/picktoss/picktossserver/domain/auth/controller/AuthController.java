@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.auth.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
@@ -60,9 +61,11 @@ public class AuthController {
     @Operation(summary = "login")
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            @RequestParam(required = false, value = "invite-link") String inviteLink) {
 
-        LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform());
+        LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
         return ResponseEntity.ok().body(response);
     }
 
@@ -83,6 +86,30 @@ public class AuthController {
         Long memberId = jwtUserInfo.getMemberId();
 
         authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
+    }
+
+    @Operation(summary = "초대 인증 코드 생성")
+    @GetMapping("/auth/invite-code")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void generateMemberInviteCode(
+            @RequestParam(required = false, value = "invite-code") String link
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        authFacade.generateMemberInviteCode(memberId, link);
+        System.out.println("인증코드 전송");
+    }
+
+    @Operation(summary = "테스트 회원가입")
+    @PostMapping("/auth/create-member")
+    @ResponseStatus(HttpStatus.OK)
+    public String testCreateMember(
+            @RequestParam(required = false, value = "invite-code") String link
+    ) {
+        authFacade.testMember(link);
+        return link;
     }
 
     @Operation(summary = "Health check")

@@ -39,6 +39,9 @@ dependencies {
     implementation 'com.itextpdf:itext7-core:7.2.5'
 
     implementation 'javax.xml.bind:jaxb-api:2.3.0'
+
+    //Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 bootJar {

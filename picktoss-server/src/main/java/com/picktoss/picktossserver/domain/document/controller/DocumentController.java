@@ -40,8 +40,9 @@ public class DocumentController {
             ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
+        Long directoryId = Long.valueOf(request.getDirectoryId());
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, request.getDirectoryId(), request.getStar(), request.getQuizType());
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, request.getStar(), request.getQuizType());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 

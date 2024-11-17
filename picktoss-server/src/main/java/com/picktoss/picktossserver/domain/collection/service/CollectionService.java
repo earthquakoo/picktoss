@@ -97,6 +97,14 @@ public class CollectionService {
         return collectionRepository.findAllByMemberIdAndBookmarked(memberId);
     }
 
+    // 북마크한 컬렉션의 카테고리별로 모든 퀴즈 가져오기
+    public void findQuizzesInCollectionByMemberIdAndBookmarkedAndCollectionField(Long memberId, CollectionField collectionField) {
+        List<CollectionQuiz> collectionQuizzes = collectionQuizRepository.findQuizzesInCollectionByMemberIdAndBookmarkedAndCollectionField(memberId, collectionField);
+        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+            Quiz quiz = collectionQuiz.getQuiz();
+        }
+    }
+
     // 직접 생성한 컬렉션 가져오기
     public List<Collection> findAllByMemberId(Long memberId) {
         return collectionRepository.findAllByMemberId(memberId);

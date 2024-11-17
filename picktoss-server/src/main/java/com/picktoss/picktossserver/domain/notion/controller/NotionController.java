@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +16,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
 public class NotionController {
-
-    @Value("${oauth.notion.access_token}")
-    private String notionAccessToken;
 
     private final NotionFacade notionFacade;
     private final JwtTokenProvider jwtTokenProvider;
@@ -45,18 +41,19 @@ public class NotionController {
     public String getNotionPages() {
 //        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
 //        Long memberId = jwtUserInfo.getMemberId();
-        String accessToken = notionAccessToken;
+        String accessToken = "";
         return notionFacade.findNotionPages(accessToken);
-
     }
 
     @Operation(summary = "Get notion page")
-    @GetMapping("/notion/page")
+    @GetMapping("/notion/page/{page_id}")
     @ResponseStatus(HttpStatus.OK)
-    public String getNotionPage() {
+    public String getNotionPage(
+            @PathVariable("page_id") String pageId
+    ) {
 //        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
 //        Long memberId = jwtUserInfo.getMemberId();
-        String accessToken = notionAccessToken;
-        return notionFacade.findNotionPage(accessToken);
+        String accessToken = "";
+        return notionFacade.findNotionPage(accessToken, pageId);
     }
 }

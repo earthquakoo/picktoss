@@ -63,7 +63,8 @@ public class SecurityConfig {
                                 "/api/v2/test/create-member",
                                 "/api/v2/test/quiz-create",
                                 "/api/v2/upload",
-                                "/api/v2/collection/**"
+                                "/api/v2/collection/**",
+                                "/api/v2/auth/create-member"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

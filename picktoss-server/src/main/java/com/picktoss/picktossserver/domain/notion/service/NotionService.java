@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @Transactional(readOnly = true)
@@ -19,14 +20,19 @@ public class NotionService {
     @Value("${oauth.notion.client_secret}")
     private String notionClientSecret;
 
-    private static final String notionRedirectUri = "http://localhost:8181/api/v2/notion/callback";
+    @Value("${oauth.notion.redirect_uri}")
+    private String notionRedirectUri;
+
 
     public String findNotionRedirectUri() {
-        return String.format(
-                "https://api.notion.com/v1/oauth/authorize?client_id=%s&response_type=code&owner=user&redirect_uri=%s",
-                notionClientId,
-                notionRedirectUri
-        );
+        String notionAuthorizeUrl = "https://api.notion.com/v1/oauth/authorize";
+        return UriComponentsBuilder.fromUriString(notionAuthorizeUrl)
+                .queryParam("client_id", notionClientId)
+                .queryParam("response_type", "code")
+                .queryParam("owner", "user")
+                .queryParam("redirect_uri", notionRedirectUri)
+                .build()
+                .toUriString();
     }
 
     public String findNotionOauthAccessToken(String accessCode) {
@@ -51,27 +57,18 @@ public class NotionService {
 
     public String findNotionPages(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
-
-        // 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken); // Bearer 인증 헤더 설정
         headers.set("Notion-Version", "2022-06-28");
 
-        // 요청 바디 설정
-//        LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//        body.add("filter", new LinkedMultiValueMap<String, String>() {{
-//            add("property", "object");
-//            add("value", "page");
-//        }});
         String jsonBody = "{"
                 + "\"filter\": {\"property\": \"object\", \"value\": \"page\"}"
                 + "}";
 
-        String notionSearchUrl = "https://api.notion.com/v1/search";
-
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
 
+        String notionSearchUrl = "https://api.notion.com/v1/search";
         ResponseEntity<String> responseEntity = restTemplate.exchange(notionSearchUrl, HttpMethod.POST, requestEntity, String.class);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -81,14 +78,12 @@ public class NotionService {
         }
     }
 
-    public String findNotionPage(String accessToken) {
-        String pageId = "539e5af7-113b-44ae-948a-7359d725ee18";
+    public String findNotionPage(String accessToken, String pageId) {
         RestTemplate restTemplate = new RestTemplate();
 
-        // 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(accessToken); // Bearer 인증 헤더 설정
+        headers.setBearerAuth(accessToken);
         headers.set("Notion-Version", "2022-06-28");
 
         String notionBlocksUrl = "https://api.notion.com/v1/blocks/" + pageId + "/children";
