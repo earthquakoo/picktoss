@@ -99,7 +99,6 @@ public class AuthController {
         Long memberId = jwtUserInfo.getMemberId();
 
         authFacade.generateMemberInviteCode(memberId, link);
-        System.out.println("인증코드 전송");
     }
 
     @Operation(summary = "테스트 회원가입")
