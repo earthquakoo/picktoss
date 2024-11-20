@@ -7,13 +7,13 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class GetQuizResultRequest {
+public class UpdateQuizResultRequest {
 
     private String quizSetId;
-    private List<GetQuizResultQuizDto> quizzes;
+    private List<UpdateQuizResultQuizDto> quizzes;
 
     @Getter
-    public static class GetQuizResultQuizDto {
+    public static class UpdateQuizResultQuizDto {
         private Long id;
         private boolean answer;
         private String choseAnswer;

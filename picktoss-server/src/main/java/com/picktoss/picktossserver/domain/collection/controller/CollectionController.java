@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.domain.collection.controller.mapper.Collectio
 import com.picktoss.picktossserver.domain.collection.controller.request.*;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
@@ -76,18 +77,17 @@ public class CollectionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "북마크한 컬렉션의 카테고리별로 모든 퀴즈 가져오기")
-    @GetMapping("/collections/quizzes")
+    @Operation(summary = "북마크한 컬렉션 분야별로 모든 퀴즈 랜덤하게 가져오기")
+    @GetMapping("/collections/{collection_field}/quizzes")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CollectionResponseDto> findCollectionInQuizzesByMemberIdAndBookmarked(
-            @RequestParam(value = "collection-option") CollectionField collectionField
+    public ResponseEntity<GetQuizzesInCollectionByCollectionField> findQuizzesInCollectionByCollectionField(
+            @PathVariable("collection_field") CollectionField collectionField
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findAllByMemberIdAndBookmarked(memberId);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
-        return ResponseEntity.ok().body(response);
+        List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> response = collectionFacade.findAllByMemberIdAndCollectionFieldAndBookmarked(memberId, collectionField);
+        return ResponseEntity.ok().body(new GetQuizzesInCollectionByCollectionField(response));
     }
 
     @Operation(summary = "직접 생성한 컬렉션 가져오기")

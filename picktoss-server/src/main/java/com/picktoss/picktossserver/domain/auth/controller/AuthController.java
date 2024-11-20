@@ -7,7 +7,9 @@ import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.controller.request.VerifyInviteCode;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.controller.response.CreateInviteLinkResponse;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
@@ -45,9 +47,7 @@ public class AuthController {
 
     @Operation(summary = "Oauth callback")
     @GetMapping("/callback")
-    public String googleLogin(
-            @RequestParam("code") String code
-    ) {
+    public String googleLogin(@RequestParam("code") String code) {
         String idToken = authService.getOauthAccessToken(code);
         System.out.println("idToken = " + idToken);
 
@@ -88,27 +88,27 @@ public class AuthController {
         authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
     }
 
-    @Operation(summary = "초대 인증 코드 생성")
-    @GetMapping("/auth/invite-code")
+    @Operation(summary = "초대 링크 생성")
+    @GetMapping("/auth/invite-link")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void generateMemberInviteCode(
-            @RequestParam(required = false, value = "invite-code") String link
-    ) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateInviteLinkResponse> createInviteLink() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.generateMemberInviteCode(memberId, link);
+        String inviteLink = authFacade.createInviteLink(memberId);
+        return ResponseEntity.ok().body(new CreateInviteLinkResponse(inviteLink));
     }
 
-    @Operation(summary = "테스트 회원가입")
-    @PostMapping("/auth/create-member")
+    @Operation(summary = "초대 코드 인증")
+    @PostMapping("/auth/invite-code/verify")
+    @ApiErrorCodeExample(INVITE_LINK_EXPIRED_OR_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
-    public String testCreateMember(
-            @RequestParam(required = false, value = "invite-code") String link
-    ) {
-        authFacade.testMember(link);
-        return link;
+    public void verifyInviteCode(@Valid @RequestBody VerifyInviteCode request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        authFacade.verifyInviteCode(request.getInviteCode());
     }
 
     @Operation(summary = "Health check")

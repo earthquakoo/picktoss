@@ -20,6 +20,7 @@ import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.star.service.StarService;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import com.picktoss.picktossserver.global.enums.outbox.OutboxStatus;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,7 @@ public class DocumentFacade {
 
     @Transactional
     public Long createDocument(
-            String documentName, MultipartFile file, Long memberId, Long directoryId, Integer starCount, QuizType quizType) {
+            String documentName, MultipartFile file, Long memberId, Long directoryId, Integer starCount, QuizType quizType, DocumentType documentType) {
         List<Document> documents = documentService.findAllByMemberId(memberId);
         int possessDocumentCount = documents.size();
 
@@ -65,7 +66,7 @@ public class DocumentFacade {
         starService.withdrawalStarByCreateDocument(star, starCount);
 
         String s3Key = UUID.randomUUID().toString();
-        Document document = documentService.createDocument(documentName, directory, s3Key);
+        Document document = documentService.createDocument(documentName, s3Key, documentType, directory);
 
         outboxService.createOutbox(OutboxStatus.WAITING, quizType, starCount, document);
         s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));

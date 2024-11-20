@@ -5,7 +5,8 @@ import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.quiz.constant.QuizConstant;
-import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateRandomQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
@@ -45,8 +46,8 @@ public class QuizFacade {
         return quizService.findQuestionSetToday(memberId);
     }
 
-    public List<Quiz> findAllByMemberId(Long memberId) {
-        return quizService.findAllByMemberId(memberId);
+    public List<Quiz> findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
+        return quizService.findAllByMemberIdAndDirectoryId(memberId, directoryId);
     }
 
     public List<Quiz> findAllGeneratedQuizzesByDocumentId(Long documentId, QuizType quizType, Long memberId) {
@@ -58,7 +59,7 @@ public class QuizFacade {
     }
 
     @Transactional
-    public UpdateQuizResultResponse updateQuizResult(List<GetQuizResultRequest.GetQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
+    public UpdateQuizResultResponse updateQuizResult(List<UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
         boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
         if (isTodayQuizSet) {
             List<QuizSet> quizSets = quizService.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
@@ -109,6 +110,11 @@ public class QuizFacade {
         Star star = member.getStar();
         starService.depositStarByInvalidQuiz(star, errorContent);
         quizService.deleteInvalidQuiz(quizId, memberId);
+    }
+
+    @Transactional
+    public void updateRandomQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Long memberId) {
+        quizService.updateRandomQuizResult(quizDtos, memberId);
     }
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)

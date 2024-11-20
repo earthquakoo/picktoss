@@ -9,7 +9,6 @@ import com.picktoss.picktossserver.domain.document.controller.response.*;
 import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +42,7 @@ public class DocumentController {
         Long directoryId = Long.valueOf(request.getDirectoryId());
         Integer star = Integer.valueOf(request.getStar());
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, star, request.getQuizType());
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, star, request.getQuizType(), request.getDocumentType());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -65,8 +64,8 @@ public class DocumentController {
     @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
-            @Schema(description = "Null 인 경우 전체 노트") @RequestParam(required = false, value = "directory-id") Long directoryId,
-            @RequestParam(required = false, defaultValue = "CREATE_AT", value = "sort-option") DocumentSortOption documentSortOption) {
+            @RequestParam(required = false, value = "directory-id") Long directoryId,
+            @RequestParam(defaultValue = "CREATE_AT", value = "sort-option") DocumentSortOption documentSortOption) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 

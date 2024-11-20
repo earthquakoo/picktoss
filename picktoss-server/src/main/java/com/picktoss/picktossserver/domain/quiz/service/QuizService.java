@@ -9,7 +9,8 @@ import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedReco
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecordDetail;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateRandomQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -49,7 +50,6 @@ public class QuizService {
     private final EmailSenderPublisher emailSenderPublisher;
 
     public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
-        // quizSet으로 하면 multibag 걸림
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
         QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
 
@@ -134,8 +134,8 @@ public class QuizService {
                 .build();
     }
 
-    public List<Quiz> findAllByMemberId(Long memberId) {
-        List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
+    public List<Quiz> findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
+        List<Quiz> quizzes = quizRepository.findAllByMemberIdAndDirectoryId(memberId, directoryId);
         Collections.shuffle(quizzes);
         return quizzes;
     }
@@ -198,21 +198,21 @@ public class QuizService {
 
     @Transactional
     public boolean updateQuizResult(
-            List<GetQuizResultRequest.GetQuizResultQuizDto> quizDtos, String quizSetId, Long memberId) {
+            List<UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizDtos, String quizSetId, Long memberId) {
         QuizSet quizSet = quizSetRepository.findQuizSetByMemberIdAndQuizSetId(memberId, quizSetId)
                 .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
 
         List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
 
-        Map<Long, GetQuizResultRequest.GetQuizResultQuizDto> quizDtoMap = new HashMap<>();
-        for (GetQuizResultRequest.GetQuizResultQuizDto quizDto : quizDtos) {
+        Map<Long, UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizDtoMap = new HashMap<>();
+        for (UpdateQuizResultRequest.UpdateQuizResultQuizDto quizDto : quizDtos) {
             quizDtoMap.put(quizDto.getId(), quizDto);
         }
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             Quiz quiz = quizSetQuiz.getQuiz();
             if (quizDtoMap.containsKey(quiz.getId())) {
-                GetQuizResultRequest.GetQuizResultQuizDto quizDto = quizDtoMap.get(quiz.getId());
+                UpdateQuizResultRequest.UpdateQuizResultQuizDto quizDto = quizDtoMap.get(quiz.getId());
 
                 if (!quizDto.isAnswer()) {
                     quiz.addIncorrectAnswerCount();
@@ -543,8 +543,8 @@ public class QuizService {
                 .orElseThrow(() -> new CustomException(QUIZ_NOT_FOUND_ERROR));
     }
 
-    public List<Quiz> findQuizzesByQuizIds(List<Long> quizIds, Long memberId) {
-        return quizRepository.findQuizzesByQuizIds(memberId, quizIds);
+    public List<Quiz> findQuizzesByMemberIdAndQuizIds(List<Long> quizIds, Long memberId) {
+        return quizRepository.findQuizzesByMemberIdAndQuizIds(memberId, quizIds);
     }
 
     // 7일 이내에 발생한 quizSet by memberId
@@ -671,6 +671,22 @@ public class QuizService {
                 quizzesDtos
         );
     }
+
+    @Transactional
+    public void updateRandomQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Long memberId) {
+        List<Long> quizIds = new ArrayList<>();
+        for (UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto quizDto : quizDtos) {
+            quizIds.add(quizDto.getId());
+        }
+
+        List<Quiz> quizzes = quizRepository.findQuizzesByMemberIdAndQuizIds(memberId, quizIds);
+        for (int i = 0; i <= quizDtos.size(); i++) {
+            if (!quizDtos.get(i).isAnswer()) {
+                quizzes.get(i).updateIsReviewNeededByIncorrectAnswer();
+            }
+        }
+    }
+
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Transactional

@@ -50,9 +50,6 @@ public class AuthService {
     @Value("${email_verification.expire_seconds}")
     private long verificationExpireDurationSeconds;
 
-    private static final String defaultNickname = "Picktoss#";
-    private static final String chars = "0123456789";
-    private static final int randomCodeLen = 6;
 
     public String getRedirectUri() {
         return String.format(
@@ -108,7 +105,7 @@ public class AuthService {
     @Transactional
     public void sendVerificationCode(String email) {
         // Send verification code
-        String verificationCode = generateVerificationCode();
+        String verificationCode = generateUniqueCode();
         mailgunEmailSenderManager.sendVerificationCode(email, verificationCode);
 
         // Upsert register verification entry (always make is_verified to False)
@@ -159,51 +156,47 @@ public class AuthService {
     }
 
     // 초대 코드 생성
-    public void generateMemberInviteCode(Long memberId, String inviteLink) {
-        String[] parts = inviteLink.split("/");
-        String inviteCode = parts[parts.length - 1];
-        Map<String, Object> inviteData = Map.of(
-                "inviteMemberId", memberId,
-                "createdAt", LocalDateTime.now(),
-                "expiresAt", LocalDateTime.now().plusDays(7),
-                "status", "PENDING"
+    public String createInviteLink(Long memberId) {
+        String initLink = "https://www.picktoss.com/invite/";
+
+        String memberIdKey = memberId.toString();
+
+        // 기존 초대 코드 조회
+        Optional<Map> existingCode = redisUtil.getData(memberIdKey, Map.class);
+        if (existingCode.isPresent()) {
+            Map map = existingCode.get();
+            String inviteCode = map.get("inviteCode").toString();
+            return initLink + inviteCode;
+        }
+
+        String uniqueCode = generateUniqueCode();
+        String inviteLink = initLink + uniqueCode;
+
+        LocalDateTime createdAt = LocalDateTime.now();
+
+        Map<String, Object> memberIdKeyData = Map.of(
+                "inviteCode", uniqueCode,
+                "createdAt", createdAt,
+                "expiresAt", createdAt.plusDays(3)
         );
 
-        final Optional<HashMap> link = redisUtil.getData(inviteCode, HashMap.class);
-        if (link.isEmpty()) {
-            redisUtil.setDataExpire(inviteCode, inviteData, 30000);
-        }
+        Map<String, Object> inviteCodeKeyData = Map.of(
+                "inviteMemberId", memberId,
+                "createdAt", createdAt,
+                "expiresAt", createdAt.plusDays(3)
+        );
+        redisUtil.setDataExpire(memberIdKey, memberIdKeyData, 259200000);
+        redisUtil.setDataExpire(uniqueCode, inviteCodeKeyData, 259200000);
+
+        return inviteLink;
     }
 
-    public void processInviteLink(String inviteLink) {
-        if (!inviteLink.isEmpty()) {
-            int lastLinkIndex = inviteLink.lastIndexOf("/");
-            String inviteCode = inviteLink.substring(lastLinkIndex + 1);
-            System.out.println("inviteCode = " + inviteCode);
+    // 초대 코드 인증
+    public void verifyInviteCode(String inviteCode) {
+        Optional<Map> inviteCodeData = redisUtil.getData(inviteCode, Map.class);
 
-            Optional<String> link = redisUtil.getData(inviteCode, String.class);
-            if (link.isPresent()) {
-                String fullInviteLink = link.get();
-                System.out.println("fullInviteLink = " + fullInviteLink);
-                if (fullInviteLink.equals(inviteLink)) {
-                    redisUtil.deleteData(inviteCode);
-                }
-            }
-        }
-    }
-
-    public void testMember(String inviteLink) {
-        int lastLinkIndex = inviteLink.lastIndexOf("/");
-        String inviteCode = inviteLink.substring(lastLinkIndex + 1);
-        System.out.println("inviteCode = " + inviteCode);
-
-        Optional<String> link = redisUtil.getData(inviteCode, String.class);
-        if (link.isPresent()) {
-            String fullInviteLink = link.get();
-            System.out.println("fullInviteLink = " + fullInviteLink);
-            if (fullInviteLink.equals(inviteLink)) {
-                redisUtil.deleteData(inviteCode);
-            }
+        if (inviteCodeData.isEmpty()) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
     }
 
@@ -244,18 +237,9 @@ public class AuthService {
         }
     }
 
-    public String generateUniqueName() {
-        Random random = new SecureRandom();
-        StringBuilder uniqueName = new StringBuilder(defaultNickname);
-
-        for (int i = 0; i < randomCodeLen; i++) {
-            uniqueName.append(chars.charAt(random.nextInt(chars.length())));
-        }
-
-        return uniqueName.toString();
-    }
-
-    private String generateVerificationCode() {
+    public String generateUniqueCode() {
+        final int randomCodeLen = 6;
+        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new SecureRandom();
         StringBuilder verificationCode = new StringBuilder(randomCodeLen);
         for (int i = 0; i < randomCodeLen; i++) {

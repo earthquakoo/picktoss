@@ -14,6 +14,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,9 +41,9 @@ public class DocumentService {
     private String defaultDocumentS3Key;
 
     @Transactional
-    public Document createDocument(String documentName, Directory directory, String s3Key) {
+    public Document createDocument(String documentName, String s3Key, DocumentType documentType, Directory directory) {
         Document document = Document.createDocument(
-                documentName, s3Key, UNPROCESSED, true, directory
+                documentName, s3Key, UNPROCESSED, documentType, directory
         );
 
         documentRepository.save(document);
@@ -170,6 +171,7 @@ public class DocumentService {
                     .createdAt(document.getCreatedAt())
                     .updatedAt(document.getUpdatedAt())
                     .reviewNeededQuizCount(reviewNeededQuizCount)
+                    .documentType(document.getDocumentType())
                     .directory(directoryDto)
                     .build();
 

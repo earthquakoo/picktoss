@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,6 +38,10 @@ public class Document extends AuditBase {
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "document_type", nullable = false)
+    private DocumentType documentType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "directory_id", nullable = false)
     private Directory directory;
@@ -45,12 +50,13 @@ public class Document extends AuditBase {
     private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Directory directory) {
+    public static Document createDocument(String name, String s3Key, DocumentStatus documentStatus, DocumentType documentType, Directory directory) {
         return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
                 .status(documentStatus)
-                .isTodayQuizIncluded(isTodayQuizIncluded)
+                .isTodayQuizIncluded(true)
+                .documentType(documentType)
                 .directory(directory)
                 .build();
     }
@@ -59,7 +65,8 @@ public class Document extends AuditBase {
         return Document.builder()
                 .name("예시 문서")
                 .s3Key(s3Key)
-                .status(DocumentStatus.DEFAULT_DOCUMENT)
+                .status(DEFAULT_DOCUMENT)
+                .documentType(DocumentType.FILE)
                 .isTodayQuizIncluded(false)
                 .directory(directory)
                 .build();

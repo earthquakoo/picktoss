@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.document.controller.request;
 
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,4 +15,5 @@ public class CreateDocumentRequest {
     private String documentName;
     private String star;
     private QuizType quizType;
+    private DocumentType documentType;
 }
