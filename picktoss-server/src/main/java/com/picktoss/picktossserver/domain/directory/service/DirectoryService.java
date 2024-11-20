@@ -34,6 +34,7 @@ public class DirectoryService {
                     .name(directory.getName())
                     .tag(directory.getTag())
                     .emoji(directory.getEmoji())
+                    .documentCount(directory.getDocuments().size())
                     .build();
 
             directoryDtos.add(directoryDto);

@@ -20,5 +20,6 @@ public class GetAllDirectoriesResponse {
         private String name;
         private DirectoryTag tag;
         private String emoji;
+        private int documentCount;
     }
 }

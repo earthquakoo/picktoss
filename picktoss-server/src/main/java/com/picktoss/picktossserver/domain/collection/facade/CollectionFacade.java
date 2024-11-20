@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizResultRequest;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
@@ -35,7 +36,7 @@ public class CollectionFacade {
     @Transactional
     public void createCollection(
             List<Long> quizIds, String name, String description, String emoji, CollectionField collectionType, Long memberId) {
-        List<Quiz> quizzes = quizService.findQuizzesByQuizIds(quizIds, memberId);
+        List<Quiz> quizzes = quizService.findQuizzesByMemberIdAndQuizIds(quizIds, memberId);
         if (quizzes.isEmpty()) {
             throw new CustomException(QUIZ_NOT_FOUND_ERROR);
         }
@@ -52,6 +53,10 @@ public class CollectionFacade {
     // 북마크한 컬렉션 가져오기
     public List<Collection> findAllByMemberIdAndBookmarked(Long memberId) {
         return collectionService.findAllByMemberIdAndBookmarked(memberId);
+    }
+
+    public List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> findAllByMemberIdAndCollectionFieldAndBookmarked(Long memberId, CollectionField collectionField) {
+        return collectionService.findAllByMemberIdAndCollectionFieldAndBookmarked(memberId, collectionField);
     }
 
     // 직접 생성한 컬렉션 가져오기
@@ -103,7 +108,7 @@ public class CollectionFacade {
     @Transactional
     public void updateCollectionQuizzes(
             List<Long> quizIds, Long collectionId, Long memberId) {
-        List<Quiz> quizzes = quizService.findQuizzesByQuizIds(quizIds, memberId);
+        List<Quiz> quizzes = quizService.findQuizzesByMemberIdAndQuizIds(quizIds, memberId);
         if (quizzes.isEmpty()) {
             throw new CustomException(QUIZ_NOT_FOUND_ERROR);
         }

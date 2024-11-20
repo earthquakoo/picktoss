@@ -10,7 +10,8 @@ import com.picktoss.picktossserver.domain.quiz.controller.dto.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.controller.mapper.QuizMapper;
 import com.picktoss.picktossserver.domain.quiz.controller.request.CreateQuizzesByDocumentRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.request.DeleteInvalidQuizRequest;
-import com.picktoss.picktossserver.domain.quiz.controller.request.GetQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateQuizResultRequest;
+import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateRandomQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.facade.QuizFacade;
@@ -65,14 +66,16 @@ public class QuizController {
         return ResponseEntity.ok().body(quizSetToday);
     }
 
-    @Operation(summary = "생성된 모든 퀴즈 가져오기(랜덤 퀴즈)")
-    @GetMapping("/quizzes")
+    @Operation(summary = "디렉토리에 생성된 모든 퀴즈 랜덤하게 가져오기")
+    @GetMapping("/directories/{directory_id}/quizzes")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<QuizResponseDto> getAllQuizzesByMemberId() {
+    public ResponseEntity<QuizResponseDto> getAllQuizzesByMemberId(
+            @PathVariable("directory_id") Long directoryId
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.findAllByMemberId(memberId);
+        List<Quiz> quizzes = quizFacade.findAllByMemberIdAndDirectoryId(memberId, directoryId);
         QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
         return ResponseEntity.ok().body(quizResponseDto);
     }
@@ -109,7 +112,7 @@ public class QuizController {
     @PatchMapping("/quiz/result")
     @ApiErrorCodeExample(QUIZ_SET_NOT_FOUND_ERROR)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UpdateQuizResultResponse> updateQuizResult(@Valid @RequestBody GetQuizResultRequest request) {
+    public ResponseEntity<UpdateQuizResultResponse> updateQuizResult(@Valid @RequestBody UpdateQuizResultRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
@@ -228,6 +231,16 @@ public class QuizController {
         } catch (DocumentException | IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Operation(summary = "랜덤 퀴즈 결과 업데이트")
+    @PatchMapping("/random-quiz/result")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateRandomQuizResult(@Valid @RequestBody UpdateRandomQuizResultRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.updateRandomQuizResult(request.getQuizzes(), memberId);
     }
 
     /**

@@ -61,12 +61,11 @@ public class AuthFacade {
         Optional<Member> optionalMember = memberService.findMemberByClientId(googleMemberDto.getId());
 
         if (optionalMember.isEmpty()) {
+            if (!inviteLink.isEmpty()) {
+                authService.verifyInviteCode(inviteLink);
+            }
             Member member = memberService.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
             initializeNewMember(member);
-
-            if (!inviteLink.isEmpty()) {
-                authService.processInviteLink(inviteLink);
-            }
             return member;
         }
         return optionalMember.get();
@@ -77,12 +76,13 @@ public class AuthFacade {
         Optional<Member> optionalMember = memberService.findMemberByClientId(kakaoMemberDto.getId());
 
         if (optionalMember.isEmpty()) {
-            String nickname = authService.generateUniqueName();
+            String uniqueCode = authService.generateUniqueCode();
+            String nickname = "Picktoss#" + uniqueCode;
             Member member = memberService.createKakaoMember(nickname, kakaoMemberDto.getId());
             initializeNewMember(member);
 
             if (!inviteLink.isEmpty()) {
-                authService.processInviteLink(inviteLink);
+                authService.verifyInviteCode(inviteLink);
             }
             return member;
         }
@@ -108,11 +108,11 @@ public class AuthFacade {
         authService.verifyVerificationCode(email, verificationCode, member);
     }
 
-    public void generateMemberInviteCode(Long memberId, String inviteLink) {
-        authService.generateMemberInviteCode(memberId, inviteLink);
+    public String createInviteLink(Long memberId) {
+        return authService.createInviteLink(memberId);
     }
 
-    public void testMember(String inviteLink) {
-        authService.testMember(inviteLink);
+    public void verifyInviteCode(String inviteLink) {
+        authService.verifyInviteCode(inviteLink);
     }
 }

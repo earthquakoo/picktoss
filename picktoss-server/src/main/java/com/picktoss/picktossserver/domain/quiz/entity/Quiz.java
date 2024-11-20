@@ -43,6 +43,9 @@ public class Quiz extends AuditBase {
     @Column(name = "incorrect_answer_count", nullable = false)
     private int incorrectAnswerCount;
 
+    @Column(name = "is_review_needed", nullable = false)
+    private boolean isReviewNeeded;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
@@ -63,5 +66,9 @@ public class Quiz extends AuditBase {
 
     public void addDeliveredCount() {
         this.deliveredCount += 1;
+    }
+
+    public void updateIsReviewNeededByIncorrectAnswer() {
+        this.isReviewNeeded = true;
     }
 }

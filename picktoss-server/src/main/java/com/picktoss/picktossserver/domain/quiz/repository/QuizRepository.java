@@ -39,9 +39,11 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "LEFT JOIN FETCH q.options " +
             "JOIN FETCH q.document d " +
             "JOIN FETCH d.directory dir " +
-            "WHERE dir.member.id = :memberId")
-    List<Quiz> findAllByMemberId(
-            @Param("memberId") Long memberId
+            "WHERE dir.member.id = :memberId " +
+            "AND dir.id = :directoryId")
+    List<Quiz> findAllByMemberIdAndDirectoryId(
+            @Param("memberId") Long memberId,
+            @Param("directoryId") Long directoryId
     );
 
     @Query("SELECT q FROM Quiz q " +
@@ -65,6 +67,17 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             @Param("memberId") Long memberId
     );
 
+    @Query("SELECT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN q.document d " +
+            "JOIN d.directory dir " +
+            "WHERE dir.member.id = :memberId " +
+            "AND q.id IN :ids")
+    List<Quiz> findQuizzesByMemberIdAndQuizIds(
+            @Param("memberId") Long memberId,
+            @Param("ids") List<Long> quizIds
+    );
+
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
@@ -74,17 +87,5 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "ORDER BY q.deliveredCount ASC")
     List<Quiz> findAllByMemberIdForTest(
             @Param("memberId") Long memberId
-    );
-
-
-    @Query("SELECT q FROM Quiz q " +
-            "LEFT JOIN FETCH q.options " +
-            "JOIN q.document d " +
-            "JOIN d.directory dir " +
-            "WHERE dir.member.id = :memberId " +
-            "AND q.id IN :ids")
-    List<Quiz> findQuizzesByQuizIds(
-            @Param("memberId") Long memberId,
-            @Param("ids") List<Long> quizIds
     );
 }
