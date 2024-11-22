@@ -126,7 +126,7 @@ public class DocumentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changeDocumentContent(
             @PathVariable(name = "document_id") Long documentId,
-            UpdateDocumentContentRequest request) {
+            @Valid @ModelAttribute UpdateDocumentContentRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
