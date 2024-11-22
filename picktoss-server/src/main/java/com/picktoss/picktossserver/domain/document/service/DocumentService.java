@@ -257,7 +257,7 @@ public class DocumentService {
             documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.getOrDefault(document, 0));
         }
 
-        Set<Long> processedQuizIds = new HashSet<>(); // 이미 처리된 Quiz ID를 추적하는 Set
+        Set<Long> processedQuizIds = new HashSet<>(); // 이미 처리된 Quiz ID를 추적하는 Set -> 중복 방지
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             QuizSet quizSet = quizSetQuiz.getQuizSet();
             if (!quizSet.isSolved()) {
