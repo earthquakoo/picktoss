@@ -155,6 +155,7 @@ public class DocumentService {
             DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
             String content = s3Provider.findFile(document.getS3Key());
             int characterCount = content.length();
+            String previewContent = content.substring(0, 100);
 
             Directory directory = document.getDirectory();
             GetAllDocumentsResponse.GetAllDocumentsDirectoryDto directoryDto = GetAllDocumentsResponse.GetAllDocumentsDirectoryDto.builder()
@@ -165,6 +166,7 @@ public class DocumentService {
             GetAllDocumentsResponse.GetAllDocumentsDocumentDto documentDto = GetAllDocumentsResponse.GetAllDocumentsDocumentDto.builder()
                     .id(document.getId())
                     .name(document.getName())
+                    .previewContent(previewContent)
                     .characterCount(characterCount)
                     .status(documentStatus)
                     .totalQuizCount(document.getQuizzes().size())

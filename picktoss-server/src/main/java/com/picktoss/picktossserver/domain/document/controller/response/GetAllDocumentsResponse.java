@@ -21,6 +21,7 @@ public class GetAllDocumentsResponse {
     public static class GetAllDocumentsDocumentDto {
         private Long id;
         private String name;
+        private String previewContent;
         private int characterCount;
         private DocumentStatus status;
         private int totalQuizCount;
