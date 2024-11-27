@@ -61,7 +61,7 @@ jobs:
 
       - name: make firebase dir
         run: |
-          cd src/main/resources
+          cd ./src/main/resources
           mkdir firebase
       - name: create-json
         id: create-json
@@ -69,7 +69,7 @@ jobs:
         with:
           name: "firebase-secret-key.json"
           json: ${{ secrets.FIREBASE_SERVICE_KEY }}
-          dir: 'src/main/resources'
+          dir: './src/main/resources'
 
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
