@@ -117,6 +117,10 @@ public class QuizFacade {
         quizService.updateRandomQuizResult(quizDtos, memberId);
     }
 
+    public List<Quiz> findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(Long memberId) {
+        return quizService.findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(memberId);
+    }
+
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Transactional
     public String createTodayQuizForTest(Long memberId) {

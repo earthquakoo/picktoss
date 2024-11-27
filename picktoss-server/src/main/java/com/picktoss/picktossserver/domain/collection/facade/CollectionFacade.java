@@ -36,7 +36,7 @@ public class CollectionFacade {
     @Transactional
     public Long createCollection(
             List<Long> quizIds, String name, String description, String emoji, CollectionField collectionType, Long memberId) {
-        List<Quiz> quizzes = quizService.findQuizzesByMemberIdAndQuizIds(quizIds, memberId);
+        List<Quiz> quizzes = quizService.findAllByMemberIdAndQuizIds(quizIds, memberId);
         if (quizzes.isEmpty()) {
             throw new CustomException(QUIZ_NOT_FOUND_ERROR);
         }
@@ -108,7 +108,7 @@ public class CollectionFacade {
     @Transactional
     public void updateCollectionQuizzes(
             List<Long> quizIds, Long collectionId, Long memberId) {
-        List<Quiz> quizzes = quizService.findQuizzesByMemberIdAndQuizIds(quizIds, memberId);
+        List<Quiz> quizzes = quizService.findAllByMemberIdAndQuizIds(quizIds, memberId);
         if (quizzes.isEmpty()) {
             throw new CustomException(QUIZ_NOT_FOUND_ERROR);
         }

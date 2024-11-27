@@ -216,6 +216,7 @@ public class QuizService {
 
                 if (!quizDto.isAnswer()) {
                     quiz.addIncorrectAnswerCount();
+                    quiz.updateIsReviewNeededByIncorrectAnswer();
                 }
                 quizSetQuiz.updateIsAnswer(quizDto.isAnswer());
                 quizSetQuiz.updateChoseAnswer(quizDto.getChoseAnswer());
@@ -543,8 +544,8 @@ public class QuizService {
                 .orElseThrow(() -> new CustomException(QUIZ_NOT_FOUND_ERROR));
     }
 
-    public List<Quiz> findQuizzesByMemberIdAndQuizIds(List<Long> quizIds, Long memberId) {
-        return quizRepository.findQuizzesByMemberIdAndQuizIds(memberId, quizIds);
+    public List<Quiz> findAllByMemberIdAndQuizIds(List<Long> quizIds, Long memberId) {
+        return quizRepository.findAllByMemberIdAndQuizIds(memberId, quizIds);
     }
 
     // 7일 이내에 발생한 quizSet by memberId
@@ -679,12 +680,16 @@ public class QuizService {
             quizIds.add(quizDto.getId());
         }
 
-        List<Quiz> quizzes = quizRepository.findQuizzesByMemberIdAndQuizIds(memberId, quizIds);
+        List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(memberId, quizIds);
         for (int i = 0; i <= quizDtos.size(); i++) {
             if (!quizDtos.get(i).isAnswer()) {
                 quizzes.get(i).updateIsReviewNeededByIncorrectAnswer();
             }
         }
+    }
+
+    public List<Quiz> findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(Long memberId) {
+        return quizRepository.findAllByMemberIdAndIsReviewNeededTrue(memberId);
     }
 
 

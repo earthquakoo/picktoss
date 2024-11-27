@@ -73,9 +73,19 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "JOIN d.directory dir " +
             "WHERE dir.member.id = :memberId " +
             "AND q.id IN :ids")
-    List<Quiz> findQuizzesByMemberIdAndQuizIds(
+    List<Quiz> findAllByMemberIdAndQuizIds(
             @Param("memberId") Long memberId,
             @Param("ids") List<Long> quizIds
+    );
+
+    @Query("SELECT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.directory dir " +
+            "WHERE dir.member.id = :memberId " +
+            "AND q.isReviewNeeded = true")
+    List<Quiz> findAllByMemberIdAndIsReviewNeededTrue(
+            @Param("memberId") Long memberId
     );
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)

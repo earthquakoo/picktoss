@@ -17,6 +17,7 @@ public class FcmService {
     private final RedisUtil redisUtil;
 
     public void saveFcmToken(Long memberId, String fcmToken) {
+        System.out.println("fcmToken = " + fcmToken);
         redisUtil.setData(memberId.toString(), fcmToken);
     }
 

@@ -66,7 +66,7 @@ public class QuizController {
         return ResponseEntity.ok().body(quizSetToday);
     }
 
-    @Operation(summary = "디렉토리에 생성된 모든 퀴즈 랜덤하게 가져오기")
+    @Operation(summary = "디렉토리에 생성된 모든 퀴즈 랜덤하게 가져오기(랜덤 퀴즈)")
     @GetMapping("/directories/{directory_id}/quizzes")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<QuizResponseDto> getAllQuizzesByMemberId(
@@ -241,6 +241,18 @@ public class QuizController {
         Long memberId = jwtUserInfo.getMemberId();
 
         quizFacade.updateRandomQuizResult(request.getQuizzes(), memberId);
+    }
+
+    @Operation(summary = "오답 터뜨리기 퀴즈 가져오기")
+    @GetMapping("/incorrect-quizzes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<QuizResponseDto> getIncorrectQuizzes() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<Quiz> quizzes = quizFacade.findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(memberId);
+        QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
+        return ResponseEntity.ok().body(quizResponseDto);
     }
 
     /**
