@@ -14,6 +14,7 @@ public enum ErrorInfo {
     VERIFICATION_CODE_EXPIRED(400, "VERIFICATION_CODE_EXPIRED", "이메일 인증 코드가 만료되었습니다."),
     INVALID_SOCIAL_PLATFORM(400, "INVALID_SOCIAL_PLATFORM", "잘못된 소셜 플랫폼입니다."),
     INVITE_LINK_EXPIRED_OR_NOT_FOUND(400, "INVITE_LINK_EXPIRED_OR_NOT_FOUND", "초대 링크가 만료되었거나 잘못된 초대 링크입니다."),
+    FCM_TOKEN_NOT_FOUND(400, "FCM_TOKEN_NOT_FOUND", "FCM 토큰을 찾을 수 없습니다."),
 
     /**
      * AWS Exception

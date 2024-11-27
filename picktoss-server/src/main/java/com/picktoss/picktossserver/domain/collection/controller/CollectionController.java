@@ -7,10 +7,7 @@ import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.collection.controller.dto.CollectionResponseDto;
 import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionMapper;
 import com.picktoss.picktossserver.domain.collection.controller.request.*;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
+import com.picktoss.picktossserver.domain.collection.controller.response.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
 import com.picktoss.picktossserver.global.enums.collection.CollectionField;
@@ -41,11 +38,12 @@ public class CollectionController {
     @PostMapping(value = "/collections")
     @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
     @ResponseStatus(HttpStatus.CREATED)
-    public void createCollection(@Valid @RequestBody CreateCollectionRequest request) {
+    public ResponseEntity<CreateCollectionResponse> createCollection(@Valid @RequestBody CreateCollectionRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionField(), memberId);
+        Long collectionId = collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionField(), memberId);
+        return ResponseEntity.ok().body(new CreateCollectionResponse(collectionId));
     }
 
     @Operation(summary = "모든 컬렉션 가져오기(탐색)")

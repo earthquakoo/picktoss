@@ -59,6 +59,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "firebase-secret-key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          dir: '.src/main/resources/firebase/'
+
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
 

@@ -34,14 +34,14 @@ public class CollectionFacade {
     private final MemberService memberService;
 
     @Transactional
-    public void createCollection(
+    public Long createCollection(
             List<Long> quizIds, String name, String description, String emoji, CollectionField collectionType, Long memberId) {
         List<Quiz> quizzes = quizService.findQuizzesByMemberIdAndQuizIds(quizIds, memberId);
         if (quizzes.isEmpty()) {
             throw new CustomException(QUIZ_NOT_FOUND_ERROR);
         }
         Member member = memberService.findMemberById(memberId);
-        collectionService.createCollection(quizzes, name, description, emoji, collectionType, member);
+        return collectionService.createCollection(quizzes, name, description, emoji, collectionType, member);
     }
 
     // 탐색 컬렉션

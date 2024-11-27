@@ -90,9 +90,11 @@ public class DocumentService {
             quizDtos.add(quizDto);
         }
 
+        Directory directory = document.getDirectory();
         GetSingleDocumentResponse.GetSingleDocumentDirectoryDto directoryDto = GetSingleDocumentResponse.GetSingleDocumentDirectoryDto.builder()
-                .id(document.getDirectory().getId())
-                .name(document.getDirectory().getName())
+                .id(directory.getId())
+                .name(directory.getName())
+                .emoji(directory.getEmoji())
                 .build();
 
         DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
