@@ -59,6 +59,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: make firebase dir
+        run: |
+          cd .src/main/resources
+          mkdir firebase
       - name: create-json
         id: create-json
         uses: jsdaniell/create-json@v1.2.2
