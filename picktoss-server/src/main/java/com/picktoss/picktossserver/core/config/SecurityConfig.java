@@ -34,6 +34,9 @@ public class SecurityConfig {
     @Value("${cors.cors_allowed_origin}")
     private String corsAllowedOrigin;
 
+    @Value("${cors.cors_allowed_origin_dev}")
+    private String corsAllowedOriginDev;
+
     @Value("${cors.cors_allowed_origin_prod}")
     private String corsAllowedOriginProd;
 
@@ -81,7 +84,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, picktossServerUrl, corsAllowedOriginProd));
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

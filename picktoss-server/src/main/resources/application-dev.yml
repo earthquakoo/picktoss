@@ -85,6 +85,7 @@ email_verification:
 
 cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
+  cors_allowed_origin_dev: ${PICKTOSS_CORS_ALLOWED_ORIGIN_DEV}
   cors_allowed_origin_prod: ${PICKTOSS_CORS_ALLOWED_ORIGIN_PROD}
 
 oauth:
