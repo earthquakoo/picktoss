@@ -34,6 +34,15 @@ public class RedisUtil {
         }
     }
 
+    public <T> void setData(final String key, T value) {
+        final ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        try {
+            valueOperations.set(key, objectMapper.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public <T> void setDataExpire(final String key, T value, final long durationMillis) {
         final ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         final Duration expireDuration = Duration.ofMillis(durationMillis);

@@ -36,7 +36,7 @@ public class CollectionService {
     private final CollectionSolvedRecordDetailRepository collectionSolvedRecordDetailRepository;
 
     @Transactional
-    public void createCollection(
+    public Long createCollection(
             List<Quiz> quizzes, String name, String description, String emoji, CollectionField collectionField, Member member) {
 
         List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
@@ -50,6 +50,7 @@ public class CollectionService {
 
         collectionRepository.save(collection);
         collectionQuizRepository.saveAll(collectionQuizzes);
+        return collection.getId();
     }
 
     // 탐색 컬렉션

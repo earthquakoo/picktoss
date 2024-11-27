@@ -29,6 +29,7 @@ public class GetSingleDocumentResponse {
     public static class GetSingleDocumentDirectoryDto {
         private Long id;
         private String name;
+        private String emoji;
     }
 
     @Getter
