@@ -15,7 +15,6 @@ import java.util.Map;
 public class FcmService {
 
     private final RedisUtil redisUtil;
-    private final FirebaseMessaging firebaseMessaging;
 
     public void saveFcmToken(Long memberId, String fcmToken) {
         redisUtil.setData(memberId.toString(), fcmToken);
