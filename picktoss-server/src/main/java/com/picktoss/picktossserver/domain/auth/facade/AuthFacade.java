@@ -61,7 +61,7 @@ public class AuthFacade {
         Optional<Member> optionalMember = memberService.findMemberByClientId(googleMemberDto.getId());
 
         if (optionalMember.isEmpty()) {
-            if (!inviteLink.isEmpty()) {
+            if (inviteLink != null) {
                 authService.verifyInviteCode(inviteLink);
             }
             Member member = memberService.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
@@ -81,7 +81,7 @@ public class AuthFacade {
             Member member = memberService.createKakaoMember(nickname, kakaoMemberDto.getId());
             initializeNewMember(member);
 
-            if (!inviteLink.isEmpty()) {
+            if (inviteLink != null) {
                 authService.verifyInviteCode(inviteLink);
             }
             return member;
