@@ -34,17 +34,9 @@ public class CollectionController {
     private final JwtTokenProvider jwtTokenProvider;
     private final CollectionFacade collectionFacade;
 
-    @Operation(summary = "컬렉션 생성")
-    @PostMapping(value = "/collections")
-    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CreateCollectionResponse> createCollection(@Valid @RequestBody CreateCollectionRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        Long collectionId = collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionField(), memberId);
-        return ResponseEntity.ok().body(new CreateCollectionResponse(collectionId));
-    }
+    /**
+     * GET
+     */
 
     @Operation(summary = "모든 컬렉션 가져오기(탐색)")
     @GetMapping("/collections")
@@ -143,18 +135,62 @@ public class CollectionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "컬렉션 삭제")
-    @DeleteMapping("/collections/{collection_id}/delete-collection")
-    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
+    @Operation(summary = "컬렉션 분석")
+    @GetMapping("/collections-analysis")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetCollectionSAnalysisResponse> getCollectionAnalysis() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetCollectionSAnalysisResponse response = collectionFacade.findCollectionsAnalysis(memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "사용자 관심 분야 컬렉션 가져오기")
+    @GetMapping("/collections/interest-field-collection")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<CollectionResponseDto> getInterestFieldCollections() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<Collection> collections = collectionFacade.findInterestFieldCollections(memberId);
+        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        return ResponseEntity.ok().body(response);
+    }
+
+    /**
+     * POST
+     */
+
+    @Operation(summary = "컬렉션 생성")
+    @PostMapping(value = "/collections")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateCollectionResponse> createCollection(@Valid @RequestBody CreateCollectionRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        Long collectionId = collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionField(), memberId);
+        return ResponseEntity.ok().body(new CreateCollectionResponse(collectionId));
+    }
+
+    @Operation(summary = "컬렉션 북마크하기")
+    @PostMapping("/collections/{collection_id}/create-bookmark")
+    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, OWN_COLLECTION_CANT_BOOKMARK, MEMBER_NOT_FOUND})
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCollection(
-            @PathVariable(name = "collection_id") Long collectionId
+    public void createCollectionBookmark(
+            @PathVariable("collection_id") Long collectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.deleteCollection(collectionId, memberId);
+        collectionFacade.createCollectionBookmark(memberId, collectionId);
     }
+
+    /**
+     * PATCH
+     */
 
     @Operation(summary = "컬렉션을 풀었을 때 결과 업데이트")
     @PatchMapping("/collections/{collection_id}/update-collection-result")
@@ -191,7 +227,7 @@ public class CollectionController {
     public void addQuizToCollection(
             @PathVariable(name = "collection_id") Long collectionId,
             @Valid @RequestBody AddQuizToCollectionRequest request
-            ) {
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
@@ -212,28 +248,21 @@ public class CollectionController {
         collectionFacade.updateCollectionQuizzes(request.getQuizzes(), collectionId, memberId);
     }
 
-    @Operation(summary = "컬렉션 분석")
-    @GetMapping("/collections-analysis")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetCollectionSAnalysisResponse> getCollectionAnalysis() {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
+    /**
+     * DELETE
+     */
 
-        GetCollectionSAnalysisResponse response = collectionFacade.findCollectionsAnalysis(memberId);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @Operation(summary = "컬렉션 북마크하기")
-    @PostMapping("/collections/{collection_id}/create-bookmark")
-    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, OWN_COLLECTION_CANT_BOOKMARK, MEMBER_NOT_FOUND})
+    @Operation(summary = "컬렉션 삭제")
+    @DeleteMapping("/collections/{collection_id}/delete-collection")
+    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void createCollectionBookmark(
-            @PathVariable("collection_id") Long collectionId
+    public void deleteCollection(
+            @PathVariable(name = "collection_id") Long collectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.createCollectionBookmark(memberId, collectionId);
+        collectionFacade.deleteCollection(collectionId, memberId);
     }
 
     @Operation(summary = "컬렉션 북마크 취소하기")
@@ -247,18 +276,5 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         collectionFacade.deleteCollectionBookmark(memberId, collectionId);
-    }
-
-    @Operation(summary = "사용자 관심 분야 컬렉션 가져오기")
-    @GetMapping("/collections/interest-field-collection")
-    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CollectionResponseDto> getInterestFieldCollections() {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        List<Collection> collections = collectionFacade.findInterestFieldCollections(memberId);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
-        return ResponseEntity.ok().body(response);
     }
 }

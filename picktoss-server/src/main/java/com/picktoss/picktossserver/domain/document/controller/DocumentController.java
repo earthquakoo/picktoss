@@ -30,21 +30,9 @@ public class DocumentController {
     private final JwtTokenProvider jwtTokenProvider;
     private final DocumentFacade documentFacade;
 
-    @Operation(summary = "문서 생성")
-    @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR})
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CreateDocumentResponse> createDocument(
-            @Valid @ModelAttribute CreateDocumentRequest request
-            ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-        Long directoryId = Long.valueOf(request.getDirectoryId());
-        Integer star = Integer.valueOf(request.getStar());
-
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, star, request.getQuizType(), request.getDocumentType());
-        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
-    }
+    /**
+     * GET
+     */
 
     @Operation(summary = "document_id로 문서 가져오기")
     @GetMapping("/documents/{document_id}")
@@ -84,6 +72,26 @@ public class DocumentController {
         return ResponseEntity.ok().body(response);
     }
 
+    /**
+     * POST
+     */
+
+    @Operation(summary = "문서 생성")
+    @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR})
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateDocumentResponse> createDocument(
+            @Valid @ModelAttribute CreateDocumentRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+        Long directoryId = Long.valueOf(request.getDirectoryId());
+        Integer star = Integer.valueOf(request.getStar());
+
+        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, star, request.getQuizType(), request.getDocumentType());
+        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
+    }
+
     @Operation(summary = "문서 검색")
     @PostMapping("/documents/search")
     @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
@@ -96,18 +104,23 @@ public class DocumentController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "문서 삭제")
-    @DeleteMapping("/documents/delete-documents")
-    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDocument(
-            @Valid @RequestBody DeleteDocumentRequest request
-            ) {
+    @Operation(summary = "통합(문서, 컬렉션, 퀴즈) 검색")
+    @PostMapping("/integrated-search")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<IntegratedSearchResponse> integratedSearchByKeyword(
+            @Valid @RequestBody SearchRequest request
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.deleteDocument(memberId, request.getDocumentIds());
+        IntegratedSearchResponse response = documentFacade.integratedSearchByKeyword(memberId, request.getKeyword());
+        return ResponseEntity.ok().body(response);
     }
+
+    /**
+     * PATCH
+     */
 
     @Operation(summary = "문서 다른 폴더로 옮기기")
     @PatchMapping("/documents/move")
@@ -158,17 +171,20 @@ public class DocumentController {
         documentFacade.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIdTodayQuizMap(), memberId);
     }
 
-    @Operation(summary = "통합(문서, 컬렉션, 퀴즈) 검색")
-    @PostMapping("/integrated-search")
-    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<IntegratedSearchResponse> integratedSearchByKeyword(
-            @Valid @RequestBody SearchRequest request
-    ) {
+    /**
+     * DELETE
+     */
+
+    @Operation(summary = "문서 삭제")
+    @DeleteMapping("/documents/delete-documents")
+    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteDocument(
+            @Valid @RequestBody DeleteDocumentRequest request
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        IntegratedSearchResponse response = documentFacade.integratedSearchByKeyword(memberId, request.getKeyword());
-        return ResponseEntity.ok().body(response);
+        documentFacade.deleteDocument(memberId, request.getDocumentIds());
     }
 }

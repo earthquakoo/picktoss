@@ -266,7 +266,7 @@ public class QuizService {
     }
 
     @Transactional
-    public String createQuizzesByDocument(Long documentId, Member member, QuizType quizType, Integer quizCount) {
+    public String createMemberGeneratedQuizSet(Long documentId, Member member, QuizType quizType, Integer quizCount) {
         List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
 
         if (quizType != null) {
@@ -282,6 +282,25 @@ public class QuizService {
         }
 
         quizzes = quizzes.subList(0, quizCount);
+
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+        String quizSetId = createQuizSetId();
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, false, member);
+
+        for (Quiz quiz : quizzes) {
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+        }
+
+        quizSetRepository.save(quizSet);
+        quizSetQuizRepository.saveAll(quizSetQuizzes);
+
+        return quizSetId;
+    }
+
+    @Transactional
+    public String createErrorCheckQuizSet(Long documentId, Member member) {
+        List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
         String quizSetId = createQuizSetId();

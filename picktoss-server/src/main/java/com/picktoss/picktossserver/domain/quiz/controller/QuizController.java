@@ -43,7 +43,11 @@ public class QuizController {
     private final PdfGenerator pdfGenerator;
     private final QuizFacade quizFacade;
 
-    @Operation(summary = "quizSet_id로 퀴즈 가져오기")
+    /**
+     * GET
+     */
+
+    @Operation(summary = "quiz_set_id로 퀴즈 가져오기")
     @GetMapping("/quiz-sets/{quiz_set_id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizSetResponse> getQuizSet(@PathVariable("quiz_set_id") String quizSetId) {
@@ -108,18 +112,6 @@ public class QuizController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "퀴즈 결과 업데이트")
-    @PatchMapping("/quiz/result")
-    @ApiErrorCodeExample(QUIZ_SET_NOT_FOUND_ERROR)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UpdateQuizResultResponse> updateQuizResult(@Valid @RequestBody UpdateQuizResultRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        UpdateQuizResultResponse response = quizFacade.updateQuizResult(request.getQuizzes(), request.getQuizSetId(), memberId);
-        return ResponseEntity.ok().body(response);
-    }
-
     @Operation(summary = "퀴즈 분석")
     @GetMapping("/quiz-analysis")
     @ResponseStatus(HttpStatus.OK)
@@ -133,46 +125,6 @@ public class QuizController {
 
         GetQuizAnswerRateAnalysisResponse response = quizFacade.findQuizAnswerRateAnalysis(memberId, directoryId, startWeekDate, startMonthDate);
         return ResponseEntity.ok().body(response);
-    }
-
-    @Operation(summary = "퀴즈 삭제")
-    @DeleteMapping("/quizzes/{quiz_id}/delete-quiz")
-    @ApiErrorCodeExample(QUIZ_NOT_FOUND_ERROR)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteQuiz(@PathVariable("quiz_id") Long quizId) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        quizFacade.deleteQuiz(quizId, memberId);
-    }
-
-    @Operation(summary = "잘못된 퀴즈 삭제")
-    @DeleteMapping("/quizzes/{quiz_id}/delete-invalid-quiz")
-    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteInvalidQuiz(
-            @PathVariable("quiz_id") Long quizId,
-            @Valid @RequestBody DeleteInvalidQuizRequest request
-    ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        quizFacade.deleteInvalidQuiz(quizId, memberId, request.getErrorContent());
-    }
-
-    @Operation(summary = "사용자가 생성한 문서에서 직접 퀴즈 생성(랜덤, OX, 객관식)")
-    @PostMapping("/quizzes/documents/{document_id}/create-quizzes")
-    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_COUNT_EXCEEDED})
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CreateQuizzesResponse> createQuizzesByDocument(
-            @PathVariable("document_id") Long documentId,
-            @Valid @RequestBody CreateQuizzesByDocumentRequest request
-            ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        String quizSetId = quizFacade.createQuizzesByDocument(documentId, memberId, request.getQuizType(), request.getQuizCount());
-        return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
     }
 
     @Operation(summary = "전체 퀴즈 기록")
@@ -233,16 +185,6 @@ public class QuizController {
         }
     }
 
-    @Operation(summary = "랜덤 퀴즈 결과 업데이트")
-    @PatchMapping("/random-quiz/result")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateRandomQuizResult(@Valid @RequestBody UpdateRandomQuizResultRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        quizFacade.updateRandomQuizResult(request.getQuizzes(), memberId);
-    }
-
     @Operation(summary = "오답 터뜨리기 퀴즈 가져오기")
     @GetMapping("/incorrect-quizzes")
     @ResponseStatus(HttpStatus.OK)
@@ -253,6 +195,94 @@ public class QuizController {
         List<Quiz> quizzes = quizFacade.findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(memberId);
         QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
         return ResponseEntity.ok().body(quizResponseDto);
+    }
+
+    /**
+     * PATCH
+     */
+
+    @Operation(summary = "퀴즈 결과 업데이트")
+    @PatchMapping("/quiz/result")
+    @ApiErrorCodeExample(QUIZ_SET_NOT_FOUND_ERROR)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<UpdateQuizResultResponse> updateQuizResult(@Valid @RequestBody UpdateQuizResultRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        UpdateQuizResultResponse response = quizFacade.updateQuizResult(request.getQuizzes(), request.getQuizSetId(), memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "랜덤 퀴즈 결과 업데이트")
+    @PatchMapping("/random-quiz/result")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateRandomQuizResult(@Valid @RequestBody UpdateRandomQuizResultRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.updateRandomQuizResult(request.getQuizzes(), memberId);
+    }
+
+    /**
+     * POST
+     */
+
+    @Operation(summary = "사용자가 생성한 문서에서 직접 퀴즈 세트 생성(랜덤, OX, 객관식)")
+    @PostMapping("/quizzes/documents/{document_id}/custom-quiz-set")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_COUNT_EXCEEDED})
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateQuizzesResponse> createMemberGeneratedQuizSet(
+            @PathVariable("document_id") Long documentId,
+            @Valid @RequestBody CreateQuizzesByDocumentRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        String quizSetId = quizFacade.createMemberGeneratedQuizSet(documentId, memberId, request.getQuizType(), request.getQuizCount());
+        return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
+    }
+
+    @Operation(summary = "퀴즈 생성 후 퀴즈 오류 확인을 위한 퀴즈세트 생성(퀴즈 시작하기 후 모든 퀴즈 생성이 완료되면 요청)")
+    @PostMapping("/quizzes/documents/{document_id}/check-quiz-set")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateQuizzesResponse> createErrorCheckQuizSet(
+            @PathVariable("document_id") Long documentId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        String quizSetId = quizFacade.createErrorCheckQuizSet(documentId, memberId);
+        return ResponseEntity.ok().body(new CreateQuizzesResponse(quizSetId));
+    }
+
+    /**
+     * DELETE
+     */
+
+    @Operation(summary = "퀴즈 삭제")
+    @DeleteMapping("/quizzes/{quiz_id}/delete-quiz")
+    @ApiErrorCodeExample(QUIZ_NOT_FOUND_ERROR)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteQuiz(@PathVariable("quiz_id") Long quizId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.deleteQuiz(quizId, memberId);
+    }
+
+    @Operation(summary = "오류가 발생한 퀴즈 삭제")
+    @DeleteMapping("/quizzes/{quiz_id}/invalid")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteInvalidQuiz(
+            @PathVariable("quiz_id") Long quizId,
+            @Valid @RequestBody DeleteInvalidQuizRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.deleteInvalidQuiz(quizId, memberId, request.getQuizErrorType());
     }
 
     /**

@@ -37,6 +37,10 @@ public class AuthController {
     private final AuthFacade authFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * GET
+     */
+
     @Operation(summary = "Oauth url api")
     @GetMapping("/oauth/url")
     public RedirectView oauthUrlApi() {
@@ -58,36 +62,6 @@ public class AuthController {
         return jwtTokenDto.getAccessToken();
     }
 
-    @Operation(summary = "login")
-    @PostMapping("/login")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request,
-            @RequestParam(required = false, value = "invite-link") String inviteLink) {
-
-        LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @PostMapping("/auth/verification")
-    @ResponseStatus(HttpStatus.OK)
-    public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        authFacade.sendVerificationCode(request.getEmail());
-    }
-
-    @PostMapping("/auth/verification/check")
-    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, EMAIL_VERIFICATION_NOT_FOUND, EMAIL_ALREADY_VERIFIED, INVALID_VERIFICATION_CODE, VERIFICATION_CODE_EXPIRED})
-    @ResponseStatus(HttpStatus.OK)
-    public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
-    }
-
     @Operation(summary = "초대 링크 생성")
     @GetMapping("/auth/invite-link")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
@@ -100,6 +74,42 @@ public class AuthController {
         return ResponseEntity.ok().body(new CreateInviteLinkResponse(inviteLink));
     }
 
+    /**
+     * POST
+     */
+
+    @Operation(summary = "login")
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            @RequestParam(required = false, value = "invite-link") String inviteLink) {
+
+        LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "이메일 인증 코드 생성 및 발송")
+    @PostMapping("/auth/verification")
+    @ResponseStatus(HttpStatus.OK)
+    public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        authFacade.sendVerificationCode(request.getEmail());
+    }
+
+    @Operation(summary = "이메일 코드 인증")
+    @PostMapping("/auth/verification/check")
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, EMAIL_VERIFICATION_NOT_FOUND, EMAIL_ALREADY_VERIFIED, INVALID_VERIFICATION_CODE, VERIFICATION_CODE_EXPIRED})
+    @ResponseStatus(HttpStatus.OK)
+    public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
+    }
+
     @Operation(summary = "초대 코드 인증")
     @PostMapping("/auth/invite-code/verify")
     @ApiErrorCodeExample(INVITE_LINK_EXPIRED_OR_NOT_FOUND)
@@ -110,6 +120,10 @@ public class AuthController {
 
         authFacade.verifyInviteCode(request.getInviteCode());
     }
+
+    /**
+     * TEST
+     */
 
     @Operation(summary = "Health check")
     @GetMapping("/health-check")

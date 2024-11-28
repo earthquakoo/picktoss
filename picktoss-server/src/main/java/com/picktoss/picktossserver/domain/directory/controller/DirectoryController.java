@@ -31,6 +31,10 @@ public class DirectoryController {
     private final DirectoryFacade directoryFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * GET
+     */
+
     @Operation(summary = "모든 디렉토리 가져오기")
     @GetMapping("/directories")
     @ResponseStatus(HttpStatus.OK)
@@ -54,6 +58,10 @@ public class DirectoryController {
         return ResponseEntity.ok().body(response);
     }
 
+    /**
+     * POST
+     */
+
     @Operation(summary = "디렉토리 생성")
     @PostMapping("/directories")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
@@ -66,15 +74,9 @@ public class DirectoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new CreateDirectoryResponse(directoryId));
     }
 
-    @Operation(summary = "디렉토리 삭제")
-    @DeleteMapping("/directories/{directory_id}")
-    @ApiErrorCodeExamples({DIRECTORY_NOT_FOUND, UNAUTHORIZED_OPERATION_EXCEPTION})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDirectory(@PathVariable(name = "directory_id") Long directoryId) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-        directoryFacade.deleteDirectory(memberId, directoryId);
-    }
+    /**
+     * PATCH
+     */
 
     @Operation(summary = "디렉토리 정보 변경")
     @PatchMapping("/directories/{directory_id}/update-info")
@@ -87,5 +89,19 @@ public class DirectoryController {
         Long memberId = jwtUserInfo.getMemberId();
 
         directoryFacade.updateDirectoryInfo(memberId, directoryId, request.getName(), request.getEmoji());
+    }
+
+    /**
+     * DELETE
+     */
+
+    @Operation(summary = "디렉토리 삭제")
+    @DeleteMapping("/directories/{directory_id}")
+    @ApiErrorCodeExamples({DIRECTORY_NOT_FOUND, UNAUTHORIZED_OPERATION_EXCEPTION})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteDirectory(@PathVariable(name = "directory_id") Long directoryId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+        directoryFacade.deleteDirectory(memberId, directoryId);
     }
 }

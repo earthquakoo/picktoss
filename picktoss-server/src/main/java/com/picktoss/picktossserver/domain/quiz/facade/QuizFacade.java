@@ -13,6 +13,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.star.service.StarService;
+import com.picktoss.picktossserver.global.enums.quiz.QuizErrorType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
@@ -73,9 +74,15 @@ public class QuizFacade {
     }
 
     @Transactional
-    public String createQuizzesByDocument(Long documentId, Long memberId, QuizType quizType, Integer quizCount) {
+    public String createMemberGeneratedQuizSet(Long documentId, Long memberId, QuizType quizType, Integer quizCount) {
         Member member = memberService.findMemberById(memberId);
-        return quizService.createQuizzesByDocument(documentId, member, quizType, quizCount);
+        return quizService.createMemberGeneratedQuizSet(documentId, member, quizType, quizCount);
+    }
+
+    @Transactional
+    public String createErrorCheckQuizSet(Long documentId, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        return quizService.createErrorCheckQuizSet(documentId, member);
     }
 
     public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
@@ -105,10 +112,10 @@ public class QuizFacade {
     }
 
     @Transactional
-    public void deleteInvalidQuiz(Long quizId, Long memberId, String errorContent) {
+    public void deleteInvalidQuiz(Long quizId, Long memberId, QuizErrorType quizErrorType) {
         Member member = memberService.findMemberById(memberId);
         Star star = member.getStar();
-        starService.depositStarByInvalidQuiz(star, errorContent);
+        starService.depositStarByInvalidQuiz(star, quizErrorType.toString());
         quizService.deleteInvalidQuiz(quizId, memberId);
     }
 

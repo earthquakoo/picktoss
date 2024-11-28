@@ -29,6 +29,10 @@ public class MemberController {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberFacade memberFacade;
 
+    /**
+     * GET
+     */
+
     @Operation(summary = "Get member info")
     @GetMapping("/members/info")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
@@ -41,7 +45,11 @@ public class MemberController {
         return ResponseEntity.ok().body(memberInfo);
     }
 
-    @Operation(summary = "Update member name")
+    /**
+     * PATCH
+     */
+
+    @Operation(summary = "사용자 이름 수정")
     @PatchMapping("/members/update-name")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -52,7 +60,7 @@ public class MemberController {
         memberFacade.updateMemberName(memberId, request.getName());
     }
 
-    @Operation(summary = "Update quiz notification")
+    @Operation(summary = "사용자 퀴즈 알림 ON/OFF")
     @PatchMapping("/members/update-quiz-notification")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -84,6 +92,10 @@ public class MemberController {
 
         memberFacade.updateTodayQuizCount(memberId, request.getTodayQuizCount());
     }
+
+    /**
+     * TEST
+     */
 
     @PostMapping("/test/create-member")
     @ResponseStatus(HttpStatus.NO_CONTENT)
