@@ -124,6 +124,11 @@ public class QuizFacade {
         quizService.updateRandomQuizResult(quizDtos, memberId);
     }
 
+    @Transactional
+    public void updateWrongQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Long memberId) {
+        quizService.updateWrongQuizResult(quizDtos, memberId);
+    }
+
     public List<Quiz> findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(Long memberId) {
         return quizService.findIncorrectQuizzesByMemberIdAndIsReviewNeedTrue(memberId);
     }

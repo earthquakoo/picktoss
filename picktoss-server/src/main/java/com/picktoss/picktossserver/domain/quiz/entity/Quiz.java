@@ -68,7 +68,11 @@ public class Quiz extends AuditBase {
         this.deliveredCount += 1;
     }
 
-    public void updateIsReviewNeededByIncorrectAnswer() {
+    public void updateIsReviewNeededTrueByIncorrectAnswer() {
         this.isReviewNeeded = true;
+    }
+
+    public void updateIsReviewNeededFalseByCorrectAnswer() {
+        this.isReviewNeeded = false;
     }
 }

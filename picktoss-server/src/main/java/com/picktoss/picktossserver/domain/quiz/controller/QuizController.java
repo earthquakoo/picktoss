@@ -223,6 +223,16 @@ public class QuizController {
         quizFacade.updateRandomQuizResult(request.getQuizzes(), memberId);
     }
 
+    @Operation(summary = "오답 터뜨리기 결과 업데이트")
+    @PatchMapping("/wrong-quiz/result")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateWrongQuizResult(@Valid @RequestBody UpdateRandomQuizResultRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        quizFacade.updateWrongQuizResult(request.getQuizzes(), memberId);
+    }
+
     /**
      * POST
      */

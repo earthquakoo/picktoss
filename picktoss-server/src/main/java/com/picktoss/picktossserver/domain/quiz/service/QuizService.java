@@ -216,7 +216,7 @@ public class QuizService {
 
                 if (!quizDto.isAnswer()) {
                     quiz.addIncorrectAnswerCount();
-                    quiz.updateIsReviewNeededByIncorrectAnswer();
+                    quiz.updateIsReviewNeededTrueByIncorrectAnswer();
                 }
                 quizSetQuiz.updateIsAnswer(quizDto.isAnswer());
                 quizSetQuiz.updateChoseAnswer(quizDto.getChoseAnswer());
@@ -702,7 +702,22 @@ public class QuizService {
         List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(memberId, quizIds);
         for (int i = 0; i <= quizDtos.size(); i++) {
             if (!quizDtos.get(i).isAnswer()) {
-                quizzes.get(i).updateIsReviewNeededByIncorrectAnswer();
+                quizzes.get(i).updateIsReviewNeededTrueByIncorrectAnswer();
+            }
+        }
+    }
+
+    @Transactional
+    public void updateWrongQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Long memberId) {
+        List<Long> quizIds = new ArrayList<>();
+        for (UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto quizDto : quizDtos) {
+            quizIds.add(quizDto.getId());
+        }
+
+        List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(memberId, quizIds);
+        for (int i = 0; i <= quizDtos.size(); i++) {
+            if (quizDtos.get(i).isAnswer()) {
+                quizzes.get(i).updateIsReviewNeededFalseByCorrectAnswer();
             }
         }
     }

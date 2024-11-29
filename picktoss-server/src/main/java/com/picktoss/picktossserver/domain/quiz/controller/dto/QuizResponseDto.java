@@ -24,7 +24,7 @@ public class QuizResponseDto {
         private List<String> options;
         private QuizType quizType;
         private DocumentDto document;
-        private CategoryDto category;
+        private DirectoryDto directory;
     }
 
     @Getter
@@ -36,7 +36,7 @@ public class QuizResponseDto {
 
     @Getter
     @Builder
-    public static class CategoryDto {
+    public static class DirectoryDto {
         private Long id;
         private String name;
     }

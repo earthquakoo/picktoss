@@ -48,6 +48,7 @@ logging.level:
 
 springdoc:
   packages-to-scan:
+    - com.picktoss.picktossserver.domain.payment.controller
     - com.picktoss.picktossserver.domain.auth.controller
     - com.picktoss.picktossserver.domain.fcm.controller
     - com.picktoss.picktossserver.domain.directory.controller
@@ -114,3 +115,6 @@ cloud:
       queue:
         name: ${PICKTOSS_AWS_SQS_QUEUE_NAME}
         url: ${PICKTOSS_AWS_SQS_QUEUE_URL}
+
+payment:
+  secret-key: ${PICKTOSS_TOSS_SECRET_KEY}
