@@ -5,6 +5,5 @@ import lombok.Getter;
 @Getter
 public class FcmMessageDto {
 
-    private String token;
     private String content;
 }

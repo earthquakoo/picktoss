@@ -94,7 +94,7 @@ public class CollectionController {
 
     // collection 상세 정보
     @Operation(summary = "만든 컬렉션 상세 정보 가져오기")
-    @GetMapping("/collections/{collection_id}/collection_info")
+    @GetMapping("/collections/{collection_id}/collection-info")
     @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleCollectionResponse> findCollectionByCollectionId(
@@ -103,21 +103,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleCollectionResponse response = collectionFacade.findCollectionByCollectionId(collectionId, memberId);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @Operation(summary = "퀴즈를 푼 컬렉션의 상세 기록")
-    @GetMapping("/collections/{collection_id}/record")
-    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetCollectionSolvedRecordResponse> getCollectionRecord(
-            @PathVariable("collection_id") Long collectionId
-    ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        GetCollectionSolvedRecordResponse response = collectionFacade.findCollectionSolvedRecord(memberId, collectionId);
+        GetSingleCollectionResponse response = collectionFacade.findCollectionByCollectionIdAndMemberId(collectionId, memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -191,20 +177,6 @@ public class CollectionController {
     /**
      * PATCH
      */
-
-    @Operation(summary = "컬렉션을 풀었을 때 결과 업데이트")
-    @PatchMapping("/collections/{collection_id}/update-collection-result")
-    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, MEMBER_NOT_FOUND})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCollectionQuizResult(
-            @PathVariable(name = "collection_id") Long collectionId,
-            @Valid @RequestBody UpdateCollectionQuizResultRequest request
-    ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        collectionFacade.updateCollectionQuizResult(request.getCollectionQuizzes(), collectionId, memberId);
-    }
 
     @Operation(summary = "컬렉션 정보 수정")
     @PatchMapping("/collections/{collection_id}/update-info")

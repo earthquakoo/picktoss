@@ -8,7 +8,7 @@ import lombok.Getter;
 @Builder
 public class FcmNotificationRequestDto {
 
-    private String token;
     private String title;
     private String body;
+    private String content;
 }

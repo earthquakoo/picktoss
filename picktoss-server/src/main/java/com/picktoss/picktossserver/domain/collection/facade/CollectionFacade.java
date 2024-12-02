@@ -1,9 +1,7 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizResultRequest;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
@@ -65,12 +63,8 @@ public class CollectionFacade {
     }
 
     // 만든 컬렉션 상세
-    public GetSingleCollectionResponse findCollectionByCollectionId(Long collectionId, Long memberId) {
-        return collectionService.findCollectionByCollectionId(collectionId, memberId);
-    }
-
-    public GetCollectionSolvedRecordResponse findCollectionSolvedRecord(Long memberId, Long collectionId) {
-        return collectionService.findCollectionSolvedRecord(memberId, collectionId);
+    public GetSingleCollectionResponse findCollectionByCollectionIdAndMemberId(Long collectionId, Long memberId) {
+        return collectionService.findCollectionByCollectionIdAndMemberId(collectionId, memberId);
     }
 
     // 컬렉션 키워드 검색
@@ -81,13 +75,6 @@ public class CollectionFacade {
     @Transactional
     public void deleteCollection(Long collectionId, Long memberId) {
         collectionService.deleteCollection(collectionId, memberId);
-    }
-
-    @Transactional
-    public void updateCollectionQuizResult(
-            List<UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto> collectionQuizDtos, Long collectionId, Long memberId) {
-        Member member = memberService.findMemberById(memberId);
-        collectionService.updateCollectionQuizResult(collectionQuizDtos, collectionId, member);
     }
 
     // 컬렉션 정보 수정
@@ -115,11 +102,6 @@ public class CollectionFacade {
         collectionService.updateCollectionQuizzes(quizzes, collectionId, memberId);
     }
 
-    // 컬렉션 분석
-    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
-        return collectionService.findCollectionsAnalysis(memberId);
-    }
-
     // 컬렉션 북마크
     @Transactional
     public void createCollectionBookmark(Long memberId, Long collectionId) {
@@ -139,5 +121,9 @@ public class CollectionFacade {
             interestCollectionFields = new ArrayList<>();
         }
         return collectionService.findInterestFieldCollections(interestCollectionFields);
+    }
+
+    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
+        return collectionService.findCollectionsAnalysis(memberId);
     }
 }

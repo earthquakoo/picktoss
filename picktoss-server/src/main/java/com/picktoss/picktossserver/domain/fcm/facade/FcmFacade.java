@@ -18,11 +18,11 @@ public class FcmFacade {
         fcmService.saveFcmToken(memberId, fcmToken);
     }
 
-    public void sendByToken(String token, String title, String body, Long memberId) {
-        fcmService.sendByToken(token, title, body, memberId);
+    public void sendByToken(String title, String body, String content, Long memberId) {
+        fcmService.sendByToken(title, body, content, memberId);
     }
 
-    public void pushNotification(Long memberId, String token, String content) {
-        fcmService.pushNotification(memberId, token, content);
+    public void pushNotification(Long memberId, String content) {
+        fcmService.pushNotification(memberId, content);
     }
 }

@@ -16,14 +16,16 @@ import static java.util.Objects.requireNonNull;
 
 @Component
 @RequiredArgsConstructor
-public class RedisUtil {
+public class RedisUtil implements RedisManager{
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public <T> Optional<T> getData(final String key, final Class<T> classType) {
+    @Override
+    public <T> Optional<T> getData(final String prefix, final String key, final Class<T> classType) {
         final ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        final String value = valueOperations.get(key);
+        String prefixedKey = prefix + ":" + key;
+        final String value = valueOperations.get(prefixedKey);
         if (value == null) {
             return Optional.empty();
         }
@@ -34,27 +36,34 @@ public class RedisUtil {
         }
     }
 
-    public <T> void setData(final String key, T value) {
+    @Override
+    public <T> void setData(final String prefix, final String key, T value) {
         final ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        String prefixedKey = prefix + ":" + key;
         try {
-            valueOperations.set(key, objectMapper.writeValueAsString(value));
+            valueOperations.set(prefixedKey, objectMapper.writeValueAsString(value));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public <T> void setDataExpire(final String key, T value, final long durationMillis) {
+    @Override
+    public <T> void setData(final String prefix, final String key, T value, long durationMillis) {
         final ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        String prefixedKey = prefix + ":" + key;
         final Duration expireDuration = Duration.ofMillis(durationMillis);
         try {
-            valueOperations.set(key, objectMapper.writeValueAsString(value), expireDuration);
+            valueOperations.set(prefixedKey, objectMapper.writeValueAsString(value), expireDuration);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void deleteData(String key) {
-        redisTemplate.delete(key);
+
+    @Override
+    public void deleteData(final String prefix, final String key) {
+        String prefixedKey = prefix + ":" + key;
+        redisTemplate.delete(prefixedKey);
     }
 
     public static long toTomorrow() {

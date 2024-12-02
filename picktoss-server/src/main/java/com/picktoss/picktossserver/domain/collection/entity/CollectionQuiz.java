@@ -32,8 +32,4 @@ public class CollectionQuiz extends AuditBase {
                 .collection(collection)
                 .build();
     }
-
-    public void updateCollectionQuizByUpdateCollectionQuizzes(Quiz quiz) {
-        this.quiz = quiz;
-    }
 }

@@ -58,22 +58,10 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     );
 
     @Query("SELECT c FROM Collection c " +
+            "JOIN FETCH c.collectionQuizzes cq " +
             "WHERE c.id = :collectionId " +
             "AND c.member.id = :memberId")
     Optional<Collection> findCollectionByCollectionIdAndMemberId(
-            @Param("collectionId") Long collectionId,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT c FROM Collection c " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
-            "LEFT JOIN FETCH c.collectionBookmarks " +
-            "JOIN FETCH c.collectionQuizzes cq " +
-            "JOIN FETCH cq.quiz q " +
-            "LEFT JOIN FETCH q.options " +
-            "WHERE c.id = :collectionId " +
-            "AND c.member.id = :memberId")
-    Optional<Collection> findCollectionWithCollectionSolvedRecordByCollectionIdAndMemberId(
             @Param("collectionId") Long collectionId,
             @Param("memberId") Long memberId
     );

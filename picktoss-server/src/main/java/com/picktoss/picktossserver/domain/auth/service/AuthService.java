@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
@@ -49,7 +50,6 @@ public class AuthService {
 
     @Value("${email_verification.expire_seconds}")
     private long verificationExpireDurationSeconds;
-
 
     public String getRedirectUri() {
         return String.format(
@@ -162,7 +162,7 @@ public class AuthService {
         String memberIdKey = memberId.toString();
 
         // 기존 초대 코드 조회
-        Optional<Map> existingCode = redisUtil.getData(memberIdKey, Map.class);
+        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_PREFIX, memberIdKey, Map.class);
         if (existingCode.isPresent()) {
             Map map = existingCode.get();
             String inviteCode = map.get("inviteCode").toString();
@@ -185,15 +185,15 @@ public class AuthService {
                 "createdAt", createdAt,
                 "expiresAt", createdAt.plusDays(3)
         );
-        redisUtil.setDataExpire(memberIdKey, memberIdKeyData, 259200000);
-        redisUtil.setDataExpire(uniqueCode, inviteCodeKeyData, 259200000);
+        redisUtil.setData(RedisConstant.REDIS_INVITE_PREFIX, memberIdKey, memberIdKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
+        redisUtil.setData(RedisConstant.REDIS_INVITE_PREFIX, uniqueCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
 
         return inviteLink;
     }
 
     // 초대 코드 인증
     public void verifyInviteCode(String inviteCode) {
-        Optional<Map> inviteCodeData = redisUtil.getData(inviteCode, Map.class);
+        Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_PREFIX, inviteCode, Map.class);
 
         if (inviteCodeData.isEmpty()) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);

@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.response;
 
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,9 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 public class GetSingleQuizSetRecordResponse {
 
-    private LocalDateTime createdAt;
     private Integer totalElapsedTimeMs;
     private List<GetSingleQuizSetRecordDto> quizzes;
+    private LocalDateTime createdAt;
 
     @Getter
     @Builder
@@ -26,5 +27,7 @@ public class GetSingleQuizSetRecordResponse {
         private String choseAnswer;
         private String documentName;
         private String directoryName;
+        private String collectionName;
+        private QuizSetType quizSetType;
     }
 }

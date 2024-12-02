@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.facade;
 
+import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.service.CollectionService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.service.DocumentService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -15,6 +17,7 @@ import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.star.service.StarService;
 import com.picktoss.picktossserver.global.enums.quiz.QuizErrorType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetResponseType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,9 +35,15 @@ public class QuizFacade {
     private final QuizService quizService;
     private final MemberService memberService;
     private final StarService starService;
+    private final CollectionService collectionService;
 
-    public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
-        return quizService.findQuizSet(quizSetId, memberId);
+    public GetQuizSetByDocumentResponse findQuizSetByDocument(String quizSetId, Long memberId) {
+        return quizService.findQuizSetByDocument(quizSetId, memberId);
+    }
+
+    public GetQuizSetByCollectionResponse findQuizSetByCollection(String quizSetId, Long collectionId, Long memberId) {
+        Collection collection = collectionService.findCollectionByCollectionId(collectionId);
+        return quizService.findQuizSetByCollection(quizSetId, collection.getName(), memberId);
     }
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
@@ -61,9 +70,9 @@ public class QuizFacade {
 
     @Transactional
     public UpdateQuizResultResponse updateQuizResult(List<UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
-        boolean isTodayQuizSet = quizService.updateQuizResult(quizzes, quizSetId, memberId);
-        if (isTodayQuizSet) {
-            List<QuizSet> quizSets = quizService.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+        QuizSetType quizSetType = quizService.updateQuizResult(quizzes, quizSetId, memberId);
+        if (quizSetType == QuizSetType.TODAY_QUIZ_SET) {
+            List<QuizSet> quizSets = quizService.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId);
             int currentConsecutiveTodayQuizDate = quizService.checkCurrentConsecutiveTodayQuiz(quizSets);
             if (currentConsecutiveTodayQuizDate % 5 == 0) {
                 return new UpdateQuizResultResponse(QuizConstant.FIVE_DAYS_CONSECUTIVE_REWARD, currentConsecutiveTodayQuizDate);
@@ -74,24 +83,30 @@ public class QuizFacade {
     }
 
     @Transactional
-    public String createMemberGeneratedQuizSet(Long documentId, Long memberId, QuizType quizType, Integer quizCount) {
+    public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Long memberId, QuizType quizType, Integer quizCount) {
         Member member = memberService.findMemberById(memberId);
         return quizService.createMemberGeneratedQuizSet(documentId, member, quizType, quizCount);
     }
 
     @Transactional
-    public String createErrorCheckQuizSet(Long documentId, Long memberId) {
+    public CreateQuizzesResponse createErrorCheckQuizSet(Long documentId, Long memberId) {
         Member member = memberService.findMemberById(memberId);
         return quizService.createErrorCheckQuizSet(documentId, member);
     }
 
-    public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
-        Member member = memberService.findMemberWithCollectionSolvedRecordByMemberId(memberId);
-        return quizService.findAllQuizAndCollectionRecords(member, member.getCollectionSolvedRecords());
+    @Transactional
+    public CreateQuizzesResponse createCollectionQuizSet(Long collectionId, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+        Collection collection = collectionService.findCollectionByCollectionId(collectionId);
+        return quizService.createCollectionQuizSet(member, collection);
     }
 
-    public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId) {
-        return quizService.findQuizSetRecordByMemberIdAndQuizSetId(memberId, quizSetId);
+    public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
+        return quizService.findAllQuizAndCollectionRecords(memberId);
+    }
+
+    public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId, QuizSetType quizSetType) {
+        return quizService.findQuizSetRecordByMemberIdAndQuizSetId(memberId, quizSetId, quizSetType);
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysis(Long memberId, Long directoryId, LocalDate startWeekDate, LocalDate startMonthDate) {
@@ -135,7 +150,7 @@ public class QuizFacade {
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Transactional
-    public String createTodayQuizForTest(Long memberId) {
+    public CreateQuizzesResponse createTodayQuizForTest(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         return quizService.createTodayQuizForTest(member);
     }

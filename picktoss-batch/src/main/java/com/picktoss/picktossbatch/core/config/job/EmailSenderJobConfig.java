@@ -10,6 +10,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -120,13 +121,13 @@ public class EmailSenderJobConfig {
             List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
             List<Member> members = new ArrayList<>();
             for (Member member : chunk.getItems()) {
-                if (member == null || member.getCategories() == null) {
+                if (member == null || member.getDirectories() == null) {
                     continue;
                 }
                 members.add(member);
 
                 List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
-                List<Directory> categories = member.getCategories();
+                List<Directory> categories = member.getDirectories();
                 for (Directory directory : categories) {
                     if (directory.getDocuments() == null) {
                         continue;
@@ -147,7 +148,7 @@ public class EmailSenderJobConfig {
                     }
                 }
                 String quizSetId = UUID.randomUUID().toString().replace("-", "");
-                QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+                QuizSet quizSet = QuizSet.createQuizSet(quizSetId, "오늘의 퀴즈 세트", QuizSetType.TODAY_QUIZ_SET, member);
                 quizSets.add(quizSet);
 
                 quizzesBySortedDeliveredCount.stream().sorted((e1, e2) -> e1.getDeliveredCount());

@@ -3,10 +3,9 @@ package com.picktoss.picktossserver.domain.quiz.service;
 import com.picktoss.picktossserver.core.eventlistener.event.email.EmailSenderEvent;
 import com.picktoss.picktossserver.core.eventlistener.publisher.email.EmailSenderPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecordDetail;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateQuizResultRequest;
@@ -20,6 +19,7 @@ import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetResponseType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -49,13 +49,38 @@ public class QuizService {
     private final JdbcTemplate jdbcTemplate;
     private final EmailSenderPublisher emailSenderPublisher;
 
-    public GetQuizSetResponse findQuizSet(String quizSetId, Long memberId) {
+    public GetQuizSetByCollectionResponse findQuizSetByCollection(String quizSetId, String collectionName, Long memberId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
-        QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
 
-        boolean isTodayQuizSet = quizSet.isTodayQuizSet();
+        List<GetQuizSetByCollectionResponse.GetQuizSetByCollectionQuizDto> quizDtos = new ArrayList<>();
+        for (QuizSetQuiz quizzes : quizSetQuizzes) {
+            Quiz quiz = quizzes.getQuiz();
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                Set<Option> options = quiz.getOptions();
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+            GetQuizSetByCollectionResponse.GetQuizSetByCollectionQuizDto quizDto = GetQuizSetByCollectionResponse.GetQuizSetByCollectionQuizDto.builder()
+                    .id(quiz.getId())
+                    .question(quiz.getQuestion())
+                    .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
+                    .options(optionList)
+                    .quizType(quiz.getQuizType())
+                    .build();
 
-        List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
+            quizDtos.add(quizDto);
+        }
+        return new GetQuizSetByCollectionResponse(quizDtos, collectionName);
+    }
+
+
+    public GetQuizSetByDocumentResponse findQuizSetByDocument(String quizSetId, Long memberId) {
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
+
+        List<GetQuizSetByDocumentResponse.GetQuizSetByDocumentQuizDto> quizDtos = new ArrayList<>();
         for (QuizSetQuiz quizzes : quizSetQuizzes) {
             Quiz quiz = quizzes.getQuiz();
             List<String> optionList = new ArrayList<>();
@@ -68,7 +93,7 @@ public class QuizService {
 
             Document document = quiz.getDocument();
 
-            GetQuizSetResponse.GetQuizSetDocumentDto documentDto = GetQuizSetResponse.GetQuizSetDocumentDto.builder()
+            GetQuizSetByDocumentResponse.GetQuizSetByDocumentDocumentDto documentDto = GetQuizSetByDocumentResponse.GetQuizSetByDocumentDocumentDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .build();
@@ -76,12 +101,12 @@ public class QuizService {
 
             Directory directory = document.getDirectory();
 
-            GetQuizSetResponse.GetQuizSetDirectoryDto directoryDto = GetQuizSetResponse.GetQuizSetDirectoryDto.builder()
+            GetQuizSetByDocumentResponse.GetQuizSetByDocumentDirectoryDto directoryDto = GetQuizSetByDocumentResponse.GetQuizSetByDocumentDirectoryDto.builder()
                     .id(directory.getId())
                     .name(directory.getName())
                     .build();
 
-            GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
+            GetQuizSetByDocumentResponse.GetQuizSetByDocumentQuizDto quizDto = GetQuizSetByDocumentResponse.GetQuizSetByDocumentQuizDto.builder()
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
@@ -94,7 +119,7 @@ public class QuizService {
 
             quizDtos.add(quizDto);
         }
-        return new GetQuizSetResponse(quizDtos, isTodayQuizSet);
+        return new GetQuizSetByDocumentResponse(quizDtos);
     }
 
     public GetQuizSetTodayResponse findQuestionSetToday(Long memberId) {
@@ -102,7 +127,7 @@ public class QuizService {
         LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
         LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
 
-        List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetIsOrderByCreatedAtDesc(memberId);
+        List<QuizSet> quizSets = quizSetRepository.findByMemberIdAndTodayQuizSetOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
         List<QuizSet> todayQuizSets = new ArrayList<>();
         for (QuizSet qs : quizSets) {
             if (qs.getCreatedAt().isAfter(todayStartTime) && qs.getCreatedAt().isBefore(todayEndTime)) {
@@ -130,7 +155,9 @@ public class QuizService {
 
         return GetQuizSetTodayResponse.builder()
                 .quizSetId(todayQuizSet.getId())
+                .quizSetType(QuizSetType.TODAY_QUIZ_SET)
                 .type(QuizSetResponseType.READY)
+                .createdAt(todayQuizSet.getCreatedAt())
                 .build();
     }
 
@@ -197,7 +224,7 @@ public class QuizService {
     }
 
     @Transactional
-    public boolean updateQuizResult(
+    public QuizSetType updateQuizResult(
             List<UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizDtos, String quizSetId, Long memberId) {
         QuizSet quizSet = quizSetRepository.findQuizSetByMemberIdAndQuizSetId(memberId, quizSetId)
                 .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
@@ -225,7 +252,7 @@ public class QuizService {
         }
         quizSet.updateSolved();
 
-        return quizSet.isTodayQuizSet();
+        return quizSet.getQuizSetType();
     }
 
     public GetQuizAnswerRateAnalysisResponse findQuizAnswerRateAnalysis(
@@ -266,8 +293,9 @@ public class QuizService {
     }
 
     @Transactional
-    public String createMemberGeneratedQuizSet(Long documentId, Member member, QuizType quizType, Integer quizCount) {
+    public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Member member, QuizType quizType, Integer quizCount) {
         List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
+        String quizSetName = quizzes.getFirst().getDocument().getName();
 
         if (quizType != null) {
             quizzes = quizzes.stream()
@@ -285,7 +313,7 @@ public class QuizService {
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
         String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, false, member);
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.DOCUMENT_QUIZ_SET, member);
 
         for (Quiz quiz : quizzes) {
             QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
@@ -295,16 +323,17 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return quizSetId;
+        return new CreateQuizzesResponse(quizSetId, LocalDateTime.now());
     }
 
     @Transactional
-    public String createErrorCheckQuizSet(Long documentId, Member member) {
+    public CreateQuizzesResponse createErrorCheckQuizSet(Long documentId, Member member) {
         List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
+        String quizSetName = quizzes.getFirst().getDocument().getName();
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
         String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, false, member);
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.DOCUMENT_QUIZ_SET, member);
 
         for (Quiz quiz : quizzes) {
             QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
@@ -314,17 +343,37 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return quizSetId;
+        return new CreateQuizzesResponse(quizSetId, LocalDateTime.now());
     }
 
-    public GetQuizRecordResponse findAllQuizAndCollectionRecords(Member member, List<CollectionSolvedRecord> collectionSolvedRecords) {
-        List<QuizSet> SolvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(member.getId());
-        List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(member.getId());
+    @Transactional
+    public CreateQuizzesResponse createCollectionQuizSet(Member member, Collection collection) {
+        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+        String quizSetName = collection.getName();
+
+        List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+        String quizSetId = createQuizSetId();
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.COLLECTION_QUIZ_SET, member);
+
+        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+            Quiz quiz = collectionQuiz.getQuiz();
+            QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
+            quizSetQuizzes.add(quizSetQuiz);
+        }
+
+        quizSetRepository.save(quizSet);
+        quizSetQuizRepository.saveAll(quizSetQuizzes);
+
+        return new CreateQuizzesResponse(quizSetId, LocalDateTime.now());
+    }
+
+    public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
+        List<QuizSet> SolvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
         int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
         int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
 
         List<GetQuizRecordResponse.GetQuizRecordDto> quizRecordDtos = new ArrayList<>();
-        List<GetQuizRecordResponse.GetCollectionRecordDto> collectionRecordDtos = new ArrayList<>();
 
         for (QuizSet quizSet : SolvedQuizSets) {
             int quizCount = quizSet.getQuizSetQuizzes().size();
@@ -335,53 +384,23 @@ public class QuizService {
                     score -= 1;
                 }
             }
-            Quiz quiz = quizSet.getQuizSetQuizzes().getFirst().getQuiz();
-            String recordName = quiz.getDocument().getName();
-
-            if (quizSet.isTodayQuizSet()) {
-                recordName = "오늘의 퀴즈";
-            }
 
             GetQuizRecordResponse.GetQuizRecordDto quizRecordDto = GetQuizRecordResponse.GetQuizRecordDto.builder()
                     .quizSetId(quizSet.getId())
-                    .name(recordName)
                     .quizCount(quizCount)
+                    .name(quizSet.getName())
                     .score(score)
+                    .quizSetType(quizSet.getQuizSetType())
                     .solvedDate(quizSet.getCreatedAt())
                     .build();
 
             quizRecordDtos.add(quizRecordDto);
         }
 
-        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
-            Collection collection = collectionSolvedRecord.getCollection();
-            int quizCount = collection.getCollectionQuizzes().size();
-            int score = quizCount;
-
-            Set<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
-            for (CollectionSolvedRecordDetail collectionSolvedRecordDetail : collectionSolvedRecordDetails) {
-                if (!collectionSolvedRecordDetail.getIsAnswer()) {
-                    score -= 1;
-                }
-            }
-
-            GetQuizRecordResponse.GetCollectionRecordDto collectionRecordDto = GetQuizRecordResponse.GetCollectionRecordDto.builder()
-                    .collectionId(collection.getId())
-                    .name(collection.getName())
-                    .quizCount(quizCount)
-                    .score(score)
-                    .solvedDate(collectionSolvedRecord.getCreatedAt())
-                    .build();
-
-            collectionRecordDtos.add(collectionRecordDto);
-        }
-        return new GetQuizRecordResponse(
-                currentConsecutiveDays, maxConsecutiveDays,
-                quizRecordDtos, collectionRecordDtos
-        );
+        return new GetQuizRecordResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordDtos);
     }
 
-    public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId) {
+    public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId, QuizSetType quizSetType) {
         QuizSet quizSet = quizSetRepository.findQuizSetByMemberIdAndQuizSetId(memberId, quizSetId)
                 .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
 
@@ -389,15 +408,18 @@ public class QuizService {
             throw new CustomException(UNRESOLVED_QUIZ_SET);
         }
 
+        if (quizSet.getQuizSetType() != quizSetType) {
+            throw new CustomException(QUIZ_SET_TYPE_ERROR);
+        }
+
         List<GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto> quizSetRecordDtos = new ArrayList<>();
 
         int elapsedTimeMs = 0;
         List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+            GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto quizSetRecordDto;
             elapsedTimeMs += quizSetQuiz.getElapsedTimeMs();
             Quiz quiz = quizSetQuiz.getQuiz();
-            Document document = quiz.getDocument();
-            Directory directory = document.getDirectory();
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                 Set<Option> options = quiz.getOptions();
@@ -409,25 +431,39 @@ public class QuizService {
                 }
             }
 
-            GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
-                    .question(quiz.getQuestion())
-                    .answer(quiz.getAnswer())
-                    .explanation(quiz.getExplanation())
-                    .options(optionList)
-                    .choseAnswer(quizSetQuiz.getChoseAnswer())
-                    .isAnswer(quizSetQuiz.getIsAnswer())
-                    .documentName(document.getName())
-                    .directoryName(directory.getName())
-                    .build();
+            if (quizSetType == QuizSetType.TODAY_QUIZ_SET || quizSetType == QuizSetType.DOCUMENT_QUIZ_SET || quizSetType == QuizSetType.FIRST_QUIZ_SET) {
+                quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
+                        .question(quiz.getQuestion())
+                        .answer(quiz.getAnswer())
+                        .explanation(quiz.getExplanation())
+                        .options(optionList)
+                        .choseAnswer(quizSetQuiz.getChoseAnswer())
+                        .isAnswer(quizSetQuiz.getIsAnswer())
+                        .documentName(quiz.getDocument().getName())
+                        .directoryName(quiz.getDocument().getDirectory().getName())
+                        .quizSetType(quizSet.getQuizSetType())
+                        .build();
+            } else {
+                quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
+                        .question(quiz.getQuestion())
+                        .answer(quiz.getAnswer())
+                        .explanation(quiz.getExplanation())
+                        .options(optionList)
+                        .choseAnswer(quizSetQuiz.getChoseAnswer())
+                        .isAnswer(quizSetQuiz.getIsAnswer())
+                        .collectionName(quizSet.getName())
+                        .quizSetType(quizSet.getQuizSetType())
+                        .build();
+            }
 
             quizSetRecordDtos.add(quizSetRecordDto);
         }
 
-        return new GetSingleQuizSetRecordResponse(quizSet.getCreatedAt(), elapsedTimeMs, quizSetRecordDtos);
+        return new GetSingleQuizSetRecordResponse(elapsedTimeMs, quizSetRecordDtos, quizSet.getCreatedAt());
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
         int currentConsecutiveTodayQuizDate = checkCurrentConsecutiveTodayQuiz(quizSets);
         int maxConsecutiveTodayQuizDate = checkMaxConsecutiveTodayQuiz(quizSets);
 
@@ -496,7 +532,7 @@ public class QuizService {
     @Transactional
     public void quizChunkBatchInsert(
             List<Quiz> quizzes, List<QuizSet> quizSets, List<QuizSetQuiz> quizSetQuizzes, List<Member> members) {
-        String insertQuizSetSql = "INSERT INTO quiz_set (id, solved, is_today_quiz_set, member_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
+        String insertQuizSetSql = "INSERT INTO quiz_set (id, name, solved, quiz_set_type, member_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.batchUpdate(
                 insertQuizSetSql,
                 new BatchPreparedStatementSetter() {
@@ -504,11 +540,12 @@ public class QuizService {
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         QuizSet quizSet = quizSets.get(i);
                         ps.setString(1, quizSet.getId());
-                        ps.setBoolean(2, quizSet.isSolved());
-                        ps.setBoolean(3, quizSet.isTodayQuizSet());
-                        ps.setLong(4, quizSet.getMember().getId());
-                        ps.setObject(5, LocalDateTime.now());
+                        ps.setString(2, quizSet.getName());
+                        ps.setBoolean(3, quizSet.isSolved());
+                        ps.setObject(4, quizSet.getQuizSetType());
+                        ps.setLong(5, quizSet.getMember().getId());
                         ps.setObject(6, LocalDateTime.now());
+                        ps.setObject(7, LocalDateTime.now());
                     }
 
                     @Override
@@ -573,8 +610,8 @@ public class QuizService {
         return quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
     }
 
-    public List<QuizSet> findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(Long memberId) {
-        return quizSetRepository.findAllByMemberIdAndIsTodayQuizSetTrueAndSolvedTrueOrderByCreatedAtDesc(memberId);
+    public List<QuizSet> findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(Long memberId) {
+        return quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
     }
 
     private static String createQuizSetId() {
@@ -726,17 +763,21 @@ public class QuizService {
         return quizRepository.findAllByMemberIdAndIsReviewNeededTrue(memberId);
     }
 
+    public List<QuizSet> findAllByMemberIdAndSolvedTrueAndQuizSetType(Long memberId, QuizSetType quizSetType) {
+        return quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetType(memberId, quizSetType);
+    }
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Transactional
-    public String createTodayQuizForTest(Member member) {
+    public CreateQuizzesResponse createTodayQuizForTest(Member member) {
         List<Quiz> quizzes = quizRepository.findAllByMemberIdForTest(member.getId());
+        String quizSetName = quizzes.getFirst().getDocument().getName();
         Collections.shuffle(quizzes);
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
         String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.TODAY_QUIZ_SET, member);
 
         for (Quiz quiz : quizzes) {
             quiz.addDeliveredCount();
@@ -748,6 +789,6 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return quizSetId;
+        return new CreateQuizzesResponse(quizSetId, quizSet.getCreatedAt());
     }
 }

@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.controller.response;
 
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,6 @@ public class GetQuizRecordResponse {
     private int currentConsecutiveDays;
     private int maxConsecutiveDays;
     private List<GetQuizRecordDto> quizRecords;
-    private List<GetCollectionRecordDto> collectionRecords;
 
     @Getter
     @Builder
@@ -23,16 +23,7 @@ public class GetQuizRecordResponse {
         private String name;
         private int quizCount;
         private int score;
-        private LocalDateTime solvedDate;
-    }
-
-    @Getter
-    @Builder
-    public static class GetCollectionRecordDto {
-        private Long collectionId;
-        private String name;
-        private int quizCount;
-        private int score;
+        private QuizSetType quizSetType;
         private LocalDateTime solvedDate;
     }
 }

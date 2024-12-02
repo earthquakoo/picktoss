@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.member.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
@@ -169,11 +168,6 @@ public class MemberService {
                     }
                 }
         );
-    }
-
-    public Member findMemberWithCollectionSolvedRecordByMemberId(Long memberId) {
-        return memberRepository.findMemberWithCollectionSolvedRecordByMemberId(memberId)
-                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
     }
 
     public Tuple findMinIdAndMaxIdAndIsQuizNotificationEnabled() {

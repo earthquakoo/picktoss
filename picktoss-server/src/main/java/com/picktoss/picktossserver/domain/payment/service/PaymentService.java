@@ -36,14 +36,15 @@ public class PaymentService {
     @Value("${payment.secret-key}")
     private String tossSecretKey;
 
-    private static final String tossPaymentBaseUrl = "https://api.tosspayments.com/v1/payments/";
+    private static final String TOSS_PAYMENT_BASE_URL = "https://api.tosspayments.com/v1/payments/";
+    private static final String REDIS_PAYMENT_PREFIX = "payment";
 
     public void tempSaveAmount(String orderId, Integer amount) {
-        redisUtil.setDataExpire(orderId, amount, 100000);
+        redisUtil.setData(REDIS_PAYMENT_PREFIX, orderId, amount, 100000);
     }
 
     public void verifyAmount(String orderId, Integer amount) {
-        Optional<Integer> optionalData = redisUtil.getData(orderId, Integer.class);
+        Optional<Integer> optionalData = redisUtil.getData(REDIS_PAYMENT_PREFIX, orderId, Integer.class);
         if (optionalData.isEmpty()) {
             throw new CustomException(ErrorInfo.PAYMENT_AMOUNT_ERROR);
         }
@@ -54,7 +55,7 @@ public class PaymentService {
             throw new CustomException(ErrorInfo.PAYMENT_AMOUNT_ERROR);
         }
 
-        redisUtil.deleteData(orderId);
+        redisUtil.deleteData(REDIS_PAYMENT_PREFIX, orderId);
     }
 
     @Transactional
@@ -69,7 +70,7 @@ public class PaymentService {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<HashMap<String, String>> requestHttpEntity = new HttpEntity<>(params, httpHeaders);
 
-        ResponseEntity<TossPaymentResponseDto> responseEntity = restTemplate.postForEntity(tossPaymentBaseUrl + "/confirm", requestHttpEntity, TossPaymentResponseDto.class);
+        ResponseEntity<TossPaymentResponseDto> responseEntity = restTemplate.postForEntity(TOSS_PAYMENT_BASE_URL + "/confirm", requestHttpEntity, TossPaymentResponseDto.class);
         TossPaymentResponseDto tossPaymentResponseDto = responseEntity.getBody();
 
         PaymentMethod paymentMethod = PaymentMethod.valueOf("SIMPLE_PAYMENT");
@@ -82,7 +83,7 @@ public class PaymentService {
     }
 
     public void cancelPayment(String paymentKey) {
-        String tossPaymentCancelUrl = tossPaymentBaseUrl + paymentKey + "/cancel";
+        String tossPaymentCancelUrl = TOSS_PAYMENT_BASE_URL + paymentKey + "/cancel";
         HttpHeaders httpHeaders = createTossPaymentRequestHeaders();
 
         HashMap<String, String> params = new HashMap<>();
@@ -96,7 +97,7 @@ public class PaymentService {
     }
 
     public void findPaymentsByOrderId(String orderId) {
-        String tossPaymentSelectUrl = tossPaymentBaseUrl + "orders/" + orderId;
+        String tossPaymentSelectUrl = TOSS_PAYMENT_BASE_URL + "orders/" + orderId;
         HttpHeaders httpHeaders = createTossPaymentRequestHeaders();
 
         RestTemplate restTemplate = new RestTemplate();
@@ -107,7 +108,7 @@ public class PaymentService {
     }
 
     public void findPaymentsByPaymentKey(String paymentKey) {
-        String tossPaymentSelectUrl = tossPaymentBaseUrl + paymentKey;
+        String tossPaymentSelectUrl = TOSS_PAYMENT_BASE_URL + paymentKey;
         HttpHeaders httpHeaders = createTossPaymentRequestHeaders();
 
         RestTemplate restTemplate = new RestTemplate();

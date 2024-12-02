@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.domain.collection.controller.response;
+package com.picktoss.picktossserver.domain.quiz.controller.response;
 
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
@@ -8,21 +8,16 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-@Builder
 @AllArgsConstructor
-public class GetSingleCollectionResponse {
+public class GetQuizSetByCollectionResponse {
 
-    private Long id;
-    private String name;
-    private String description;
-    private String emoji;
-    private int bookmarkCount;
-    private List<GetSingleCollectionQuizDto> quizzes;
-
+    private List<GetQuizSetByCollectionQuizDto> quizzes;
+    private String collectionName;
 
     @Getter
     @Builder
-    public static class GetSingleCollectionQuizDto {
+    public static class GetQuizSetByCollectionQuizDto {
+        private Long id;
         private String question;
         private String answer;
         private String explanation;

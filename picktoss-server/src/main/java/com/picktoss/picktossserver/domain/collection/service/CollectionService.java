@@ -2,13 +2,16 @@ package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
-import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizResultRequest;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSolvedRecordResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
-import com.picktoss.picktossserver.domain.collection.entity.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.repository.*;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionBookmarkRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionSolvedRecordRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -33,7 +36,6 @@ public class CollectionService {
     private final CollectionQuizRepository collectionQuizRepository;
     private final CollectionBookmarkRepository collectionBookmarkRepository;
     private final CollectionSolvedRecordRepository collectionSolvedRecordRepository;
-    private final CollectionSolvedRecordDetailRepository collectionSolvedRecordDetailRepository;
 
     @Transactional
     public Long createCollection(
@@ -137,8 +139,8 @@ public class CollectionService {
     }
 
     // 만든 컬렉션 상세
-    public GetSingleCollectionResponse findCollectionByCollectionId(Long collectionId, Long memberId) {
-        Collection collection = collectionRepository.findCollectionWithCollectionSolvedRecordByCollectionIdAndMemberId(collectionId, memberId)
+    public GetSingleCollectionResponse findCollectionByCollectionIdAndMemberId(Long collectionId, Long memberId) {
+        Collection collection = collectionRepository.findCollectionByCollectionIdAndMemberId(collectionId, memberId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
         List<GetSingleCollectionResponse.GetSingleCollectionQuizDto> quizzesDtos = new ArrayList<>();
@@ -168,45 +170,10 @@ public class CollectionService {
                 .id(collection.getId())
                 .name(collection.getName())
                 .description(collection.getDescription())
-                .solvedCount(collection.getCollectionSolvedRecords().size())
+                .emoji(collection.getEmoji())
                 .bookmarkCount(collection.getCollectionBookmarks().size())
                 .quizzes(quizzesDtos)
                 .build();
-    }
-
-    public GetCollectionSolvedRecordResponse findCollectionSolvedRecord(Long memberId, Long collectionId) {
-        CollectionSolvedRecord collectionSolvedRecord = collectionSolvedRecordRepository.findByMemberIdAndCollectionId(memberId, collectionId)
-                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
-
-        List<GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto> collectionSolvedRecordDtos = new ArrayList<>();
-
-        Set<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = collectionSolvedRecord.getCollectionSolvedRecordDetails();
-        int totalElapsedTimeMs = 0;
-        for (CollectionSolvedRecordDetail collectionSolvedRecordDetail : collectionSolvedRecordDetails) {
-            totalElapsedTimeMs += collectionSolvedRecordDetail.getElapsedTime();
-            Quiz quiz = collectionSolvedRecordDetail.getQuiz();
-            List<String> optionList = new ArrayList<>();
-            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                Set<Option> options = quiz.getOptions();
-                if (options.isEmpty()) {
-                    continue;
-                }
-                for (Option option : options) {
-                    optionList.add(option.getOption());
-                }
-            }
-            GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto collectionSolvedRecordDto = GetCollectionSolvedRecordResponse.GetCollectionSolvedRecordDto.builder()
-                    .question(quiz.getQuestion())
-                    .answer(quiz.getAnswer())
-                    .explanation(quiz.getExplanation())
-                    .options(optionList)
-                    .isAnswer(collectionSolvedRecordDetail.getIsAnswer())
-                    .choseAnswer(collectionSolvedRecordDetail.getChoseAnswer())
-                    .build();
-
-            collectionSolvedRecordDtos.add(collectionSolvedRecordDto);
-        }
-        return new GetCollectionSolvedRecordResponse(collectionSolvedRecord.getCreatedAt(), totalElapsedTimeMs, collectionSolvedRecordDtos);
     }
 
     // 컬렉션 키워드 검색
@@ -220,39 +187,6 @@ public class CollectionService {
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
         collectionRepository.delete(collection);
-    }
-
-    @Transactional
-    public void updateCollectionQuizResult(
-            List<UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto> collectionQuizDtos, Long collectionId, Member member) {
-        Collection collection = collectionRepository.findCollectionWithCollectionQuizByCollectionId(collectionId)
-                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
-
-        CollectionSolvedRecord collectionSolvedRecord = CollectionSolvedRecord.createCollectionSolvedRecord(collection, member);
-
-        List<CollectionSolvedRecordDetail> collectionSolvedRecordDetails = new ArrayList<>();
-        Map<Long, UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto> collectionQuizAndQuizIdMapping = new HashMap<>();
-        for (UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto collectionQuizDto : collectionQuizDtos) {
-            collectionQuizAndQuizIdMapping.put(collectionQuizDto.getQuizId(), collectionQuizDto);
-        }
-
-        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
-
-        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
-            Quiz quiz = collectionQuiz.getQuiz();
-            UpdateCollectionQuizResultRequest.UpdateCollectionQuizResultDto collectionQuizDto = collectionQuizAndQuizIdMapping.get(quiz.getId());
-            CollectionSolvedRecordDetail collectionSolvedRecordDetail = CollectionSolvedRecordDetail.createCollectionSolvedRecordDetail(
-                    collectionQuizDto.getElapsedTimeMs(),
-                    collectionQuizDto.getIsAnswer(),
-                    collectionQuizDto.getChoseAnswer(),
-                    collectionSolvedRecord,
-                    quiz);
-
-            collectionSolvedRecordDetails.add(collectionSolvedRecordDetail);
-        }
-
-        collectionSolvedRecordRepository.save(collectionSolvedRecord);
-        collectionSolvedRecordDetailRepository.saveAll(collectionSolvedRecordDetails);
     }
 
     // 컬렉션 정보 수정
@@ -300,21 +234,6 @@ public class CollectionService {
         collectionQuizRepository.saveAll(newCollectionQuizzes);
     }
 
-    // 컬렉션 분석(컬렉션 분야와 해당 컬렉션을 푼 횟수)
-    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
-        List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
-        Map<CollectionField, Integer> collectionFieldMap = new HashMap<>();
-
-        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
-            Collection collection = collectionSolvedRecord.getCollection();
-            collectionFieldMap.put(collection.getCollectionField(), collectionFieldMap.getOrDefault(collection.getCollectionField(), 0) + 1);
-        }
-
-        return GetCollectionSAnalysisResponse.builder()
-                .collectionsAnalysis(collectionFieldMap)
-                .build();
-    }
-
     // 컬렉션 북마크
     @Transactional
     public void createCollectionBookmark(Member member, Long collectionId) {
@@ -349,5 +268,31 @@ public class CollectionService {
             interestCollectionFields.add(collectionField);
         }
         return collectionRepository.findAllByCollectionDomainsAndUpdatedAt(interestCollectionFields);
+    }
+
+    public Collection findCollectionByCollectionId(Long collectionId) {
+        return collectionRepository.findCollectionWithCollectionQuizByCollectionId(collectionId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+    }
+
+    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
+        List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
+
+
+        Map<Collection, CollectionField> quizMap = new HashMap<>();
+        // 중복된 컬렉션 제거 후 map으로 변경
+        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
+            Collection collection = collectionSolvedRecord.getCollection();
+            quizMap.putIfAbsent(collection, collection.getCollectionField());
+        }
+
+        Map<CollectionField, Integer> collectionFieldMap = new HashMap<>();
+        for (Collection collection : quizMap.keySet()) {
+            collectionFieldMap.put(collection.getCollectionField(), collectionFieldMap.getOrDefault(collection.getCollectionField(), 0) + 1);
+        }
+        return GetCollectionSAnalysisResponse.builder()
+                .collectionsAnalysis(collectionFieldMap)
+                .build();
+
     }
 }

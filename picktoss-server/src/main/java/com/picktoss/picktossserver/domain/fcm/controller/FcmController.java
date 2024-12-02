@@ -40,7 +40,7 @@ public class FcmController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        fcmFacade.sendByToken(request.getToken(), request.getTitle(), request.getBody(), memberId);
+        fcmFacade.sendByToken(request.getTitle(), request.getBody(), request.getContent(), memberId);
     }
 
     @Operation(summary = "메시지 전송 2")
@@ -50,7 +50,7 @@ public class FcmController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        fcmFacade.pushNotification(memberId, request.getToken(), request.getContent());
+        fcmFacade.pushNotification(memberId, request.getContent());
     }
 
 }

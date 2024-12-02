@@ -9,34 +9,33 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class GetQuizSetResponse {
+public class GetQuizSetByDocumentResponse {
 
-    private List<GetQuizSetQuizDto> quizzes;
-    private boolean isTodayQuizSet;
+    private List<GetQuizSetByDocumentQuizDto> quizzes;
 
     @Getter
     @Builder
-    public static class GetQuizSetQuizDto {
+    public static class GetQuizSetByDocumentQuizDto {
         private Long id;
         private String question;
         private String answer;
         private String explanation;
         private List<String> options;
         private QuizType quizType;
-        private GetQuizSetDocumentDto document;
-        private GetQuizSetDirectoryDto directory;
+        private GetQuizSetByDocumentDocumentDto document;
+        private GetQuizSetByDocumentDirectoryDto directory;
     }
 
     @Getter
     @Builder
-    public static class GetQuizSetDocumentDto {
+    public static class GetQuizSetByDocumentDocumentDto {
         private Long id;
         private String name;
     }
 
     @Getter
     @Builder
-    public static class GetQuizSetDirectoryDto {
+    public static class GetQuizSetByDocumentDirectoryDto {
         private Long id;
         private String name;
     }
