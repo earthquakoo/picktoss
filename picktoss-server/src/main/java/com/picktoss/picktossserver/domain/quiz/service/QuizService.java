@@ -49,10 +49,10 @@ public class QuizService {
     private final JdbcTemplate jdbcTemplate;
     private final EmailSenderPublisher emailSenderPublisher;
 
-    public GetQuizSetByCollectionResponse findQuizSetByCollection(String quizSetId, String collectionName, Long memberId) {
+    public List<GetQuizSetResponse.GetQuizSetQuizDto> findQuizSetByCollection(String quizSetId, Long memberId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
 
-        List<GetQuizSetByCollectionResponse.GetQuizSetByCollectionQuizDto> quizDtos = new ArrayList<>();
+        List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
         for (QuizSetQuiz quizzes : quizSetQuizzes) {
             Quiz quiz = quizzes.getQuiz();
             List<String> optionList = new ArrayList<>();
@@ -62,7 +62,7 @@ public class QuizService {
                     optionList.add(option.getOption());
                 }
             }
-            GetQuizSetByCollectionResponse.GetQuizSetByCollectionQuizDto quizDto = GetQuizSetByCollectionResponse.GetQuizSetByCollectionQuizDto.builder()
+            GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
@@ -73,14 +73,18 @@ public class QuizService {
 
             quizDtos.add(quizDto);
         }
-        return new GetQuizSetByCollectionResponse(quizDtos, collectionName);
+        return quizDtos;
     }
 
 
-    public GetQuizSetByDocumentResponse findQuizSetByDocument(String quizSetId, Long memberId) {
+    public GetQuizSetResponse findQuizSetByDocument(String quizSetId, QuizSetType quizSetType, Long memberId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
+        QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
+        if (quizSet.getQuizSetType() != quizSetType || quizSetType == QuizSetType.COLLECTION_QUIZ_SET) {
+            throw new CustomException(QUIZ_SET_TYPE_ERROR);
+        }
 
-        List<GetQuizSetByDocumentResponse.GetQuizSetByDocumentQuizDto> quizDtos = new ArrayList<>();
+        List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
         for (QuizSetQuiz quizzes : quizSetQuizzes) {
             Quiz quiz = quizzes.getQuiz();
             List<String> optionList = new ArrayList<>();
@@ -93,7 +97,7 @@ public class QuizService {
 
             Document document = quiz.getDocument();
 
-            GetQuizSetByDocumentResponse.GetQuizSetByDocumentDocumentDto documentDto = GetQuizSetByDocumentResponse.GetQuizSetByDocumentDocumentDto.builder()
+            GetQuizSetResponse.GetQuizSetDocumentDto documentDto = GetQuizSetResponse.GetQuizSetDocumentDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .build();
@@ -101,12 +105,12 @@ public class QuizService {
 
             Directory directory = document.getDirectory();
 
-            GetQuizSetByDocumentResponse.GetQuizSetByDocumentDirectoryDto directoryDto = GetQuizSetByDocumentResponse.GetQuizSetByDocumentDirectoryDto.builder()
+            GetQuizSetResponse.GetQuizSetDirectoryDto directoryDto = GetQuizSetResponse.GetQuizSetDirectoryDto.builder()
                     .id(directory.getId())
                     .name(directory.getName())
                     .build();
 
-            GetQuizSetByDocumentResponse.GetQuizSetByDocumentQuizDto quizDto = GetQuizSetByDocumentResponse.GetQuizSetByDocumentQuizDto.builder()
+            GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
@@ -119,7 +123,7 @@ public class QuizService {
 
             quizDtos.add(quizDto);
         }
-        return new GetQuizSetByDocumentResponse(quizDtos);
+        return new GetQuizSetResponse(quizDtos, null);
     }
 
     public GetQuizSetTodayResponse findQuestionSetToday(Long memberId) {
@@ -323,7 +327,7 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return new CreateQuizzesResponse(quizSetId, LocalDateTime.now());
+        return new CreateQuizzesResponse(quizSetId, QuizSetType.DOCUMENT_QUIZ_SET, LocalDateTime.now());
     }
 
     @Transactional
@@ -333,7 +337,7 @@ public class QuizService {
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
         String quizSetId = createQuizSetId();
-        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.DOCUMENT_QUIZ_SET, member);
+        QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.FIRST_QUIZ_SET, member);
 
         for (Quiz quiz : quizzes) {
             QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
@@ -343,7 +347,7 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return new CreateQuizzesResponse(quizSetId, LocalDateTime.now());
+        return new CreateQuizzesResponse(quizSetId, QuizSetType.FIRST_QUIZ_SET, LocalDateTime.now());
     }
 
     @Transactional
@@ -364,7 +368,7 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return new CreateQuizzesResponse(quizSetId, LocalDateTime.now());
+        return new CreateQuizzesResponse(quizSetId, QuizSetType.COLLECTION_QUIZ_SET, LocalDateTime.now());
     }
 
     public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
@@ -789,6 +793,6 @@ public class QuizService {
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return new CreateQuizzesResponse(quizSetId, quizSet.getCreatedAt());
+        return new CreateQuizzesResponse(quizSetId, QuizSetType.TODAY_QUIZ_SET, quizSet.getCreatedAt());
     }
 }

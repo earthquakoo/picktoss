@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.payment.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.payment.controller.dto.TossPaymentResponseDto;
 import com.picktoss.picktossserver.domain.payment.entity.TossPayment;
 import com.picktoss.picktossserver.domain.payment.repository.PaymentRepository;
@@ -59,7 +60,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void confirmPayment(String paymentKey, String orderId, Integer amount) {
+    public void confirmPayment(String paymentKey, String orderId, Integer amount, Member member) {
         HttpHeaders httpHeaders = createTossPaymentRequestHeaders();
 
         HashMap<String, String> params = new HashMap<>();
@@ -78,7 +79,7 @@ public class PaymentService {
         LocalDateTime requestedAt = tossPaymentResponseDto.getRequestAt().toLocalDateTime();
         LocalDateTime approvedAt = tossPaymentResponseDto.getApproveAt().toLocalDateTime();
 
-        TossPayment tossPayment = TossPayment.createTossPayment(paymentKey, orderId, paymentMethod, paymentStatus, amount, requestedAt, approvedAt);
+        TossPayment tossPayment = TossPayment.createTossPayment(paymentKey, orderId, paymentMethod, paymentStatus, amount, requestedAt, approvedAt, member);
         paymentRepository.save(tossPayment);
     }
 

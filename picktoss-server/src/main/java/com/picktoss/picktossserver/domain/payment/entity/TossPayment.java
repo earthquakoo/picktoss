@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.payment.entity;
 
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.payment.PaymentMethod;
 import com.picktoss.picktossserver.global.enums.payment.PaymentStatus;
 import jakarta.persistence.*;
@@ -42,8 +43,12 @@ public class TossPayment {
     @Column(name = "approve_at")
     private LocalDateTime approvedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
     public static TossPayment createTossPayment(
-            String paymentKey, String orderId, PaymentMethod paymentMethod, PaymentStatus paymentStatus, Integer amount, LocalDateTime requestedAt, LocalDateTime approvedAt) {
+            String paymentKey, String orderId, PaymentMethod paymentMethod, PaymentStatus paymentStatus, Integer amount, LocalDateTime requestedAt, LocalDateTime approvedAt, Member member) {
         return TossPayment.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)
@@ -52,6 +57,7 @@ public class TossPayment {
                 .amount(amount)
                 .requestedAt(requestedAt)
                 .approvedAt(approvedAt)
+                .member(member)
                 .build();
     }
 

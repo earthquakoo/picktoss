@@ -7,7 +7,7 @@ import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.payment.controller.request.CancelPaymentRequest;
 import com.picktoss.picktossserver.domain.payment.controller.request.SaveAmountRequest;
 import com.picktoss.picktossserver.domain.payment.controller.request.TossPaymentRequest;
-import com.picktoss.picktossserver.domain.payment.service.PaymentService;
+import com.picktoss.picktossserver.domain.payment.facade.PaymentFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v2")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentFacade paymentFacade;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "주문과 결제금액 임시저장")
@@ -33,7 +33,7 @@ public class PaymentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        paymentService.tempSaveAmount(saveAmountRequest.getOrderId(), saveAmountRequest.getAmount());
+        paymentFacade.tempSaveAmount(saveAmountRequest.getOrderId(), saveAmountRequest.getAmount());
         return ResponseEntity.ok("Payment temp save successful");
     }
 
@@ -45,7 +45,7 @@ public class PaymentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        paymentService.verifyAmount(saveAmountRequest.getOrderId(), saveAmountRequest.getAmount());
+        paymentFacade.verifyAmount(saveAmountRequest.getOrderId(), saveAmountRequest.getAmount());
         return ResponseEntity.ok("Payment is valid");
     }
 
@@ -56,7 +56,7 @@ public class PaymentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        paymentService.confirmPayment(request.getPaymentKey(), request.getOrderId(), request.getAmount());
+        paymentFacade.confirmPayment(request.getPaymentKey(), request.getOrderId(), request.getAmount(), memberId);
     }
 
     @Operation(summary = "결제 취소 요청")
@@ -66,7 +66,7 @@ public class PaymentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        paymentService.cancelPayment(request.getPaymentKey());
+        paymentFacade.cancelPayment(request.getPaymentKey());
     }
 
     @Operation(summary = "orderId로 결제 조회")
@@ -76,7 +76,7 @@ public class PaymentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        paymentService.findPaymentsByOrderId(orderId);
+        paymentFacade.findPaymentsByOrderId(orderId);
     }
 
     @Operation(summary = "paymentKey로 결제 조회")
@@ -86,6 +86,6 @@ public class PaymentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        paymentService.findPaymentsByPaymentKey(paymentKey);
+        paymentFacade.findPaymentsByPaymentKey(paymentKey);
     }
 }

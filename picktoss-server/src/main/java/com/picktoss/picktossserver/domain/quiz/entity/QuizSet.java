@@ -20,14 +20,14 @@ public class QuizSet extends AuditBase {
     @Id @Column(name = "id", length = 300)
     private String id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "solved", nullable = false)
     private boolean solved;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "quiz_set_type")
+    @Column(name = "quiz_set_type", nullable = false)
     private QuizSetType quizSetType;
 
     @ManyToOne(fetch = FetchType.LAZY)

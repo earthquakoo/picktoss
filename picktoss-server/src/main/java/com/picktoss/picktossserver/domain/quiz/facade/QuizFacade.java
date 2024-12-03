@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.facade;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -37,13 +39,16 @@ public class QuizFacade {
     private final StarService starService;
     private final CollectionService collectionService;
 
-    public GetQuizSetByDocumentResponse findQuizSetByDocument(String quizSetId, Long memberId) {
-        return quizService.findQuizSetByDocument(quizSetId, memberId);
-    }
-
-    public GetQuizSetByCollectionResponse findQuizSetByCollection(String quizSetId, Long collectionId, Long memberId) {
-        Collection collection = collectionService.findCollectionByCollectionId(collectionId);
-        return quizService.findQuizSetByCollection(quizSetId, collection.getName(), memberId);
+    public GetQuizSetResponse findQuizSet(String quizSetId, Long collectionId, QuizSetType quizSetType, Long memberId) {
+        if (collectionId != null) {
+            if (quizSetType != QuizSetType.COLLECTION_QUIZ_SET) {
+                throw new CustomException(ErrorInfo.QUIZ_SET_TYPE_ERROR);
+            }
+            Collection collection = collectionService.findCollectionByCollectionId(collectionId);
+            List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = quizService.findQuizSetByCollection(quizSetId, memberId);
+            return new GetQuizSetResponse(quizDtos, collection.getName());
+        }
+        return quizService.findQuizSetByDocument(quizSetId, quizSetType, memberId);
     }
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {

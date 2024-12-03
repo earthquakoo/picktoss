@@ -48,30 +48,18 @@ public class QuizController {
      * GET
      */
 
-    @Operation(summary = "quiz_set_id와 collection_id로 컬렉션 퀴즈 가져오기")
-    @GetMapping("/collections/{collection_id}/quiz-sets/{quiz_set_id}")
+    @Operation(summary = "quiz_set_id와 quiz-set-type으로 퀴즈 가져오기")
+    @GetMapping("/quiz-sets/{quiz_set_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizSetByCollectionResponse> getQuizSetByCollection(
-            @PathVariable("collection_id") Long collectionId,
+    public ResponseEntity<GetQuizSetResponse> getQuizSetByCollection(
+            @RequestParam(required = false, value = "collection-id") Long collectionId,
+            @RequestParam(value = "quiz-set-type") QuizSetType quizSetType,
             @PathVariable("quiz_set_id") String quizSetId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizSetByCollectionResponse response = quizFacade.findQuizSetByCollection(quizSetId, collectionId, memberId);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @Operation(summary = "quiz_set_id로 문서 퀴즈 가져오기")
-    @GetMapping("/documents/quiz-sets/{quiz_set_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizSetByDocumentResponse> getQuizSetByDocument(
-            @PathVariable("quiz_set_id") String quizSetId
-    ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        GetQuizSetByDocumentResponse response = quizFacade.findQuizSetByDocument(quizSetId, memberId);
+        GetQuizSetResponse response = quizFacade.findQuizSet(quizSetId, collectionId, quizSetType, memberId);
         return ResponseEntity.ok().body(response);
     }
 
