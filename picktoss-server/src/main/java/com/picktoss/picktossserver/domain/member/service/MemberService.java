@@ -39,12 +39,16 @@ public class MemberService {
 
     @Transactional
     public Member createGoogleMember(String name, String clientId, String email) {
-        return Member.createGoogleMember(name, clientId, email);
+        Member member = Member.createGoogleMember(name, clientId, email);
+        memberRepository.save(member);
+        return member;
     }
 
     @Transactional
     public Member createKakaoMember(String name, String clientId) {
-        return Member.createKakaoMember(name, clientId);
+        Member member = Member.createKakaoMember(name, clientId);
+        memberRepository.save(member);
+        return member;
     }
 
     public GetMemberInfoResponse findMemberInfo(

@@ -41,7 +41,7 @@ public class CollectionController {
     @Operation(summary = "모든 컬렉션 가져오기(탐색)")
     @GetMapping("/collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CollectionResponseDto> findAllCollections(
+    public ResponseEntity<CollectionResponseDto> getAllCollections(
             @RequestParam(required = false, defaultValue = "POPULARITY", value = "collection-sort-option") CollectionSortOption collectionSortOption,
             @RequestParam(required = false, value = "collection-field") List<CollectionField> collectionFieldOption,
             @RequestParam(required = false, value = "quiz-type") QuizType quizType,
@@ -58,7 +58,7 @@ public class CollectionController {
     @Operation(summary = "북마크한 컬렉션 가져오기")
     @GetMapping("/collections/bookmarked-collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CollectionResponseDto> findAllByMemberIdAndBookmarked() {
+    public ResponseEntity<CollectionResponseDto> getAllByMemberIdAndBookmarked() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
@@ -67,10 +67,10 @@ public class CollectionController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "북마크한 컬렉션 분야별로 모든 퀴즈 랜덤하게 가져오기")
+    @Operation(summary = "북마크하거나 소유한 컬렉션 분야별로 모든 퀴즈 랜덤하게 가져오기")
     @GetMapping("/collections/{collection_field}/quizzes")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizzesInCollectionByCollectionField> findQuizzesInCollectionByCollectionField(
+    public ResponseEntity<GetQuizzesInCollectionByCollectionField> getQuizzesInCollectionByCollectionField(
             @PathVariable("collection_field") CollectionField collectionField
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -83,12 +83,11 @@ public class CollectionController {
     @Operation(summary = "직접 생성한 컬렉션 가져오기")
     @GetMapping("/collections/my-collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CollectionResponseDto> findAllByMemberId() {
+    public ResponseEntity<GetAllMyCollectionsResponse> getAllByMemberId() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findAllByMemberId(memberId);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        GetAllMyCollectionsResponse response = collectionFacade.findAllByMemberId(memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -97,7 +96,7 @@ public class CollectionController {
     @GetMapping("/collections/{collection_id}/collection-info")
     @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetSingleCollectionResponse> findCollectionByCollectionId(
+    public ResponseEntity<GetSingleCollectionResponse> getCollectionByCollectionId(
             @PathVariable(name = "collection_id") Long collectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -239,7 +238,7 @@ public class CollectionController {
 
     @Operation(summary = "컬렉션 북마크 취소하기")
     @DeleteMapping("/collections/{collection_id}/delete-bookmark")
-    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
+    @ApiErrorCodeExamples({COLLECTION_NOT_FOUND, COLLECTION_BOOKMARK_NOT_FOUND, MEMBER_NOT_FOUND})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCollectionBookmark(
             @PathVariable("collection_id") Long collectionId

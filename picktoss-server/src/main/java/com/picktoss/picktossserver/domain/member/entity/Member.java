@@ -58,7 +58,7 @@ public class Member extends AuditBase {
     @Column(name = "interest_collection_fields")
     private List<String> interestCollectionFields;
 
-    @OneToOne(mappedBy = "member", orphanRemoval = true)
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Star star;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)

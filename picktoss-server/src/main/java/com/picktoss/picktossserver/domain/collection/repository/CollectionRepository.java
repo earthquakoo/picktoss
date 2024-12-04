@@ -27,7 +27,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     );
 
     @Query("SELECT c FROM Collection c " +
-            "JOIN FETCH c.member " +
             "WHERE c.id = :collectionId")
     Optional<Collection> findCollectionById(
             @Param("collectionId") Long collectionId
@@ -51,6 +50,8 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "JOIN FETCH c.collectionQuizzes cq " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "JOIN FETCH cq.quiz q " +
             "JOIN FETCH c.member m " +
             "WHERE m.id = :memberId")
     List<Collection> findAllByMemberId(
@@ -59,9 +60,22 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "JOIN FETCH c.collectionQuizzes cq " +
+            "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "WHERE c.id = :collectionId " +
             "AND c.member.id = :memberId")
     Optional<Collection> findCollectionByCollectionIdAndMemberId(
+            @Param("collectionId") Long collectionId,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT c FROM Collection c " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "LEFT JOIN FETCH c.collectionBookmarks cb " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "JOIN FETCH cq.quiz q " +
+            "WHERE c.id = :collectionId " +
+            "AND c.member.id = :memberId")
+    Optional<Collection> findCollectionWithSolvedRecordAndBookmarkAndQuizzesByCollectionIdAndMemberId(
             @Param("collectionId") Long collectionId,
             @Param("memberId") Long memberId
     );

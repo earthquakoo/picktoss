@@ -53,7 +53,6 @@ public class AuthFacade {
 
         JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
         return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
-
     }
 
     @Transactional

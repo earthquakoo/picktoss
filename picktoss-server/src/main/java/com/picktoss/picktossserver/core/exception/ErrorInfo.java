@@ -55,8 +55,10 @@ public enum ErrorInfo {
      * Collection
      */
     COLLECTION_NOT_FOUND(400, "COLLECTION_NOT_FOUND", "해당 id의 컬렉션을 찾을 수 없습니다."),
+    COLLECTION_BOOKMARK_NOT_FOUND(400, "COLLECTION_BOOKMARK_NOT_FOUND", "해당 컬렉션 북마크를 찾을 수 없습니다."),
     DUPLICATE_QUIZ_IN_COLLECTION(400, "DUPLICATE_QUIZ_IN_COLLECTION", "해당 퀴즈는 이미 컬렉션에 포함되어 있습니다."),
     OWN_COLLECTION_CANT_BOOKMARK(400, "OWN_COLLECTION_CANT_BOOKMARK", "자신의 컬렉션은 북마크할 수 없습니다."),
+    COLLECTION_ALREADY_BOOKMARKED(400, "COLLECTION_ALREADY_BOOKMARK", "이미 북마크된 컬렉션입니다."),
     INTEREST_COLLECTION_FIELD_NOT_FOUND(400, "INTEREST_COLLECTION_FIELD_NOT_FOUND", "관심분야 설정이 되어있지 않습니다"),
 
     /**
