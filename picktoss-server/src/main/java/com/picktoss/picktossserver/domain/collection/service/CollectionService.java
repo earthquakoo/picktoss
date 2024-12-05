@@ -77,6 +77,7 @@ public class CollectionService {
                     }
                 }
                 GetAllCollectionsResponse.GetAllCollectionsQuizDto quizDto = GetAllCollectionsResponse.GetAllCollectionsQuizDto.builder()
+                        .id(quiz.getId())
                         .question(quiz.getQuestion())
                         .answer(quiz.getAnswer())
                         .explanation(quiz.getExplanation())
@@ -169,6 +170,7 @@ public class CollectionService {
                     }
                 }
                 GetAllCollectionsResponse.GetAllCollectionsQuizDto quizDto = GetAllCollectionsResponse.GetAllCollectionsQuizDto.builder()
+                        .id(quiz.getId())
                         .question(quiz.getQuestion())
                         .answer(quiz.getAnswer())
                         .explanation(quiz.getExplanation())
@@ -223,6 +225,7 @@ public class CollectionService {
                 }
             }
             GetSingleCollectionResponse.GetSingleCollectionQuizDto quizDto = GetSingleCollectionResponse.GetSingleCollectionQuizDto.builder()
+                    .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
                     .explanation(quiz.getExplanation())
