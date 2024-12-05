@@ -10,31 +10,38 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class GetAllMyCollectionsResponse {
+public class GetAllCollectionsResponse {
 
-    private List<GetAllMyCollectionsDto> collections;
+    private List<GetAllCollectionsDto> collections;
 
     @Getter
     @Builder
-    public static class GetAllMyCollectionsDto {
+    public static class GetAllCollectionsDto {
         private Long id;
         private String name;
         private String description;
         private String emoji;
         private int bookmarkCount;
         private CollectionField collectionField;
-        private String createMemberName;
         private int solvedMemberCount;
-        private List<GetAllMyCollectionsQuizDto> quizzes;
+        private GetAllCollectionsMemberDto member;
+        private List<GetAllCollectionsQuizDto> quizzes;
     }
 
     @Getter
     @Builder
-    public static class GetAllMyCollectionsQuizDto {
+    public static class GetAllCollectionsQuizDto {
         private String question;
         private String answer;
         private String explanation;
         private List<String> options;
         private QuizType quizType;
+    }
+
+    @Getter
+    @Builder
+    public static class GetAllCollectionsMemberDto {
+        private Long creatorId;
+        private String creatorName;
     }
 }

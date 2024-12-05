@@ -19,8 +19,8 @@ public class GetSingleCollectionResponse {
     private String emoji;
     private int bookmarkCount;
     private CollectionField collectionField;
-    private String createMemberName;
     private int solvedMemberCount;
+    private GetSingleCollectionMemberDto member;
     private List<GetSingleCollectionQuizDto> quizzes;
 
     @Getter
@@ -31,5 +31,12 @@ public class GetSingleCollectionResponse {
         private String explanation;
         private List<String> options;
         private QuizType quizType;
+    }
+
+    @Getter
+    @Builder
+    public static class GetSingleCollectionMemberDto {
+        private Long creatorId;
+        private String creatorName;
     }
 }

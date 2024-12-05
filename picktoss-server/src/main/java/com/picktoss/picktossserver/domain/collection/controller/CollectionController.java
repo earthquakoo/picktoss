@@ -41,7 +41,7 @@ public class CollectionController {
     @Operation(summary = "모든 컬렉션 가져오기(탐색)")
     @GetMapping("/collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CollectionResponseDto> getAllCollections(
+    public ResponseEntity<GetAllCollectionsResponse> getAllCollections(
             @RequestParam(required = false, defaultValue = "POPULARITY", value = "collection-sort-option") CollectionSortOption collectionSortOption,
             @RequestParam(required = false, value = "collection-field") List<CollectionField> collectionFieldOption,
             @RequestParam(required = false, value = "quiz-type") QuizType quizType,
@@ -50,8 +50,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findAllCollections(collectionSortOption, collectionFieldOption, quizType, quizCount);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        GetAllCollectionsResponse response = collectionFacade.findAllCollections(collectionSortOption, collectionFieldOption, quizType, quizCount);
         return ResponseEntity.ok().body(response);
     }
 
@@ -83,11 +82,11 @@ public class CollectionController {
     @Operation(summary = "직접 생성한 컬렉션 가져오기")
     @GetMapping("/collections/my-collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllMyCollectionsResponse> getAllByMemberId() {
+    public ResponseEntity<GetAllCollectionsResponse> getAllByMemberId() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllMyCollectionsResponse response = collectionFacade.findAllByMemberId(memberId);
+        GetAllCollectionsResponse response = collectionFacade.findMemberGeneratedCollections(memberId);
         return ResponseEntity.ok().body(response);
     }
 

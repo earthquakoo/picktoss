@@ -14,12 +14,14 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllOrderByUpdatedAtDesc();
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
             "WHERE c.collectionField IN :collectionFields " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllByCollectionDomainsAndUpdatedAt(
