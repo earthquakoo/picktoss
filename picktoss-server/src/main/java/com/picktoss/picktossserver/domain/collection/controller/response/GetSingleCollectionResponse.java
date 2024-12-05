@@ -26,6 +26,7 @@ public class GetSingleCollectionResponse {
     @Getter
     @Builder
     public static class GetSingleCollectionQuizDto {
+        private Long id;
         private String question;
         private String answer;
         private String explanation;

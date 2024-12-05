@@ -31,6 +31,7 @@ public class GetAllCollectionsResponse {
     @Getter
     @Builder
     public static class GetAllCollectionsQuizDto {
+        private Long id;
         private String question;
         private String answer;
         private String explanation;
