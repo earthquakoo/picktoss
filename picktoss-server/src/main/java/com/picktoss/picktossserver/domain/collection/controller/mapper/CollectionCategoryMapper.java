@@ -29,8 +29,8 @@ public class CollectionCategoryMapper {
             case CollectionCategory.MEDICINE_PHARMACY: return "\uD83E\uDE7A";
             case CollectionCategory.SCIENCE_ENGINEERING: return "\uD83D\uDD2C";
             case CollectionCategory.ART: return "\uD83C\uDFA8";
-            case CollectionCategory.SOCIETY_POLITICS: return "⚖";
-            default: return "♾";
+            case CollectionCategory.SOCIETY_POLITICS: return "⚖\uFE0F";
+            default: return "♾\uFE0F";
         }
     }
 }
