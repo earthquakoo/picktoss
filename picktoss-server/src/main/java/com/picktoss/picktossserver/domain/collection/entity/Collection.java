@@ -2,7 +2,7 @@ package com.picktoss.picktossserver.domain.collection.entity;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,8 +31,8 @@ public class Collection extends AuditBase {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "collection_field")
-    private CollectionField collectionField;
+    @Column(name = "collection_category")
+    private CollectionCategory collectionCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -49,18 +49,18 @@ public class Collection extends AuditBase {
 
     // Constructor methods
     public static Collection createCollection(
-            String name, String emoji, String description, CollectionField collectionField, Member member
+            String name, String emoji, String description, CollectionCategory collectionCategory, Member member
     ) {
         return Collection.builder()
                 .name(name)
                 .emoji(emoji)
                 .description(description)
-                .collectionField(collectionField)
+                .collectionCategory(collectionCategory)
                 .member(member)
                 .build();
     }
 
-    public void updateCollectionByUpdateCollectionInfo(String name, String description, String emoji, CollectionField collectionField) {
+    public void updateCollectionByUpdateCollectionInfo(String name, String description, String emoji, CollectionCategory collectionCategory) {
         if (name != null) {
             this.name = name;
         }
@@ -73,8 +73,8 @@ public class Collection extends AuditBase {
             this.emoji = emoji;
         }
 
-        if (collectionField != null) {
-            this.collectionField = collectionField;
+        if (collectionCategory != null) {
+            this.collectionCategory = collectionCategory;
         }
     }
 }

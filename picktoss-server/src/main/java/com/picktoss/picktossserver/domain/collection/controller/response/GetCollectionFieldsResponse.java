@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.collection.controller.response;
 
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,5 +12,5 @@ import java.util.Set;
 @AllArgsConstructor
 public class GetCollectionFieldsResponse {
 
-    private Set<CollectionField> collectionFields;
+    private Set<CollectionCategory> collectionCategories;
 }

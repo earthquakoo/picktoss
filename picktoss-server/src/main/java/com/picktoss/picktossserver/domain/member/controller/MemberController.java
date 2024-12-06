@@ -72,14 +72,14 @@ public class MemberController {
     }
 
     @Operation(summary = "관심분야 태그 설정")
-    @PatchMapping("/members/update-collection-fields")
+    @PatchMapping("/members/update-collection-categories")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateInterestCollectionFields(@Valid @RequestBody UpdateInterestCollectionFieldsRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.updateInterestCollectionFields(memberId, request.getInterestCollectionFields());
+        memberFacade.updateInterestCollectionFields(memberId, request.getInterestCollectionCategories());
     }
 
     @Operation(summary = "오늘의 퀴즈 관리(오늘의 퀴즈 개수 설정)")

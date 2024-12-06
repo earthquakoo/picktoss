@@ -393,7 +393,7 @@ public class DocumentService {
                     .name(collection.getName())
                     .emoji(collection.getEmoji())
                     .bookmarkCount(collection.getCollectionBookmarks().size())
-                    .collectionField(collection.getCollectionField())
+                    .collectionCategory(collection.getCollectionCategory())
                     .memberName(collection.getMember().getName())
                     .quizCount(collection.getCollectionQuizzes().size())
                     .build();

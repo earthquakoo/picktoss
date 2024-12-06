@@ -13,7 +13,7 @@ import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCo
 import com.picktoss.picktossserver.domain.collection.controller.response.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.collection.CollectionSortOption;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,14 +46,14 @@ public class CollectionController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CollectionResponseDto> getAllCollections(
             @RequestParam(required = false, defaultValue = "POPULARITY", value = "collection-sort-option") CollectionSortOption collectionSortOption,
-            @RequestParam(required = false, value = "collection-field") List<CollectionField> collectionFieldOption,
+            @RequestParam(required = false, value = "collection-field") List<CollectionCategory> collectionCategoryOption,
             @RequestParam(required = false, value = "quiz-type") QuizType quizType,
             @RequestParam(required = false, value = "quiz-count") Integer quizCount
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findAllCollections(collectionSortOption, collectionFieldOption, quizType, quizCount);
+        List<Collection> collections = collectionFacade.findAllCollections(collectionSortOption, collectionCategoryOption, quizType, quizCount);
         CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
@@ -74,12 +74,12 @@ public class CollectionController {
     @GetMapping("/collections/{collection_field}/quizzes")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizzesInCollectionByCollectionField> getQuizzesInCollectionByCollectionField(
-            @PathVariable("collection_field") CollectionField collectionField
+            @PathVariable("collection_field") CollectionCategory collectionCategory
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> response = collectionFacade.findAllByMemberIdAndCollectionFieldAndBookmarked(memberId, collectionField);
+        List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> response = collectionFacade.findAllByMemberIdAndCollectionFieldAndBookmarked(memberId, collectionCategory);
         return ResponseEntity.ok().body(new GetQuizzesInCollectionByCollectionField(response));
     }
 
@@ -97,7 +97,7 @@ public class CollectionController {
 
     // collection 상세 정보
     @Operation(summary = "만든 컬렉션 상세 정보 가져오기")
-    @GetMapping("/collections/{collection_id}/collection-info")
+    @GetMapping("/collections/{collection_id}/info")
     @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleCollectionResponse> getCollectionByCollectionId(
@@ -148,6 +148,18 @@ public class CollectionController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "사용자가 북마크했거나 생성한 컬렉션 카테고리 가져오기")
+    @GetMapping("/collections/categories")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetCollectionCategoriesResponse> getCollectionCategories() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        List<GetCollectionCategoriesResponse.GetCollectionCategoriesDto> response = collectionFacade.findCollectionCategoriesByMemberId(memberId);
+        return ResponseEntity.ok().body(new GetCollectionCategoriesResponse(response));
+    }
+
+
     /**
      * POST
      */
@@ -160,7 +172,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long collectionId = collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionField(), memberId);
+        Long collectionId = collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionCategory(), memberId);
         return ResponseEntity.ok().body(new CreateCollectionResponse(collectionId));
     }
 
@@ -192,7 +204,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.updateCollectionInfo(collectionId, memberId, request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionField());
+        collectionFacade.updateCollectionInfo(collectionId, memberId, request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionCategory());
     }
 
     @Operation(summary = "컬렉션에 퀴즈 추가", description = "노트 상세에서 특정 퀴즈를 특정 컬렉션에 추가")
