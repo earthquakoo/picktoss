@@ -10,8 +10,6 @@ spring:
       maxFileSize: 10MB
       maxRequestSize: 20MB
   batch:
-#    jdbc:
-#      initialize-schema: always
     job:
       enabled: false
       name: emailSenderJob
