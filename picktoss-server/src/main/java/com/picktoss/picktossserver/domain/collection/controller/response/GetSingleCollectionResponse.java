@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.collection.controller.response;
 
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,9 +17,9 @@ public class GetSingleCollectionResponse {
     private String description;
     private String emoji;
     private int bookmarkCount;
-    private CollectionField collectionField;
+    private String collectionCategory;
     private int solvedMemberCount;
-    private boolean isBookmarked;
+    private boolean bookmarked;
     private GetSingleCollectionMemberDto member;
     private List<GetSingleCollectionQuizDto> quizzes;
 

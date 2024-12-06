@@ -70,8 +70,8 @@ public class MemberFacade {
     }
 
     @Transactional
-    public void updateInterestCollectionFields(Long memberId, List<String> interestCollectionFields) {
-        memberService.updateInterestCollectionFields(memberId, interestCollectionFields);
+    public void updateInterestCollectionCategories(Long memberId, List<String> interestCollectionCategories) {
+        memberService.updateInterestCollectionCategories(memberId, interestCollectionCategories);
     }
 
     @Transactional

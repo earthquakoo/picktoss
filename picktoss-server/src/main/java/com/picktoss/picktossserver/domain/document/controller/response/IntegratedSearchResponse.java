@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.document.controller.response;
 
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,7 +48,7 @@ public class IntegratedSearchResponse {
         private String name;
         private String emoji;
         private int bookmarkCount;
-        private CollectionField collectionField;
+        private CollectionCategory collectionCategory;
         private String memberName;
         private int quizCount;
     }

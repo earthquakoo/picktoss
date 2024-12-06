@@ -4,7 +4,7 @@ package com.picktoss.picktossserver.domain.member.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
-import com.picktoss.picktossserver.domain.member.controller.request.UpdateInterestCollectionFieldsRequest;
+import com.picktoss.picktossserver.domain.member.controller.request.UpdateInterestCollectionCategoriesRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateMemberNameRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateQuizNotificationRequest;
 import com.picktoss.picktossserver.domain.member.controller.request.UpdateTodayQuizCountRequest;
@@ -72,14 +72,14 @@ public class MemberController {
     }
 
     @Operation(summary = "관심분야 태그 설정")
-    @PatchMapping("/members/update-collection-fields")
+    @PatchMapping("/members/update-collection-categories")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateInterestCollectionFields(@Valid @RequestBody UpdateInterestCollectionFieldsRequest request) {
+    public void updateInterestCollectionCategories(@Valid @RequestBody UpdateInterestCollectionCategoriesRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.updateInterestCollectionFields(memberId, request.getInterestCollectionFields());
+        memberFacade.updateInterestCollectionCategories(memberId, request.getInterestCollectionCategories());
     }
 
     @Operation(summary = "오늘의 퀴즈 관리(오늘의 퀴즈 개수 설정)")
