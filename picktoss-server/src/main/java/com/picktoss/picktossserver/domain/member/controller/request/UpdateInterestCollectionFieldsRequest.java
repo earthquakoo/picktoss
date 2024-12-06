@@ -9,6 +9,6 @@ import java.util.List;
 
 @Getter
 public class UpdateInterestCollectionFieldsRequest {
-    @ArraySchema(schema = @Schema(implementation = CollectionField.class, example = "IT, ECONOMY, HISTORY, LANGUAGE, MATH, ETC, ART, MEDICINE, SCIENCE"))
+    @ArraySchema(schema = @Schema(implementation = CollectionField.class, example = "IT, LAW, BUSINESS_ECONOMY, SOCIETY_POLITICS, LANGUAGE, MEDICINE_PHARMACY, ART, SCIENCE_ENGINEERING, HISTORY_PHILOSOPHY, OTHER"))
     private List<String> interestCollectionFields;
 }

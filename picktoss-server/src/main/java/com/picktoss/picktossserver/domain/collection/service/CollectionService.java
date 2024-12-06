@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetAllCollectionsResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
@@ -57,61 +56,10 @@ public class CollectionService {
     }
 
     // 탐색 컬렉션
-    public GetAllCollectionsResponse findAllCollections(
+    public List<Collection> findAllCollections(
             CollectionSortOption collectionSortOption, List<CollectionField> collectionFields, QuizType quizType, Integer quizCount) {
 
-        List<Collection> collections = filterCollections(collectionSortOption, collectionFields, quizType, quizCount);
-
-        List<GetAllCollectionsResponse.GetAllCollectionsDto> collectionsDtos = new ArrayList<>();
-
-        for (Collection collection : collections) {
-            Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
-            List<GetAllCollectionsResponse.GetAllCollectionsQuizDto> quizDtos = new ArrayList<>();
-            for (CollectionQuiz collectionQuiz : collectionQuizzes) {
-                Quiz quiz = collectionQuiz.getQuiz();
-                List<String> optionList = new ArrayList<>();
-                if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                    Set<Option> options = quiz.getOptions();
-                    for (Option option : options) {
-                        optionList.add(option.getOption());
-                    }
-                }
-                GetAllCollectionsResponse.GetAllCollectionsQuizDto quizDto = GetAllCollectionsResponse.GetAllCollectionsQuizDto.builder()
-                        .id(quiz.getId())
-                        .question(quiz.getQuestion())
-                        .answer(quiz.getAnswer())
-                        .explanation(quiz.getExplanation())
-                        .options(optionList)
-                        .quizType(quiz.getQuizType())
-                        .build();
-
-                quizDtos.add(quizDto);
-            }
-
-            int solvedMemberCount = findSolvedCountCollectionByCollectionId(collection);
-
-            Member createdMember = collection.getMember();
-
-            GetAllCollectionsResponse.GetAllCollectionsMemberDto memberDto = GetAllCollectionsResponse.GetAllCollectionsMemberDto.builder()
-                    .creatorId(createdMember.getId())
-                    .creatorName(createdMember.getName())
-                    .build();
-
-            GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
-                    .id(collection.getId())
-                    .name(collection.getName())
-                    .description(collection.getDescription())
-                    .emoji(collection.getEmoji())
-                    .bookmarkCount(collection.getCollectionBookmarks().size())
-                    .collectionField(collection.getCollectionField())
-                    .solvedMemberCount(solvedMemberCount)
-                    .member(memberDto)
-                    .quizzes(quizDtos)
-                    .build();
-
-            collectionsDtos.add(collectionDto);
-        }
-        return new GetAllCollectionsResponse(collectionsDtos);
+        return filterCollections(collectionSortOption, collectionFields, quizType, quizCount);
     }
 
     // 북마크한 컬렉션 가져오기
@@ -152,59 +100,8 @@ public class CollectionService {
     }
 
     // 직접 생성한 컬렉션 가져오기
-    public GetAllCollectionsResponse findMemberGeneratedCollections(Long memberId) {
-        List<Collection> collections = collectionRepository.findAllByMemberId(memberId);
-
-        List<GetAllCollectionsResponse.GetAllCollectionsDto> collectionsDtos = new ArrayList<>();
-
-        for (Collection collection : collections) {
-            Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
-            List<GetAllCollectionsResponse.GetAllCollectionsQuizDto> quizDtos = new ArrayList<>();
-            for (CollectionQuiz collectionQuiz : collectionQuizzes) {
-                Quiz quiz = collectionQuiz.getQuiz();
-                List<String> optionList = new ArrayList<>();
-                if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                    Set<Option> options = quiz.getOptions();
-                    for (Option option : options) {
-                        optionList.add(option.getOption());
-                    }
-                }
-                GetAllCollectionsResponse.GetAllCollectionsQuizDto quizDto = GetAllCollectionsResponse.GetAllCollectionsQuizDto.builder()
-                        .id(quiz.getId())
-                        .question(quiz.getQuestion())
-                        .answer(quiz.getAnswer())
-                        .explanation(quiz.getExplanation())
-                        .options(optionList)
-                        .quizType(quiz.getQuizType())
-                        .build();
-
-                quizDtos.add(quizDto);
-            }
-
-            int solvedMemberCount = findSolvedCountCollectionByCollectionId(collection);
-
-            Member createdMember = collection.getMember();
-
-            GetAllCollectionsResponse.GetAllCollectionsMemberDto memberDto = GetAllCollectionsResponse.GetAllCollectionsMemberDto.builder()
-                    .creatorId(createdMember.getId())
-                    .creatorName(createdMember.getName())
-                    .build();
-
-            GetAllCollectionsResponse.GetAllCollectionsDto collectionDto = GetAllCollectionsResponse.GetAllCollectionsDto.builder()
-                    .id(collection.getId())
-                    .name(collection.getName())
-                    .description(collection.getDescription())
-                    .emoji(collection.getEmoji())
-                    .bookmarkCount(collection.getCollectionBookmarks().size())
-                    .collectionField(collection.getCollectionField())
-                    .solvedMemberCount(solvedMemberCount)
-                    .member(memberDto)
-                    .quizzes(quizDtos)
-                    .build();
-
-            collectionsDtos.add(collectionDto);
-        }
-        return new GetAllCollectionsResponse(collectionsDtos);
+    public List<Collection> findMemberGeneratedCollections(Long memberId) {
+        return collectionRepository.findAllByMemberId(memberId);
     }
 
     // 만든 컬렉션 상세
@@ -244,11 +141,15 @@ public class CollectionService {
                 .build();
 
         int solvedMemberCount = findSolvedCountCollectionByCollectionId(collection);
+        Set<CollectionBookmark> collectionBookmarks = collection.getCollectionBookmarks();
+        boolean isBookmarked = collectionBookmarks.stream()
+                .anyMatch(bookmark -> bookmark.getCollection().equals(collection));
 
         return GetSingleCollectionResponse.builder()
                 .id(collection.getId())
                 .name(collection.getName())
                 .description(collection.getDescription())
+                .isBookmarked(isBookmarked)
                 .emoji(collection.getEmoji())
                 .collectionField(collection.getCollectionField())
                 .solvedMemberCount(solvedMemberCount)

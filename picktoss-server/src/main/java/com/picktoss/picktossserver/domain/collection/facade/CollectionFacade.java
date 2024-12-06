@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetAllCollectionsResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
@@ -44,7 +43,7 @@ public class CollectionFacade {
     }
 
     // 탐색 컬렉션
-    public GetAllCollectionsResponse findAllCollections(
+    public List<Collection> findAllCollections(
             CollectionSortOption collectionSortOption, List<CollectionField> collectionFields, QuizType quizType, Integer quizCount) {
         return collectionService.findAllCollections(collectionSortOption, collectionFields, quizType, quizCount);
     }
@@ -59,7 +58,7 @@ public class CollectionFacade {
     }
 
     // 직접 생성한 컬렉션 가져오기
-    public GetAllCollectionsResponse findMemberGeneratedCollections(Long memberId) {
+    public List<Collection> findMemberGeneratedCollections(Long memberId) {
         return collectionService.findMemberGeneratedCollections(memberId);
     }
 

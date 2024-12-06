@@ -20,6 +20,7 @@ public class GetSingleCollectionResponse {
     private int bookmarkCount;
     private CollectionField collectionField;
     private int solvedMemberCount;
+    private boolean isBookmarked;
     private GetSingleCollectionMemberDto member;
     private List<GetSingleCollectionQuizDto> quizzes;
 

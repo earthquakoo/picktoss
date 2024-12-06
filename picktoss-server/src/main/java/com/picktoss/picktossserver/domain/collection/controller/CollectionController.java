@@ -5,8 +5,11 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.collection.controller.dto.CollectionResponseDto;
-import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionMapper;
-import com.picktoss.picktossserver.domain.collection.controller.request.*;
+import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionDtoMapper;
+import com.picktoss.picktossserver.domain.collection.controller.request.AddQuizToCollectionRequest;
+import com.picktoss.picktossserver.domain.collection.controller.request.CreateCollectionRequest;
+import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionInfoRequest;
+import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizzesRequest;
 import com.picktoss.picktossserver.domain.collection.controller.response.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
@@ -41,7 +44,7 @@ public class CollectionController {
     @Operation(summary = "모든 컬렉션 가져오기(탐색)")
     @GetMapping("/collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllCollectionsResponse> getAllCollections(
+    public ResponseEntity<CollectionResponseDto> getAllCollections(
             @RequestParam(required = false, defaultValue = "POPULARITY", value = "collection-sort-option") CollectionSortOption collectionSortOption,
             @RequestParam(required = false, value = "collection-field") List<CollectionField> collectionFieldOption,
             @RequestParam(required = false, value = "quiz-type") QuizType quizType,
@@ -50,7 +53,8 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllCollectionsResponse response = collectionFacade.findAllCollections(collectionSortOption, collectionFieldOption, quizType, quizCount);
+        List<Collection> collections = collectionFacade.findAllCollections(collectionSortOption, collectionFieldOption, quizType, quizCount);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
 
@@ -62,7 +66,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionFacade.findAllByMemberIdAndBookmarked(memberId);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
 
@@ -82,11 +86,12 @@ public class CollectionController {
     @Operation(summary = "직접 생성한 컬렉션 가져오기")
     @GetMapping("/collections/my-collections")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllCollectionsResponse> getAllByMemberId() {
+    public ResponseEntity<CollectionResponseDto> getAllByMemberId() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllCollectionsResponse response = collectionFacade.findMemberGeneratedCollections(memberId);
+        List<Collection> collections = collectionFacade.findMemberGeneratedCollections(memberId);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
 
@@ -115,7 +120,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionFacade.searchCollections(keyword);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
 
@@ -139,7 +144,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionFacade.findInterestFieldCollections(memberId);
-        CollectionResponseDto response = CollectionMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
 
