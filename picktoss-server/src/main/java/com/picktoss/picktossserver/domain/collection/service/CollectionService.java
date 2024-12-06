@@ -1,8 +1,10 @@
 package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionCategoryMapper;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionCategoriesResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionCategory;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
@@ -15,7 +17,7 @@ import com.picktoss.picktossserver.domain.collection.repository.CollectionSolved
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.collection.CollectionSortOption;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
@@ -39,11 +41,11 @@ public class CollectionService {
 
     @Transactional
     public Long createCollection(
-            List<Quiz> quizzes, String name, String description, String emoji, CollectionField collectionField, Member member) {
+            List<Quiz> quizzes, String name, String description, String emoji, CollectionCategory collectionCategory, Member member) {
 
         List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
 
-        Collection collection = Collection.createCollection(name, emoji, description, collectionField, member);
+        Collection collection = Collection.createCollection(name, emoji, description, collectionCategory, member);
 
         for (Quiz quiz : quizzes) {
             CollectionQuiz collectionQuiz = CollectionQuiz.createQuizCollection(quiz, collection);
@@ -57,9 +59,9 @@ public class CollectionService {
 
     // 탐색 컬렉션
     public List<Collection> findAllCollections(
-            CollectionSortOption collectionSortOption, List<CollectionField> collectionFields, QuizType quizType, Integer quizCount) {
+            CollectionSortOption collectionSortOption, List<CollectionCategory> collectionCategories, QuizType quizType, Integer quizCount) {
 
-        return filterCollections(collectionSortOption, collectionFields, quizType, quizCount);
+        return filterCollections(collectionSortOption, collectionCategories, quizType, quizCount);
     }
 
     // 북마크한 컬렉션 가져오기
@@ -68,9 +70,9 @@ public class CollectionService {
     }
 
     // 컬렉션의 카테고리별로 모든 퀴즈 가져오기
-    public List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> findAllByMemberIdAndCollectionFieldAndBookmarked(Long memberId, CollectionField collectionField) {
-        List<CollectionQuiz> collectionQuizzes = collectionQuizRepository.findQuizzesInCollectionByMemberIdAndBookmarkedAndCollectionField(memberId, collectionField);
-        List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> quizDtos = new ArrayList<>();
+    public List<GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto> findAllByMemberIdAndCollectionCategoryAndBookmarked(Long memberId, CollectionCategory collectionCategory) {
+        List<CollectionQuiz> collectionQuizzes = collectionQuizRepository.findQuizzesInCollectionByMemberIdOrBookmarkedAndCollectionField(memberId, collectionCategory);
+        List<GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto> quizDtos = new ArrayList<>();
         for (CollectionQuiz collectionQuiz : collectionQuizzes) {
             Quiz quiz = collectionQuiz.getQuiz();
 
@@ -85,7 +87,7 @@ public class CollectionService {
                 }
             }
 
-            GetQuizzesInCollectionByCollectionField.QuizInCollectionDto quizDto = GetQuizzesInCollectionByCollectionField.QuizInCollectionDto.builder()
+            GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto quizDto = GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto.builder()
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
@@ -141,6 +143,7 @@ public class CollectionService {
                 .build();
 
         int solvedMemberCount = findSolvedCountCollectionByCollectionId(collection);
+        String collectionCategoryName = CollectionCategoryMapper.mapCollectionCategoryName(collection.getCollectionCategory());
         Set<CollectionBookmark> collectionBookmarks = collection.getCollectionBookmarks();
         boolean isBookmarked = collectionBookmarks.stream()
                 .anyMatch(bookmark -> bookmark.getCollection().equals(collection));
@@ -149,9 +152,9 @@ public class CollectionService {
                 .id(collection.getId())
                 .name(collection.getName())
                 .description(collection.getDescription())
-                .isBookmarked(isBookmarked)
+                .bookmarked(isBookmarked)
                 .emoji(collection.getEmoji())
-                .collectionField(collection.getCollectionField())
+                .collectionCategory(collectionCategoryName)
                 .solvedMemberCount(solvedMemberCount)
                 .bookmarkCount(collection.getCollectionBookmarks().size())
                 .member(memberDto)
@@ -175,11 +178,11 @@ public class CollectionService {
     // 컬렉션 정보 수정
     @Transactional
     public void updateCollectionInfo(
-            Long collectionId, Long memberId, String name, String description, String emoji, CollectionField collectionField) {
+            Long collectionId, Long memberId, String name, String description, String emoji, CollectionCategory collectionCategory) {
         Collection collection = collectionRepository.findCollectionByCollectionIdAndMemberId(collectionId, memberId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
-        collection.updateCollectionByUpdateCollectionInfo(name, description, emoji, collectionField);
+        collection.updateCollectionByUpdateCollectionInfo(name, description, emoji, collectionCategory);
     }
 
     // 컬렉션에 퀴즈 추가
@@ -251,13 +254,58 @@ public class CollectionService {
     }
 
     // 사용자 관심 분야 컬렉션
-    public List<Collection> findInterestFieldCollections(List<String> collectionFields) {
-        List<CollectionField> interestCollectionFields = new ArrayList<>();
+    public List<Collection> findInterestCategoryCollections(List<String> collectionFields) {
+        List<CollectionCategory> interestCollectionCategories = new ArrayList<>();
         for (String collectionFieldString : collectionFields) {
-            CollectionField collectionField = CollectionField.valueOf(collectionFieldString);
-            interestCollectionFields.add(collectionField);
+            CollectionCategory collectionCategory = CollectionCategory.valueOf(collectionFieldString);
+            interestCollectionCategories.add(collectionCategory);
         }
-        return collectionRepository.findAllByCollectionDomainsAndUpdatedAt(interestCollectionFields);
+        return collectionRepository.findAllByCollectionDomainsAndUpdatedAt(interestCollectionCategories);
+    }
+
+    // 사용자가 북마크했거나 생성한 컬렉션 카테고리
+    public List<GetCollectionCategoriesResponse.GetCollectionCategoriesDto> findCollectionCategoriesByMemberId(Long memberId) {
+        List<Collection> collections = collectionRepository.findAllByMemberIdOrBookmarked(memberId);
+        Map<CollectionCategory, List<Collection>> collectionCategoryListMap = new HashMap<>();
+
+        for (Collection collection : collections) {
+            CollectionCategory collectionCategory = collection.getCollectionCategory();
+
+            if (!collectionCategoryListMap.containsKey(collectionCategory)) {
+                collectionCategoryListMap.put(collectionCategory, new ArrayList<>());
+            }
+            collectionCategoryListMap.get(collectionCategory).add(collection);
+        }
+
+        List<GetCollectionCategoriesResponse.GetCollectionCategoriesDto> collectionCategoriesDtos = new ArrayList<>();
+
+        for (CollectionCategory collectionCategory : collectionCategoryListMap.keySet()) {
+            List<GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto> collectionDtos = new ArrayList<>();
+
+            List<Collection> categoryMappingCollections = collectionCategoryListMap.get(collectionCategory);
+            for (Collection collection : categoryMappingCollections) {
+                GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto collectionDto = GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto.builder()
+                        .id(collection.getId())
+                        .name(collection.getName())
+                        .build();
+
+                collectionDtos.add(collectionDto);
+            }
+
+
+            String collectionCategoryName = CollectionCategoryMapper.mapCollectionCategoryName(collectionCategory);
+            String collectionCategoryEmoji = CollectionCategoryMapper.mapCollectionCategoryEmoji(collectionCategory);
+            GetCollectionCategoriesResponse.GetCollectionCategoriesDto collectionCategoriesDto = GetCollectionCategoriesResponse.GetCollectionCategoriesDto.builder()
+                    .collectionCategory(collectionCategory)
+                    .categoryName(collectionCategoryName)
+                    .emoji(collectionCategoryEmoji)
+                    .collections(collectionDtos)
+                    .build();
+
+            collectionCategoriesDtos.add(collectionCategoriesDto);
+        }
+
+        return collectionCategoriesDtos;
     }
 
     public Collection findCollectionByCollectionId(Long collectionId) {
@@ -268,16 +316,16 @@ public class CollectionService {
     public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
         List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
 
-        Map<Collection, CollectionField> quizMap = new HashMap<>();
+        Map<Collection, CollectionCategory> quizMap = new HashMap<>();
         // 중복된 컬렉션 제거 후 map으로 변경
         for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
             Collection collection = collectionSolvedRecord.getCollection();
-            quizMap.putIfAbsent(collection, collection.getCollectionField());
+            quizMap.putIfAbsent(collection, collection.getCollectionCategory());
         }
 
-        Map<CollectionField, Integer> collectionFieldMap = new HashMap<>();
+        Map<CollectionCategory, Integer> collectionFieldMap = new HashMap<>();
         for (Collection collection : quizMap.keySet()) {
-            collectionFieldMap.put(collection.getCollectionField(), collectionFieldMap.getOrDefault(collection.getCollectionField(), 0) + 1);
+            collectionFieldMap.put(collection.getCollectionCategory(), collectionFieldMap.getOrDefault(collection.getCollectionCategory(), 0) + 1);
         }
         return GetCollectionSAnalysisResponse.builder()
                 .collectionsAnalysis(collectionFieldMap)
@@ -292,13 +340,13 @@ public class CollectionService {
                 .count();
     }
 
-    private List<Collection> filterCollections(CollectionSortOption collectionSortOption, List<CollectionField> collectionFields, QuizType quizType, Integer quizCount) {
+    private List<Collection> filterCollections(CollectionSortOption collectionSortOption, List<CollectionCategory> collectionCategories, QuizType quizType, Integer quizCount) {
         List<Collection> collections;
 
-        if (collectionFields == null) {
+        if (collectionCategories == null) {
             collections = collectionRepository.findAllOrderByUpdatedAtDesc();
         } else {
-            collections = collectionRepository.findAllByCollectionDomainsAndUpdatedAt(collectionFields);
+            collections = collectionRepository.findAllByCollectionDomainsAndUpdatedAt(collectionCategories);
         }
 
         if (collectionSortOption == CollectionSortOption.POPULARITY) {

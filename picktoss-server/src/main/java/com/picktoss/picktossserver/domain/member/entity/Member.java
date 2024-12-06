@@ -55,8 +55,8 @@ public class Member extends AuditBase {
     private MemberRole role;
 
     @Convert(converter = StringListConvert.class)
-    @Column(name = "interest_collection_fields")
-    private List<String> interestCollectionFields;
+    @Column(name = "interest_collection_categories")
+    private List<String> interestCollectionCategories;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Star star;
@@ -114,8 +114,8 @@ public class Member extends AuditBase {
         this.isQuizNotificationEnabled = isQuizNotificationEnabled;
     }
 
-    public void updateInterestCollectionFields(List<String> interestCollectionFields) {
-        this.interestCollectionFields = interestCollectionFields;
+    public void updateInterestCollectionCategories(List<String> interestCollectionCategories) {
+        this.interestCollectionCategories = interestCollectionCategories;
     }
 
     public void updateTodayQuizCount(Integer todayQuizCount) {

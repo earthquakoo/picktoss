@@ -16,7 +16,7 @@ public class GetMemberInfoResponse {
     private String email;
     private SocialPlatform socialPlatform;
     private MemberRole role;
-    private List<String> interestField;
+    private List<String> interestCategories;
     private GetMemberInfoDocumentDto documentUsage;
     private boolean isQuizNotificationEnabled;
     private int star;

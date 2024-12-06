@@ -1,8 +1,9 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionCategoriesResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionField;
+import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionCategory;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
@@ -10,7 +11,7 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.collection.CollectionSortOption;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class CollectionFacade {
 
     @Transactional
     public Long createCollection(
-            List<Long> quizIds, String name, String description, String emoji, CollectionField collectionType, Long memberId) {
+            List<Long> quizIds, String name, String description, String emoji, CollectionCategory collectionType, Long memberId) {
         List<Quiz> quizzes = quizService.findAllByMemberIdAndQuizIds(quizIds, memberId);
         if (quizzes.isEmpty()) {
             throw new CustomException(QUIZ_NOT_FOUND_ERROR);
@@ -44,8 +45,8 @@ public class CollectionFacade {
 
     // 탐색 컬렉션
     public List<Collection> findAllCollections(
-            CollectionSortOption collectionSortOption, List<CollectionField> collectionFields, QuizType quizType, Integer quizCount) {
-        return collectionService.findAllCollections(collectionSortOption, collectionFields, quizType, quizCount);
+            CollectionSortOption collectionSortOption, List<CollectionCategory> collectionCategories, QuizType quizType, Integer quizCount) {
+        return collectionService.findAllCollections(collectionSortOption, collectionCategories, quizType, quizCount);
     }
 
     // 북마크한 컬렉션 가져오기
@@ -53,8 +54,8 @@ public class CollectionFacade {
         return collectionService.findAllByMemberIdAndBookmarked(memberId);
     }
 
-    public List<GetQuizzesInCollectionByCollectionField.QuizInCollectionDto> findAllByMemberIdAndCollectionFieldAndBookmarked(Long memberId, CollectionField collectionField) {
-        return collectionService.findAllByMemberIdAndCollectionFieldAndBookmarked(memberId, collectionField);
+    public List<GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto> findAllByMemberIdAndCollectionCategoryAndBookmarked(Long memberId, CollectionCategory collectionCategory) {
+        return collectionService.findAllByMemberIdAndCollectionCategoryAndBookmarked(memberId, collectionCategory);
     }
 
     // 직접 생성한 컬렉션 가져오기
@@ -80,8 +81,8 @@ public class CollectionFacade {
     // 컬렉션 정보 수정
     @Transactional
     public void updateCollectionInfo(
-            Long collectionId, Long memberId, String name, String description, String emoji, CollectionField collectionField) {
-        collectionService.updateCollectionInfo(collectionId, memberId, name, description, emoji, collectionField);
+            Long collectionId, Long memberId, String name, String description, String emoji, CollectionCategory collectionCategory) {
+        collectionService.updateCollectionInfo(collectionId, memberId, name, description, emoji, collectionCategory);
     }
 
     // 컬렉션에 퀴즈 추가
@@ -116,13 +117,17 @@ public class CollectionFacade {
         collectionService.deleteCollectionBookmark(member, collection);
     }
 
-    public List<Collection> findInterestFieldCollections(Long memberId) {
+    public List<Collection> findInterestCategoryCollections(Long memberId) {
         Member member = memberService.findMemberById(memberId);
-        List<String> interestCollectionFields = member.getInterestCollectionFields();
-        if (interestCollectionFields == null) {
-            interestCollectionFields = new ArrayList<>();
+        List<String> interestCollectionCategories = member.getInterestCollectionCategories();
+        if (interestCollectionCategories == null) {
+            interestCollectionCategories = new ArrayList<>();
         }
-        return collectionService.findInterestFieldCollections(interestCollectionFields);
+        return collectionService.findInterestCategoryCollections(interestCollectionCategories);
+    }
+
+    public List<GetCollectionCategoriesResponse.GetCollectionCategoriesDto> findCollectionCategoriesByMemberId(Long memberId) {
+        return collectionService.findCollectionCategoriesByMemberId(memberId);
     }
 
     public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {

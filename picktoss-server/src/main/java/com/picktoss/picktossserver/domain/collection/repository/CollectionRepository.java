@@ -1,7 +1,7 @@
 package com.picktoss.picktossserver.domain.collection.repository;
 
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.global.enums.collection.CollectionField;
+import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,10 +22,10 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE c.collectionField IN :collectionFields " +
+            "WHERE c.collectionCategory IN :collectionCategories " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllByCollectionDomainsAndUpdatedAt(
-            @Param("collectionFields") List<CollectionField> collectionFields
+            @Param("collectionCategories") List<CollectionCategory> collectionCategories
     );
 
     @Query("SELECT c FROM Collection c " +
@@ -51,12 +51,17 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
-            "JOIN FETCH c.collectionQuizzes cq " +
             "LEFT JOIN FETCH c.collectionSolvedRecords " +
-            "JOIN FETCH cq.quiz q " +
             "JOIN FETCH c.member m " +
             "WHERE m.id = :memberId")
     List<Collection> findAllByMemberId(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT c FROM Collection c " +
+            "LEFT JOIN FETCH c.collectionBookmarks cb " +
+            "WHERE (cb.member.id = :memberId OR c.member.id = :memberId)")
+    List<Collection> findAllByMemberIdOrBookmarked(
             @Param("memberId") Long memberId
     );
 
@@ -83,6 +88,8 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     );
 
     @Query("SELECT c FROM Collection c " +
+            "LEFT JOIN FETCH c.collectionBookmarks cb " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "WHERE c.name LIKE %:keyword%")
     List<Collection> findByCollectionContaining(
             @Param("keyword") String keyword

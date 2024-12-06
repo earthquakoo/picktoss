@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class GetQuizzesInCollectionByCollectionField {
+public class GetQuizzesInCollectionByCollectionCategory {
 
     private List<QuizInCollectionDto> quizzes;
 

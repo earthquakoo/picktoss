@@ -70,7 +70,7 @@ public class MemberService {
                 .name(member.getName())
                 .email(email)
                 .socialPlatform(member.getSocialPlatform())
-                .interestField(member.getInterestCollectionFields())
+                .interestCategories(member.getInterestCollectionCategories())
                 .role(member.getRole())
                 .documentUsage(documentDto)
                 .star(star)
@@ -116,11 +116,11 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateInterestCollectionFields(Long memberId, List<String> interestCollectionFields) {
+    public void updateInterestCollectionCategories(Long memberId, List<String> interestCollectionCategories) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        member.updateInterestCollectionFields(interestCollectionFields);
+        member.updateInterestCollectionCategories(interestCollectionCategories);
     }
 
     @Transactional
