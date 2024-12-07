@@ -62,10 +62,10 @@ public class CollectionFacade {
     public List<Collection> findMemberGeneratedCollections(Long memberId) {
         return collectionService.findMemberGeneratedCollections(memberId);
     }
-
-    // 만든 컬렉션 상세
-    public GetSingleCollectionResponse findCollectionByCollectionIdAndMemberId(Long collectionId, Long memberId) {
-        return collectionService.findCollectionByCollectionIdAndMemberId(collectionId, memberId);
+    
+    // 컬렉션 상세 정보
+    public GetSingleCollectionResponse findCollectionInfoByCollectionId(Long collectionId) {
+        return collectionService.findCollectionInfoByCollectionId(collectionId);
     }
 
     // 컬렉션 키워드 검색

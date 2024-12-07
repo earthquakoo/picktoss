@@ -44,6 +44,7 @@ public class CollectionDtoMapper {
                     .bookmarkCount(collection.getCollectionBookmarks().size())
                     .collectionCategory(collectionCategoryName)
                     .solvedMemberCount(solvedMemberCount)
+                    .totalQuizCount(collection.getCollectionQuizzes().size())
                     .member(memberDto)
                     .build();
 

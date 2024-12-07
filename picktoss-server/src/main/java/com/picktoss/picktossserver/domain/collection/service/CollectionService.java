@@ -107,8 +107,8 @@ public class CollectionService {
     }
 
     // 만든 컬렉션 상세
-    public GetSingleCollectionResponse findCollectionByCollectionIdAndMemberId(Long collectionId, Long memberId) {
-        Collection collection = collectionRepository.findCollectionWithSolvedRecordAndBookmarkAndQuizzesByCollectionIdAndMemberId(collectionId, memberId)
+    public GetSingleCollectionResponse findCollectionInfoByCollectionId(Long collectionId) {
+        Collection collection = collectionRepository.findCollectionWithSolvedRecordAndBookmarkAndQuizzesByCollectionId(collectionId)
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
 
         List<GetSingleCollectionResponse.GetSingleCollectionQuizDto> quizzesDtos = new ArrayList<>();

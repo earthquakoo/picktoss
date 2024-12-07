@@ -96,17 +96,17 @@ public class CollectionController {
     }
 
     // collection 상세 정보
-    @Operation(summary = "만든 컬렉션 상세 정보 가져오기")
+    @Operation(summary = "컬렉션 상세 정보 가져오기")
     @GetMapping("/collections/{collection_id}/info")
     @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetSingleCollectionResponse> getCollectionByCollectionId(
+    public ResponseEntity<GetSingleCollectionResponse> getCollectionInfoByCollectionId(
             @PathVariable(name = "collection_id") Long collectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleCollectionResponse response = collectionFacade.findCollectionByCollectionIdAndMemberId(collectionId, memberId);
+        GetSingleCollectionResponse response = collectionFacade.findCollectionInfoByCollectionId(collectionId);
         return ResponseEntity.ok().body(response);
     }
 

@@ -24,6 +24,7 @@ public class CollectionResponseDto {
         private String collectionCategory;
         private int solvedMemberCount;
         private boolean bookmarked;
+        private int totalQuizCount;
         private CollectionMemberDto member;
     }
 
