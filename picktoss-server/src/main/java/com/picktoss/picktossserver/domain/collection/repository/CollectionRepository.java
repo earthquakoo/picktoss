@@ -13,6 +13,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "ORDER BY c.updatedAt DESC")
@@ -20,6 +21,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "WHERE c.collectionCategory IN :collectionCategories " +
@@ -44,6 +46,9 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
             "WHERE cb.member.id = :memberId")
     List<Collection> findAllByMemberIdAndBookmarked(
             @Param("memberId") Long memberId
@@ -52,6 +57,8 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
             "JOIN FETCH c.member m " +
             "WHERE m.id = :memberId")
     List<Collection> findAllByMemberId(
@@ -80,16 +87,16 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE c.id = :collectionId " +
-            "AND c.member.id = :memberId")
-    Optional<Collection> findCollectionWithSolvedRecordAndBookmarkAndQuizzesByCollectionIdAndMemberId(
-            @Param("collectionId") Long collectionId,
-            @Param("memberId") Long memberId
+            "WHERE c.id = :collectionId")
+    Optional<Collection> findCollectionWithSolvedRecordAndBookmarkAndQuizzesByCollectionId(
+            @Param("collectionId") Long collectionId
     );
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
             "WHERE c.name LIKE %:keyword%")
     List<Collection> findByCollectionContaining(
             @Param("keyword") String keyword
