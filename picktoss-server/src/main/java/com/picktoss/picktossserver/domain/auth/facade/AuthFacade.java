@@ -41,18 +41,45 @@ public class AuthFacade {
 
         if (socialPlatform == SocialPlatform.KAKAO) {
             KakaoMemberDto kakaoMemberDto = authService.transJsonToKakaoMemberDto(memberInfo);
-            member = registerKakaoMember(kakaoMemberDto, inviteLink);
+            Optional<Member> optionalMember = memberService.findMemberByClientId(kakaoMemberDto.getId());
 
+            if (optionalMember.isEmpty()) {
+                String uniqueCode = authService.generateUniqueCode();
+                String nickname = "Picktoss#" + uniqueCode;
+                member = memberService.createKakaoMember(nickname, kakaoMemberDto.getId());
+                initializeNewMember(member);
+
+                if (inviteLink != null) {
+                    authService.verifyInviteCode(inviteLink);
+                }
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
+            } else {
+                member = optionalMember.get();
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
+            }
         } else if (socialPlatform == SocialPlatform.GOOGLE) {
             GoogleMemberDto googleMemberDto = authService.transJsonToGoogleMemberDto(memberInfo);
-            member = registerGoogleMember(googleMemberDto, inviteLink);
+            Optional<Member> optionalMember = memberService.findMemberByClientId(googleMemberDto.getId());
+
+            if (optionalMember.isEmpty()) {
+                if (inviteLink != null) {
+                    authService.verifyInviteCode(inviteLink);
+                }
+                member = memberService.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
+                initializeNewMember(member);
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
+            } else {
+                member = optionalMember.get();
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
+            }
 
         } else {
             throw new CustomException(ErrorInfo.INVALID_SOCIAL_PLATFORM);
         }
-
-        JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
-        return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
     }
 
     @Transactional

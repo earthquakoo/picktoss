@@ -95,6 +95,10 @@ public class Document extends AuditBase {
         this.status = DocumentStatus.PROCESSING;
     }
 
+    public void updateDocumentStatusProcessingByGenerateQuizzes() {
+        this.status = DocumentStatus.PROCESSING;
+    }
+
 
     public void updateDocumentIsTodayQuizIncluded(Boolean isTodayQuizIncluded) {
         this.isTodayQuizIncluded = isTodayQuizIncluded;

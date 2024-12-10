@@ -118,6 +118,19 @@ public class DocumentController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "문서에서 추가 퀴즈 생성")
+    @PostMapping("/documents/{document_id}/add-quizzes")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createQuizzes(
+            @PathVariable("document_id") Long documentId,
+            @Valid @RequestBody CreateQuizzesRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentFacade.createQuizzes(documentId, memberId, request.getStar(), request.getQuizType());
+    }
+
     /**
      * PATCH
      */

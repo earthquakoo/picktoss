@@ -49,35 +49,7 @@ public class QuizService {
     private final JdbcTemplate jdbcTemplate;
     private final EmailSenderPublisher emailSenderPublisher;
 
-    public List<GetQuizSetResponse.GetQuizSetQuizDto> findQuizSetByCollection(String quizSetId, Long memberId) {
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
-
-        List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
-        for (QuizSetQuiz quizzes : quizSetQuizzes) {
-            Quiz quiz = quizzes.getQuiz();
-            List<String> optionList = new ArrayList<>();
-            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                Set<Option> options = quiz.getOptions();
-                for (Option option : options) {
-                    optionList.add(option.getOption());
-                }
-            }
-            GetQuizSetResponse.GetQuizSetQuizDto quizDto = GetQuizSetResponse.GetQuizSetQuizDto.builder()
-                    .id(quiz.getId())
-                    .question(quiz.getQuestion())
-                    .answer(quiz.getAnswer())
-                    .explanation(quiz.getExplanation())
-                    .options(optionList)
-                    .quizType(quiz.getQuizType())
-                    .build();
-
-            quizDtos.add(quizDto);
-        }
-        return quizDtos;
-    }
-
-
-    public GetQuizSetResponse findQuizSetByDocument(String quizSetId, QuizSetType quizSetType, Long memberId) {
+    public GetQuizSetResponse findQuizSetByQuizSetIdAndQuizSetType(String quizSetId, QuizSetType quizSetType, Long memberId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
         QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
         if (quizSet.getQuizSetType() != quizSetType || quizSetType == QuizSetType.COLLECTION_QUIZ_SET) {
@@ -123,7 +95,7 @@ public class QuizService {
 
             quizDtos.add(quizDto);
         }
-        return new GetQuizSetResponse(quizDtos, null);
+        return new GetQuizSetResponse(quizDtos);
     }
 
     public GetQuizSetTodayResponse findQuestionSetToday(Long memberId) {
@@ -297,16 +269,17 @@ public class QuizService {
     }
 
     @Transactional
-    public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Member member, QuizType quizType, Integer quizCount) {
+    public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Member member, String stringQuizType, Integer quizCount) {
         List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
         String quizSetName = quizzes.getFirst().getDocument().getName();
 
-        if (quizType != null) {
+        if (stringQuizType.equals("RANDOM")) {
+            Collections.shuffle(quizzes);
+        } else {
+            QuizType quizType = QuizType.valueOf(stringQuizType);
             quizzes = quizzes.stream()
                     .filter(quiz -> quiz.getQuizType() == quizType)
                     .toList();
-        } else {
-            Collections.shuffle(quizzes);
         }
 
         if (quizCount > quizzes.size()) {

@@ -128,4 +128,21 @@ public class DocumentFacade {
         List<Collection> collections = collectionService.searchCollections(keyword);
         return documentService.integratedSearchByKeyword(memberId, keyword, collections);
     }
+
+    @Transactional
+    public void createQuizzes(Long documentId, Long memberId, Integer starCount, QuizType quizType) {
+        List<Document> documents = documentService.findAllByMemberId(memberId);
+        Document document = documentService.createAdditionalQuizzes(documentId, memberId);
+
+        int possessDocumentCount = documents.size();
+        if (possessDocumentCount >= MAX_POSSESS_DOCUMENT_COUNT) {
+            throw new CustomException(DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR);
+        }
+
+        Star star = document.getDirectory().getMember().getStar();
+        starService.withdrawalStarByCreateDocument(star, starCount);
+
+        outboxService.createOutbox(OutboxStatus.WAITING, quizType, starCount, document);
+        sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(memberId, document.getS3Key(), document.getId(), quizType, starCount));
+    }
 }

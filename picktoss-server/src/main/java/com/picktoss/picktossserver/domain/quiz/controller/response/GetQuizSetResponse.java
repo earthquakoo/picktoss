@@ -12,7 +12,6 @@ import java.util.List;
 public class GetQuizSetResponse {
 
     private List<GetQuizSetQuizDto> quizzes;
-    private String collectionName;
 
     @Getter
     @Builder

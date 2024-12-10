@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.document.controller.response;
 
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class SearchDocumentResponse {
         private Long documentId;
         private String documentName;
         private String content;
+        private DocumentType documentType;
         private SearchDocumentDirectoryDto directory;
     }
 
