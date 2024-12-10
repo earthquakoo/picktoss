@@ -52,7 +52,7 @@ public class QuizService {
     public GetQuizSetResponse findQuizSetByQuizSetIdAndQuizSetType(String quizSetId, QuizSetType quizSetType, Long memberId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
         QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
-        if (quizSet.getQuizSetType() != quizSetType || quizSetType == QuizSetType.COLLECTION_QUIZ_SET) {
+        if (quizSet.getQuizSetType() != quizSetType) {
             throw new CustomException(QUIZ_SET_TYPE_ERROR);
         }
 

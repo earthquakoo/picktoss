@@ -169,6 +169,8 @@ public class AuthService {
             return initLink + inviteCode;
         }
 
+        List<Long> inviteMemberList = new ArrayList<>();
+
         String uniqueCode = generateUniqueCode();
         String inviteLink = initLink + uniqueCode;
 
