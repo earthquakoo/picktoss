@@ -768,4 +768,8 @@ public class QuizService {
 
         return new CreateQuizzesResponse(quizSetId, QuizSetType.TODAY_QUIZ_SET, quizSet.getCreatedAt());
     }
+
+    public void createSampleQuiz(Long documentId) {
+
+    }
 }
