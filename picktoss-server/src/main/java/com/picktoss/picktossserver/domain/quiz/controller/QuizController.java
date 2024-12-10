@@ -51,15 +51,14 @@ public class QuizController {
     @Operation(summary = "quiz_set_id와 quiz-set-type으로 퀴즈 가져오기")
     @GetMapping("/quiz-sets/{quiz_set_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizSetResponse> getQuizSetByCollection(
-            @RequestParam(required = false, value = "collection-id") Long collectionId,
+    public ResponseEntity<GetQuizSetResponse> getQuizSet(
             @RequestParam(value = "quiz-set-type") QuizSetType quizSetType,
             @PathVariable("quiz_set_id") String quizSetId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizSetResponse response = quizFacade.findQuizSet(quizSetId, collectionId, quizSetType, memberId);
+        GetQuizSetResponse response = quizFacade.findQuizSetByQuizSetIdAndQuizSetType(quizSetId, quizSetType, memberId);
         return ResponseEntity.ok().body(response);
     }
 

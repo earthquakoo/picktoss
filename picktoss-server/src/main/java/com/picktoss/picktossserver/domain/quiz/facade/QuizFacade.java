@@ -1,7 +1,5 @@
 package com.picktoss.picktossserver.domain.quiz.facade;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.CollectionService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -39,16 +37,8 @@ public class QuizFacade {
     private final StarService starService;
     private final CollectionService collectionService;
 
-    public GetQuizSetResponse findQuizSet(String quizSetId, Long collectionId, QuizSetType quizSetType, Long memberId) {
-        if (collectionId != null) {
-            if (quizSetType != QuizSetType.COLLECTION_QUIZ_SET) {
-                throw new CustomException(ErrorInfo.QUIZ_SET_TYPE_ERROR);
-            }
-            Collection collection = collectionService.findCollectionByCollectionId(collectionId);
-            List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = quizService.findQuizSetByCollection(quizSetId, memberId);
-            return new GetQuizSetResponse(quizDtos, collection.getName());
-        }
-        return quizService.findQuizSetByDocument(quizSetId, quizSetType, memberId);
+    public GetQuizSetResponse findQuizSetByQuizSetIdAndQuizSetType(String quizSetId, QuizSetType quizSetType, Long memberId) {
+        return quizService.findQuizSetByQuizSetIdAndQuizSetType(quizSetId, quizSetType, memberId);
     }
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
@@ -88,7 +78,7 @@ public class QuizFacade {
     }
 
     @Transactional
-    public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Long memberId, QuizType quizType, Integer quizCount) {
+    public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Long memberId, String quizType, Integer quizCount) {
         Member member = memberService.findMemberById(memberId);
         return quizService.createMemberGeneratedQuizSet(documentId, member, quizType, quizCount);
     }

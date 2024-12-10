@@ -1,5 +1,8 @@
 package com.picktoss.picktossserver.domain.document.service;
 
+import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3DeletePublisher;
+import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadPublisher;
+import com.picktoss.picktossserver.core.eventlistener.publisher.sqs.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.core.sqs.SqsProvider;
@@ -36,6 +39,10 @@ public class DocumentService {
     private final S3Provider s3Provider;
     private final SqsProvider sqsProvider;
     private final DocumentRepository documentRepository;
+
+    private final SQSEventMessagePublisher sqsEventMessagePublisher;
+    private final S3UploadPublisher s3UploadPublisher;
+    private final S3DeletePublisher s3DeletePublisher;
 
     @Value("${picktoss.default_document_s3_key}")
     private String defaultDocumentS3Key;
@@ -227,6 +234,7 @@ public class DocumentService {
                         .documentId(document.getId())
                         .documentName(document.getName())
                         .content(content)
+                        .documentType(document.getDocumentType())
                         .directory(directoryDto)
                         .build();
 
@@ -362,6 +370,7 @@ public class DocumentService {
                         .documentId(document.getId())
                         .documentName(document.getName())
                         .content(content)
+                        .documentType(document.getDocumentType())
                         .directory(directoryDto)
                         .build();
 
@@ -405,6 +414,16 @@ public class DocumentService {
         return new IntegratedSearchResponse(documentDtos, quizDtos, collectionDtos);
     }
 
+    // 퀴즈 추가로 생성하기
+    @Transactional
+    public Document createAdditionalQuizzes(Long documentId, Long memberId) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+
+        document.updateDocumentStatusProcessingByGenerateQuizzes();
+        return document;
+    }
+
     //보유한 모든 문서의 개수
     public int findPossessDocumentCount(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
@@ -419,5 +438,10 @@ public class DocumentService {
 
     public List<Document> findAllByMemberId(Long memberId) {
         return documentRepository.findAllByMemberId(memberId);
+    }
+
+    public Document findDocumentByDocumentIdAndMemberId(Long documentId, Long memberId) {
+        return documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
     }
 }
