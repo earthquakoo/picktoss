@@ -83,10 +83,8 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
-            @RequestParam(required = false, value = "invite-link") String inviteLink) {
-
-        System.out.println("request.getAccessToken() = " + request.getAccessToken());
-        System.out.println("request.getSocialPlatform()t = " + request.getSocialPlatform());
+            @RequestParam(required = false, value = "invite-link") String inviteLink
+    ) {
 
         LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
         return ResponseEntity.ok().body(response);

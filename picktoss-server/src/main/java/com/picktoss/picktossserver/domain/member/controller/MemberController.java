@@ -45,6 +45,14 @@ public class MemberController {
         return ResponseEntity.ok().body(memberInfo);
     }
 
+    @Operation(summary = "초대 링크 보상 확인?")
+    @GetMapping("/members/reward")
+    @ResponseStatus(HttpStatus.OK)
+    public void getInviteLinkMember() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+    }
+
     /**
      * PATCH
      */

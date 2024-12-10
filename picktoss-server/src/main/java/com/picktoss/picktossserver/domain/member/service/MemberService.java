@@ -1,6 +1,8 @@
 package com.picktoss.picktossserver.domain.member.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.redis.RedisConstant;
+import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
@@ -18,6 +20,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
@@ -30,6 +33,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final RedisUtil redisUtil;
 
     @Transactional
     public Long createMember(Member member) {
@@ -129,6 +133,13 @@ public class MemberService {
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         member.updateTodayQuizCount(todayQuizCount);
+    }
+
+    public void checkInviteLink(Long memberId) {
+        String memberIdKey = memberId.toString();
+
+        // 기존 초대 코드 조회
+        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_PREFIX, memberIdKey, Map.class);
     }
 
     @Transactional
