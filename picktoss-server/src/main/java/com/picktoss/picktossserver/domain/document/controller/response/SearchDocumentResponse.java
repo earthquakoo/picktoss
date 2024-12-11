@@ -37,7 +37,9 @@ public class SearchDocumentResponse {
         private Long id;
         private String question;
         private String answer;
+        private Long documentId;
         private String documentName;
+        private DocumentType documentType;
         private String directoryName;
     }
 }
