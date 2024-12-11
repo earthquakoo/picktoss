@@ -251,6 +251,8 @@ public class DocumentService {
                             .id(quiz.getId())
                             .question(quiz.getQuestion())
                             .answer(quiz.getAnswer())
+                            .documentId(document.getId())
+                            .documentType(document.getDocumentType())
                             .directoryName(directory.getName())
                             .documentName(document.getName())
                             .build();
@@ -387,7 +389,9 @@ public class DocumentService {
                             .id(quiz.getId())
                             .question(quiz.getQuestion())
                             .answer(quiz.getAnswer())
+                            .documentId(document.getId())
                             .directoryName(directory.getName())
+                            .documentType(document.getDocumentType())
                             .documentName(document.getName())
                             .build();
 
