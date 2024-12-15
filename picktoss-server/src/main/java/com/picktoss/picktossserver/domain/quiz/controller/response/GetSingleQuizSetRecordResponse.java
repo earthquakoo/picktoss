@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.controller.response;
 
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,9 +20,11 @@ public class GetSingleQuizSetRecordResponse {
     @Getter
     @Builder
     public static class GetSingleQuizSetRecordDto {
+        private Long id;
         private String question;
         private String answer;
         private String explanation;
+        private QuizType quizType;
         private List<String> options;
         private boolean isAnswer;
         private String choseAnswer;

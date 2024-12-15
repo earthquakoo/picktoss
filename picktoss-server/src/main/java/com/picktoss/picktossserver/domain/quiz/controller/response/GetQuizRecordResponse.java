@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -14,7 +14,14 @@ public class GetQuizRecordResponse {
 
     private int currentConsecutiveDays;
     private int maxConsecutiveDays;
-    private List<GetQuizRecordDto> quizRecords;
+    private List<GetQuizRecordSolvedDateDto> quizRecords;
+
+    @Getter
+    @Builder
+    public static class GetQuizRecordSolvedDateDto {
+        private LocalDate solvedDate;
+        private List<GetQuizRecordDto> quizRecords;
+    }
 
     @Getter
     @Builder
@@ -24,6 +31,5 @@ public class GetQuizRecordResponse {
         private int quizCount;
         private int score;
         private QuizSetType quizSetType;
-        private LocalDateTime solvedDate;
     }
 }
