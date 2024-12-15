@@ -350,31 +350,50 @@ public class QuizService {
         int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
         int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
 
-        List<GetQuizRecordResponse.GetQuizRecordDto> quizRecordDtos = new ArrayList<>();
+        HashMap<LocalDate, List<QuizSet>> dateQuizSetsMap = new HashMap<>();
 
         for (QuizSet quizSet : SolvedQuizSets) {
-            int quizCount = quizSet.getQuizSetQuizzes().size();
-            int score = quizCount;
-            List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
-            for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-                if (!quizSetQuiz.getIsAnswer()) {
-                    score -= 1;
-                }
-            }
+            LocalDate createdDate = quizSet.getCreatedAt().toLocalDate();
 
-            GetQuizRecordResponse.GetQuizRecordDto quizRecordDto = GetQuizRecordResponse.GetQuizRecordDto.builder()
-                    .quizSetId(quizSet.getId())
-                    .quizCount(quizCount)
-                    .name(quizSet.getName())
-                    .score(score)
-                    .quizSetType(quizSet.getQuizSetType())
-                    .solvedDate(quizSet.getCreatedAt())
-                    .build();
-
-            quizRecordDtos.add(quizRecordDto);
+            dateQuizSetsMap.putIfAbsent(createdDate, new ArrayList<>());
+            dateQuizSetsMap.get(createdDate).add(quizSet);
         }
 
-        return new GetQuizRecordResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordDtos);
+
+        List<GetQuizRecordResponse.GetQuizRecordSolvedDateDto> quizRecordSolvedDateDtos = new ArrayList<>();
+
+        for (LocalDate createdDate : dateQuizSetsMap.keySet()) {
+            List<QuizSet> quizSets = dateQuizSetsMap.get(createdDate);
+            List<GetQuizRecordResponse.GetQuizRecordDto> quizRecordDtos = new ArrayList<>();
+            for (QuizSet quizSet : quizSets) {
+                int quizCount = quizSet.getQuizSetQuizzes().size();
+                int score = quizCount;
+                List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
+                for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+                    if (!quizSetQuiz.getIsAnswer()) {
+                        score -= 1;
+                    }
+                }
+
+                GetQuizRecordResponse.GetQuizRecordDto quizRecordDto = GetQuizRecordResponse.GetQuizRecordDto.builder()
+                        .quizSetId(quizSet.getId())
+                        .quizCount(quizCount)
+                        .name(quizSet.getName())
+                        .score(score)
+                        .quizSetType(quizSet.getQuizSetType())
+                        .build();
+
+                quizRecordDtos.add(quizRecordDto);
+            }
+            GetQuizRecordResponse.GetQuizRecordSolvedDateDto quizRecordDto = GetQuizRecordResponse.GetQuizRecordSolvedDateDto.builder()
+                    .solvedDate(createdDate)
+                    .quizRecords(quizRecordDtos)
+                    .build();
+
+            quizRecordSolvedDateDtos.add(quizRecordDto);
+        }
+
+        return new GetQuizRecordResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordSolvedDateDtos);
     }
 
     public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId, QuizSetType quizSetType) {
@@ -410,9 +429,11 @@ public class QuizService {
 
             if (quizSetType == QuizSetType.TODAY_QUIZ_SET || quizSetType == QuizSetType.DOCUMENT_QUIZ_SET || quizSetType == QuizSetType.FIRST_QUIZ_SET) {
                 quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
+                        .id(quiz.getId())
                         .question(quiz.getQuestion())
                         .answer(quiz.getAnswer())
                         .explanation(quiz.getExplanation())
+                        .quizType(quiz.getQuizType())
                         .options(optionList)
                         .choseAnswer(quizSetQuiz.getChoseAnswer())
                         .isAnswer(quizSetQuiz.getIsAnswer())
@@ -422,9 +443,11 @@ public class QuizService {
                         .build();
             } else {
                 quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
+                        .id(quiz.getId())
                         .question(quiz.getQuestion())
                         .answer(quiz.getAnswer())
                         .explanation(quiz.getExplanation())
+                        .quizType(quiz.getQuizType())
                         .options(optionList)
                         .choseAnswer(quizSetQuiz.getChoseAnswer())
                         .isAnswer(quizSetQuiz.getIsAnswer())
