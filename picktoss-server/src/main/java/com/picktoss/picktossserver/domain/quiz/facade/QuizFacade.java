@@ -96,7 +96,11 @@ public class QuizFacade {
         return quizService.createCollectionQuizSet(member, collection);
     }
 
-    public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
+    public GetSingleQuizRecordByDateResponse findAllQuizSetRecordByDate(Long memberId, LocalDate solvedDate) {
+        return quizService.findAllQuizSetRecordByDate(memberId, solvedDate);
+    }
+
+    public GetQuizRecordsResponse findAllQuizAndCollectionRecords(Long memberId) {
         return quizService.findAllQuizAndCollectionRecords(memberId);
     }
 
