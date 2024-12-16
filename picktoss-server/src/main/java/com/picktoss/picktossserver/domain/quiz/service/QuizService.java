@@ -344,27 +344,62 @@ public class QuizService {
         return new CreateQuizzesResponse(quizSetId, QuizSetType.COLLECTION_QUIZ_SET, LocalDateTime.now());
     }
 
-    public GetQuizRecordResponse findAllQuizAndCollectionRecords(Long memberId) {
-        List<QuizSet> SolvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+    public GetSingleQuizRecordByDateResponse findAllQuizSetRecordByDate(Long memberId, LocalDate solvedDate) {
+        List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
+        int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
+        int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
+
+        LocalDateTime startDateTime = solvedDate.atStartOfDay();
+        LocalDateTime endDateTime = solvedDate.atTime(LocalTime.MAX);
+
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startDateTime, endDateTime);
+
+        List<GetSingleQuizRecordByDateResponse.GetSingleQuizRecordsDto> quizRecordsDtos = new ArrayList<>();
+        for (QuizSet quizSet : quizSets) {
+            int quizCount = quizSet.getQuizSetQuizzes().size();
+            int score = quizCount;
+            List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
+            for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
+                if (!quizSetQuiz.getIsAnswer()) {
+                    score -= 1;
+                }
+            }
+
+            GetSingleQuizRecordByDateResponse.GetSingleQuizRecordsDto quizRecordsDto = GetSingleQuizRecordByDateResponse.GetSingleQuizRecordsDto.builder()
+                    .quizSetId(quizSet.getId())
+                    .quizCount(quizCount)
+                    .name(quizSet.getName())
+                    .score(score)
+                    .quizSetType(quizSet.getQuizSetType())
+                    .build();
+
+            quizRecordsDtos.add(quizRecordsDto);
+        }
+        return new GetSingleQuizRecordByDateResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordsDtos);
+    }
+
+    public GetQuizRecordsResponse findAllQuizAndCollectionRecords(Long memberId) {
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
         List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
         int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
         int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
 
         HashMap<LocalDate, List<QuizSet>> dateQuizSetsMap = new HashMap<>();
 
-        for (QuizSet quizSet : SolvedQuizSets) {
+        for (QuizSet quizSet : solvedQuizSets) {
             LocalDate createdDate = quizSet.getCreatedAt().toLocalDate();
 
             dateQuizSetsMap.putIfAbsent(createdDate, new ArrayList<>());
             dateQuizSetsMap.get(createdDate).add(quizSet);
         }
 
+        List<LocalDate> sortedDates = new ArrayList<>(dateQuizSetsMap.keySet());
+        sortedDates.sort(Comparator.reverseOrder());
 
-        List<GetQuizRecordResponse.GetQuizRecordSolvedDateDto> quizRecordSolvedDateDtos = new ArrayList<>();
-
-        for (LocalDate createdDate : dateQuizSetsMap.keySet()) {
+        List<GetQuizRecordsResponse.GetQuizRecordsSolvedDateDto> quizRecordSolvedDateDtos = new ArrayList<>();
+        for (LocalDate createdDate : sortedDates) {
             List<QuizSet> quizSets = dateQuizSetsMap.get(createdDate);
-            List<GetQuizRecordResponse.GetQuizRecordDto> quizRecordDtos = new ArrayList<>();
+            List<GetQuizRecordsResponse.GetQuizRecordsDto> quizRecordDtos = new ArrayList<>();
             for (QuizSet quizSet : quizSets) {
                 int quizCount = quizSet.getQuizSetQuizzes().size();
                 int score = quizCount;
@@ -375,7 +410,7 @@ public class QuizService {
                     }
                 }
 
-                GetQuizRecordResponse.GetQuizRecordDto quizRecordDto = GetQuizRecordResponse.GetQuizRecordDto.builder()
+                GetQuizRecordsResponse.GetQuizRecordsDto quizRecordDto = GetQuizRecordsResponse.GetQuizRecordsDto.builder()
                         .quizSetId(quizSet.getId())
                         .quizCount(quizCount)
                         .name(quizSet.getName())
@@ -385,7 +420,7 @@ public class QuizService {
 
                 quizRecordDtos.add(quizRecordDto);
             }
-            GetQuizRecordResponse.GetQuizRecordSolvedDateDto quizRecordDto = GetQuizRecordResponse.GetQuizRecordSolvedDateDto.builder()
+            GetQuizRecordsResponse.GetQuizRecordsSolvedDateDto quizRecordDto = GetQuizRecordsResponse.GetQuizRecordsSolvedDateDto.builder()
                     .solvedDate(createdDate)
                     .quizRecords(quizRecordDtos)
                     .build();
@@ -393,29 +428,19 @@ public class QuizService {
             quizRecordSolvedDateDtos.add(quizRecordDto);
         }
 
-        return new GetQuizRecordResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordSolvedDateDtos);
+        return new GetQuizRecordsResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordSolvedDateDtos);
     }
 
     public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId, QuizSetType quizSetType) {
-        QuizSet quizSet = quizSetRepository.findQuizSetByMemberIdAndQuizSetId(memberId, quizSetId)
-                .orElseThrow(() -> new CustomException(QUIZ_SET_NOT_FOUND_ERROR));
-
-        if (!quizSet.isSolved()) {
-            throw new CustomException(UNRESOLVED_QUIZ_SET);
-        }
-
-        if (quizSet.getQuizSetType() != quizSetType) {
-            throw new CustomException(QUIZ_SET_TYPE_ERROR);
-        }
-
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
         List<GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto> quizSetRecordDtos = new ArrayList<>();
 
         int elapsedTimeMs = 0;
-        List<QuizSetQuiz> quizSetQuizzes = quizSet.getQuizSetQuizzes();
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto quizSetRecordDto;
             elapsedTimeMs += quizSetQuiz.getElapsedTimeMs();
             Quiz quiz = quizSetQuiz.getQuiz();
+
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                 Set<Option> options = quiz.getOptions();
@@ -439,7 +464,7 @@ public class QuizService {
                         .isAnswer(quizSetQuiz.getIsAnswer())
                         .documentName(quiz.getDocument().getName())
                         .directoryName(quiz.getDocument().getDirectory().getName())
-                        .quizSetType(quizSet.getQuizSetType())
+                        .quizSetType(quizSetQuiz.getQuizSet().getQuizSetType())
                         .build();
             } else {
                 quizSetRecordDto = GetSingleQuizSetRecordResponse.GetSingleQuizSetRecordDto.builder()
@@ -451,15 +476,16 @@ public class QuizService {
                         .options(optionList)
                         .choseAnswer(quizSetQuiz.getChoseAnswer())
                         .isAnswer(quizSetQuiz.getIsAnswer())
-                        .collectionName(quizSet.getName())
-                        .quizSetType(quizSet.getQuizSetType())
+                        .collectionName(quizSetQuiz.getQuizSet().getName())
+                        .quizSetType(quizSetType)
                         .build();
             }
 
             quizSetRecordDtos.add(quizSetRecordDto);
         }
+        LocalDateTime createdAt = quizSetQuizzes.getFirst().getQuizSet().getCreatedAt();
 
-        return new GetSingleQuizSetRecordResponse(elapsedTimeMs, quizSetRecordDtos, quizSet.getCreatedAt());
+        return new GetSingleQuizSetRecordResponse(elapsedTimeMs, quizSetRecordDtos, createdAt);
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {

@@ -10,22 +10,22 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class GetQuizRecordResponse {
+public class GetQuizRecordsResponse {
 
     private int currentConsecutiveDays;
     private int maxConsecutiveDays;
-    private List<GetQuizRecordSolvedDateDto> quizRecords;
+    private List<GetQuizRecordsSolvedDateDto> quizRecords;
 
     @Getter
     @Builder
-    public static class GetQuizRecordSolvedDateDto {
+    public static class GetQuizRecordsSolvedDateDto {
         private LocalDate solvedDate;
-        private List<GetQuizRecordDto> quizRecords;
+        private List<GetQuizRecordsDto> quizRecords;
     }
 
     @Getter
     @Builder
-    public static class GetQuizRecordDto {
+    public static class GetQuizRecordsDto {
         private String quizSetId;
         private String name;
         private int quizCount;

@@ -130,15 +130,28 @@ public class QuizController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "날짜별 퀴즈 기록")
+    @GetMapping("/quizzes/{solved_date}/quiz-record")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetSingleQuizRecordByDateResponse> getSingleQuizSetRecordByDate(
+            @PathVariable("solved_date") LocalDate solvedDate
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetSingleQuizRecordByDateResponse response = quizFacade.findAllQuizSetRecordByDate(memberId, solvedDate);
+        return ResponseEntity.ok().body(response);
+    }
+
     @Operation(summary = "전체 퀴즈 기록")
     @GetMapping("/quizzes/quiz-records")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizRecordResponse> getAllQuizzesAndCollectionRecords() {
+    public ResponseEntity<GetQuizRecordsResponse> getAllQuizzesAndCollectionRecords() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizRecordResponse response = quizFacade.findAllQuizAndCollectionRecords(memberId);
+        GetQuizRecordsResponse response = quizFacade.findAllQuizAndCollectionRecords(memberId);
         return ResponseEntity.ok().body(response);
     }
 
