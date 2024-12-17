@@ -119,7 +119,17 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.verifyInviteCode(request.getInviteCode());
+        authFacade.verifyInviteCode(request.getInviteCode(), memberId);
+    }
+
+    @Operation(summary = "초대 코드로 회원가입했는지 체크")
+    @GetMapping("/auth/")
+    @ResponseStatus(HttpStatus.OK)
+    public void checkInviteCodeBySignUp() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+
     }
 
     /**

@@ -16,7 +16,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
-import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
-import static com.picktoss.picktossserver.global.enums.document.DocumentStatus.DEFAULT_DOCUMENT;
-import static com.picktoss.picktossserver.global.enums.document.DocumentStatus.UNPROCESSED;
+import static com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus.DEFAULT_DOCUMENT;
+import static com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus.UNPROCESSED;
 
 @Service
 @RequiredArgsConstructor
@@ -104,12 +104,12 @@ public class DocumentService {
                 .emoji(directory.getEmoji())
                 .build();
 
-        DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
+        QuizGenerationStatus quizGenerationStatus = document.updateDocumentStatusClientResponse(document.getQuizGenerationStatus());
 
         return GetSingleDocumentResponse.builder()
                 .id(document.getId())
                 .documentName(document.getName())
-                .status(documentStatus)
+                .quizGenerationStatus(quizGenerationStatus)
                 .directory(directoryDto)
                 .content(content)
                 .characterCount(characterCount)
@@ -161,7 +161,7 @@ public class DocumentService {
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
             Integer reviewNeededQuizCount = reviewNeededDocumentIdAndQuizCount.get(document.getId());
-            DocumentStatus documentStatus = document.updateDocumentStatusClientResponse(document.getStatus());
+            QuizGenerationStatus quizGenerationStatus = document.updateDocumentStatusClientResponse(document.getQuizGenerationStatus());
             String content = s3Provider.findFile(document.getS3Key());
             int characterCount = content.length();
             String previewContent = content.substring(0, 100);
@@ -177,7 +177,7 @@ public class DocumentService {
                     .name(document.getName())
                     .previewContent(previewContent)
                     .characterCount(characterCount)
-                    .status(documentStatus)
+                    .quizGenerationStatus(quizGenerationStatus)
                     .totalQuizCount(document.getQuizzes().size())
                     .createdAt(document.getCreatedAt())
                     .updatedAt(document.getUpdatedAt())
@@ -433,7 +433,7 @@ public class DocumentService {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
         int possessDocumentCount = documents.size();
         for (Document document : documents) {
-            if (document.getStatus() == DEFAULT_DOCUMENT) {
+            if (document.getQuizGenerationStatus() == DEFAULT_DOCUMENT) {
                 return possessDocumentCount - 1;
             }
         }

@@ -34,7 +34,7 @@ public class QuizMapper {
                     .name(document.getName())
                     .build();
 
-            QuizResponseDto.DirectoryDto categoryDto = QuizResponseDto.DirectoryDto.builder()
+            QuizResponseDto.DirectoryDto directoryDto = QuizResponseDto.DirectoryDto.builder()
                     .id(directory.getId())
                     .name(directory.getName())
                     .build();
@@ -47,7 +47,7 @@ public class QuizMapper {
                     .options(optionList)
                     .quizType(quiz.getQuizType())
                     .document(documentDto)
-                    .directory(categoryDto)
+                    .directory(directoryDto)
                     .build();
 
             quizDtos.add(quizDto);

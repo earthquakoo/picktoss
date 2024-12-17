@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.document.controller.response;
 
-import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ public class GetSingleDocumentResponse {
 
     private Long id;
     private String documentName;
-    private DocumentStatus status;
+    private QuizGenerationStatus quizGenerationStatus;
     private String content;
     private int characterCount;
     private int totalQuizCount;

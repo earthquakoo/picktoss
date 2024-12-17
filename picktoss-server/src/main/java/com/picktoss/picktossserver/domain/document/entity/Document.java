@@ -3,7 +3,7 @@ package com.picktoss.picktossserver.domain.document.entity;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.document.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +11,7 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.picktoss.picktossserver.global.enums.document.DocumentStatus.*;
+import static com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus.*;
 
 @Entity
 @Getter
@@ -29,8 +29,8 @@ public class Document extends AuditBase {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private DocumentStatus status;
+    @Column(name = "quiz_generation_status", nullable = false)
+    private QuizGenerationStatus quizGenerationStatus;
 
     @Column(name = "is_today_quiz_included", nullable = false)
     private boolean isTodayQuizIncluded;
@@ -50,11 +50,11 @@ public class Document extends AuditBase {
     private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, DocumentStatus documentStatus, DocumentType documentType, Directory directory) {
+    public static Document createDocument(String name, String s3Key, QuizGenerationStatus quizGenerationStatus, DocumentType documentType, Directory directory) {
         return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
-                .status(documentStatus)
+                .quizGenerationStatus(quizGenerationStatus)
                 .isTodayQuizIncluded(true)
                 .documentType(documentType)
                 .directory(directory)
@@ -65,7 +65,7 @@ public class Document extends AuditBase {
         return Document.builder()
                 .name("예시 문서")
                 .s3Key(s3Key)
-                .status(DEFAULT_DOCUMENT)
+                .quizGenerationStatus(DEFAULT_DOCUMENT)
                 .documentType(DocumentType.FILE)
                 .isTodayQuizIncluded(false)
                 .directory(directory)
@@ -92,11 +92,11 @@ public class Document extends AuditBase {
     }
 
     public void updateDocumentStatusProcessingByGenerateAiPick() {
-        this.status = DocumentStatus.PROCESSING;
+        this.quizGenerationStatus = QuizGenerationStatus.PROCESSING;
     }
 
     public void updateDocumentStatusProcessingByGenerateQuizzes() {
-        this.status = DocumentStatus.PROCESSING;
+        this.quizGenerationStatus = QuizGenerationStatus.PROCESSING;
     }
 
 
@@ -104,14 +104,14 @@ public class Document extends AuditBase {
         this.isTodayQuizIncluded = isTodayQuizIncluded;
     }
 
-    public DocumentStatus updateDocumentStatusClientResponse(DocumentStatus documentStatus) {
-        if (documentStatus == PARTIAL_SUCCESS ||
-                documentStatus == PROCESSED ||
-                documentStatus == COMPLETELY_FAILED) {
-            documentStatus = PROCESSED;
+    public QuizGenerationStatus updateDocumentStatusClientResponse(QuizGenerationStatus quizGenerationStatus) {
+        if (quizGenerationStatus == PARTIAL_SUCCESS ||
+                quizGenerationStatus == PROCESSED ||
+                quizGenerationStatus == COMPLETELY_FAILED) {
+            quizGenerationStatus = PROCESSED;
         } else {
-            return documentStatus;
+            return quizGenerationStatus;
         }
-        return documentStatus;
+        return quizGenerationStatus;
     }
 }

@@ -51,7 +51,7 @@ public class QuizFacade {
         return quizService.findQuestionSetToday(memberId);
     }
 
-    public List<Quiz> findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
+    public GetAllQuizzesByDirectoryIdResponse findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
         return quizService.findAllByMemberIdAndDirectoryId(memberId, directoryId);
     }
 

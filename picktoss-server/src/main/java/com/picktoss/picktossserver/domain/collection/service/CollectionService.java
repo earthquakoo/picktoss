@@ -87,6 +87,12 @@ public class CollectionService {
                 }
             }
 
+            Collection collection = collectionQuiz.getCollection();
+            GetQuizzesInCollectionByCollectionCategory.QuizInCollectionByCollectionDto collectionDto = GetQuizzesInCollectionByCollectionCategory.QuizInCollectionByCollectionDto.builder()
+                    .id(collection.getId())
+                    .name(collection.getName())
+                    .build();
+
             GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto quizDto = GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto.builder()
                     .id(quiz.getId())
                     .question(quiz.getQuestion())
@@ -94,6 +100,7 @@ public class CollectionService {
                     .explanation(quiz.getExplanation())
                     .quizType(quiz.getQuizType())
                     .options(optionList)
+                    .collection(collectionDto)
                     .build();
 
             quizDtos.add(quizDto);
