@@ -139,7 +139,7 @@ public class MemberService {
         String memberIdKey = memberId.toString();
 
         // 기존 초대 코드 조회
-        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_PREFIX, memberIdKey, Map.class);
+        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);
     }
 
     @Transactional

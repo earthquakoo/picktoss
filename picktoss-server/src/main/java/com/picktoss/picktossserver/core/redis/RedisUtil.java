@@ -3,12 +3,14 @@ package com.picktoss.picktossserver.core.redis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.time.ZoneOffset.UTC;
@@ -16,10 +18,25 @@ import static java.util.Objects.requireNonNull;
 
 @Component
 @RequiredArgsConstructor
-public class RedisUtil implements RedisManager{
+public class RedisUtil implements RedisManager {
 
+    private final RedisHandler redisHandler;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+
+    public Map<Object, Object> getHashData(String prefix, String key) {
+        HashOperations<String, Object, Object> hashOperations = redisHandler.getHashOptions();
+        String prefixedKey = prefix + ":" + key;
+        return hashOperations.entries(prefixedKey);
+    }
+
+    public void setHashData(String prefix, String key, Map<Object, Object> hashData, Duration duration) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+
+        String prefixedKey = prefix + ":" + key;
+        hashOperations.putAll(prefixedKey, hashData);
+        redisTemplate.expire(prefixedKey, duration);
+    }
 
     @Override
     public <T> Optional<T> getData(final String prefix, final String key, final Class<T> classType) {

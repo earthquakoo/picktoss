@@ -137,10 +137,40 @@ public class QuizService {
                 .build();
     }
 
-    public List<Quiz> findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
+    public GetAllQuizzesByDirectoryIdResponse findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
         List<Quiz> quizzes = quizRepository.findAllByMemberIdAndDirectoryId(memberId, directoryId);
+        List<GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto> quizDtos = new ArrayList<>();
         Collections.shuffle(quizzes);
-        return quizzes;
+
+        for (Quiz quiz : quizzes) {
+            Document document = quiz.getDocument();
+
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                Set<Option> options = quiz.getOptions();
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+
+            GetAllQuizzesByDirectoryIdResponse.DocumentDto documentDto = GetAllQuizzesByDirectoryIdResponse.DocumentDto.builder()
+                    .id(document.getId())
+                    .name(document.getName())
+                    .build();
+
+            GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto quizDto = GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto.builder()
+                    .id(quiz.getId())
+                    .question(quiz.getQuestion())
+                    .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
+                    .options(optionList)
+                    .quizType(quiz.getQuizType())
+                    .document(documentDto)
+                    .build();
+
+            quizDtos.add(quizDto);
+        }
+        return new GetAllQuizzesByDirectoryIdResponse(quizDtos);
     }
 
     public List<Quiz> findAllGeneratedQuizzesByDocumentId(Long documentId, QuizType quizType, Long memberId) {
@@ -270,7 +300,8 @@ public class QuizService {
 
     @Transactional
     public CreateQuizzesResponse createMemberGeneratedQuizSet(Long documentId, Member member, String stringQuizType, Integer quizCount) {
-        List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
+        List<Quiz> quizzes = quizRepository.findAllByDocumentIdAndMemberId(documentId, member.getId());
+
         String quizSetName = quizzes.getFirst().getDocument().getName();
 
         if (stringQuizType.equals("RANDOM")) {
@@ -280,6 +311,9 @@ public class QuizService {
             quizzes = quizzes.stream()
                     .filter(quiz -> quiz.getQuizType() == quizType)
                     .toList();
+            if (quizzes.isEmpty()) {
+                throw new CustomException(QUIZ_TYPE_NOT_IN_DOCUMENT);
+            }
         }
 
         if (quizCount > quizzes.size()) {
@@ -305,7 +339,7 @@ public class QuizService {
 
     @Transactional
     public CreateQuizzesResponse createErrorCheckQuizSet(Long documentId, Member member) {
-        List<Quiz> quizzes = quizRepository.findByDocumentIdAndMemberId(documentId, member.getId());
+        List<Quiz> quizzes = quizRepository.findAllByDocumentIdAndMemberId(documentId, member.getId());
         String quizSetName = quizzes.getFirst().getDocument().getName();
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();

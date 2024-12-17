@@ -1,7 +1,5 @@
 package com.picktoss.picktossserver.domain.star.entity;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
@@ -40,9 +38,6 @@ public class Star extends AuditBase {
     }
 
     public void withdrawalStarByCreateDocument(Integer star) {
-        if (this.star < star) {
-            throw new CustomException(ErrorInfo.STAR_SHORTAGE_IN_POSSESSION);
-        }
         this.star -= star;
     }
 

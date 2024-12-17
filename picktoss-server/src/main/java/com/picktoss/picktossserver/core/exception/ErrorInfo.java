@@ -78,6 +78,7 @@ public enum ErrorInfo {
     QUIZ_COUNT_EXCEEDED(400, "QUIZ_COUNT_EXCEEDED", "생성된 퀴즈 수보다 더 많은 퀴즈를 생성할 수 없습니다."),
     UNRESOLVED_QUIZ_SET(400, "UNRESOLVED_QUIZ_SET", "풀지 않은 퀴즈셋입니다."),
     QUIZ_SET_TYPE_ERROR(400, "QUIZ_SET_TYPE_ERROR", "잘못된 퀴즈 세트 타입입니다."),
+    QUIZ_TYPE_NOT_IN_DOCUMENT(400, "QUIZ_TYPE_NOT_IN_DOCUMENT", "문서에 없는 퀴즈 유형입니다."),
     QUIZ_SET_NOT_FOUND_ERROR(400, "QUIZ_SET_NOT_FOUND", "해당 id의 퀴즈셋을 찾을 수 없습니다.");
 
 

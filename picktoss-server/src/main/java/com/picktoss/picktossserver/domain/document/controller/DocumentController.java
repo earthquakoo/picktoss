@@ -78,7 +78,7 @@ public class DocumentController {
 
     @Operation(summary = "문서 생성")
     @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR})
+    @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR, STAR_SHORTAGE_IN_POSSESSION})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateDocumentResponse> createDocument(
             @Valid @ModelAttribute CreateDocumentRequest request

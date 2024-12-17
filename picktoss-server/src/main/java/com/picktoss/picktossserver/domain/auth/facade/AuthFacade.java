@@ -50,7 +50,7 @@ public class AuthFacade {
                 initializeNewMember(member);
 
                 if (inviteLink != null) {
-                    authService.verifyInviteCode(inviteLink);
+                    authService.verifyInviteCode(inviteLink, member.getId());
                 }
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
                 return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
@@ -64,10 +64,10 @@ public class AuthFacade {
             Optional<Member> optionalMember = memberService.findMemberByClientId(googleMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                if (inviteLink != null) {
-                    authService.verifyInviteCode(inviteLink);
-                }
                 member = memberService.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
+                if (inviteLink != null) {
+                    authService.verifyInviteCode(inviteLink, member.getId());
+                }
                 initializeNewMember(member);
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
                 return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
@@ -87,10 +87,10 @@ public class AuthFacade {
         Optional<Member> optionalMember = memberService.findMemberByClientId(googleMemberDto.getId());
 
         if (optionalMember.isEmpty()) {
-            if (inviteLink != null) {
-                authService.verifyInviteCode(inviteLink);
-            }
             Member member = memberService.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
+            if (inviteLink != null) {
+                authService.verifyInviteCode(inviteLink, member.getId());
+            }
             initializeNewMember(member);
             return member;
         }
@@ -108,7 +108,7 @@ public class AuthFacade {
             initializeNewMember(member);
 
             if (inviteLink != null) {
-                authService.verifyInviteCode(inviteLink);
+                authService.verifyInviteCode(inviteLink, member.getId());
             }
             return member;
         }
@@ -138,7 +138,11 @@ public class AuthFacade {
         return authService.createInviteLink(memberId);
     }
 
-    public void verifyInviteCode(String inviteLink) {
-        authService.verifyInviteCode(inviteLink);
+    public void verifyInviteCode(String inviteLink, Long memberId) {
+        authService.verifyInviteCode(inviteLink, memberId);
+    }
+
+    public void checkInviteCodeBySignUp(Long memberId) {
+
     }
 }

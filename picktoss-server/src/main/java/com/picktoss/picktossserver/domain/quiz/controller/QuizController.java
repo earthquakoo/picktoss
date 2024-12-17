@@ -76,15 +76,14 @@ public class QuizController {
     @Operation(summary = "디렉토리에 생성된 모든 퀴즈 랜덤하게 가져오기(랜덤 퀴즈)")
     @GetMapping("/directories/{directory_id}/quizzes")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<QuizResponseDto> getAllQuizzesByMemberId(
+    public ResponseEntity<GetAllQuizzesByDirectoryIdResponse> getAllQuizzesByMemberId(
             @PathVariable("directory_id") Long directoryId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Quiz> quizzes = quizFacade.findAllByMemberIdAndDirectoryId(memberId, directoryId);
-        QuizResponseDto quizResponseDto = QuizMapper.quizzesToQuizResponseDto(quizzes);
-        return ResponseEntity.ok().body(quizResponseDto);
+        GetAllQuizzesByDirectoryIdResponse response = quizFacade.findAllByMemberIdAndDirectoryId(memberId, directoryId);
+        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "document_id에 해당하는 모든 퀴즈 가져오기")
@@ -162,7 +161,7 @@ public class QuizController {
     public ResponseEntity<GetSingleQuizSetRecordResponse> getSingleQuizSetRecord(
             @PathVariable("quiz_set_id") String quizSetId,
             @PathVariable("quiz_set_type") QuizSetType quizSetType
-            ) {
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
@@ -256,7 +255,7 @@ public class QuizController {
 
     @Operation(summary = "사용자가 생성한 문서에서 직접 퀴즈 세트 생성(랜덤, OX, 객관식)")
     @PostMapping("/quizzes/documents/{document_id}/custom-quiz-set")
-    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_COUNT_EXCEEDED})
+    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_COUNT_EXCEEDED, QUIZ_TYPE_NOT_IN_DOCUMENT})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateQuizzesResponse> createMemberGeneratedQuizSet(
             @PathVariable("document_id") Long documentId,

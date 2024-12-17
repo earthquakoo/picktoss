@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.star.service;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.star.constant.StarConstant;
 import com.picktoss.picktossserver.domain.star.entity.Star;
@@ -31,6 +33,9 @@ public class StarService {
 
     @Transactional
     public void withdrawalStarByCreateDocument(Star star, Integer starCount) {
+        if (star.getStar() < starCount) {
+            throw new CustomException(ErrorInfo.STAR_SHORTAGE_IN_POSSESSION);
+        }
         star.withdrawalStarByCreateDocument(starCount);
         Integer curStarCount = star.getStar();
         Integer changeStarCount = curStarCount - starCount;
