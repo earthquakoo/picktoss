@@ -268,7 +268,7 @@ public class DocumentService {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
         HashMap<Document, Integer> documentsNeedingReviewCountMap = new LinkedHashMap<>();
         for (Document document : documents) {
-            documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.getOrDefault(document, 0));
+            documentsNeedingReviewCountMap.put(document, 0);
         }
 
         Set<Long> processedQuizIds = new HashSet<>(); // 이미 처리된 Quiz ID를 추적하는 Set -> 중복 방지

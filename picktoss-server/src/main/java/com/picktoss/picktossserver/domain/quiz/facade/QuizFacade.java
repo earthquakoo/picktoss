@@ -135,7 +135,8 @@ public class QuizFacade {
 
     @Transactional
     public void updateRandomQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Long memberId) {
-        quizService.updateRandomQuizResult(quizDtos, memberId);
+        Member member = memberService.findMemberById(memberId);
+        quizService.updateRandomQuizResult(quizDtos, member);
     }
 
     @Transactional

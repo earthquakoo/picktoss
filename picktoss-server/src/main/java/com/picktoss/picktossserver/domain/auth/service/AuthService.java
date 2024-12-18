@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
@@ -156,59 +157,6 @@ public class AuthService {
         member.updateMemberEmail(email);
     }
 
-//    // 초대 코드 생성
-//    public String createInviteLink(Long memberId) {
-//        String initLink = "https://www.picktoss.com/invite/";
-//        String uniqueCode = generateUniqueCode();
-//
-//        String memberIdKey = memberId.toString();
-//
-//        // 기존 초대 코드 조회
-//        Map<Object, Object> hashData = redisUtil.getHashData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey);
-//        if (!hashData.isEmpty()) {
-//            String inviteCode = hashData.get("inviteCode").toString();
-//            return initLink + inviteCode;
-//        }
-//
-////        LocalDateTime createdAt = LocalDateTime.now();
-//        List<Long> inviteMembers = new ArrayList<>();
-//
-//        HashMap<Object, Object> memberIdKeyData = new HashMap<>();
-//        memberIdKeyData.put("inviteCode", uniqueCode);
-//        memberIdKeyData.put("inviteMembers", inviteMembers);
-////        memberIdKeyData.put("createdAt", createdAt);
-////        memberIdKeyData.put("expiresAt", createdAt.plusDays(3));
-//
-//        HashMap<Object, Object> inviteCodeKeyData = new HashMap<>();
-//        inviteCodeKeyData.put("inviteMemberId", memberId);
-////        inviteCodeKeyData.put("createdAt", createdAt);
-////        inviteCodeKeyData.put("expiresAt", createdAt.plusDays(3));
-//
-//        redisUtil.setHashData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, memberIdKeyData, Duration.ofDays(3));
-//        redisUtil.setHashData(RedisConstant.REDIS_INVITE_CODE_PREFIX, uniqueCode, inviteCodeKeyData, Duration.ofDays(3));
-//
-//        return initLink + uniqueCode;
-//    }
-//
-//    public void verifyInviteCode(String inviteCode, Long memberId) {
-//        Map<Object, Object> inviteCodeKeyData = redisUtil.getHashData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode);
-//
-//        if (inviteCodeKeyData.isEmpty()) {
-//            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
-//        }
-//
-//        Object inviteMemberIdObject = inviteCodeKeyData.get("inviteMemberId");
-//        String memberIdKey = new ObjectMapper().convertValue(inviteMemberIdObject, new TypeReference<String>() {});
-//
-//        Map<Object, Object> memberIdKeyData = redisUtil.getHashData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey);
-//        Object inviteMembersObject = memberIdKeyData.get("inviteMembers");
-//        List<Long> inviteMembers = new ObjectMapper().convertValue(inviteMembersObject, new TypeReference<List<Long>>() {});
-//        inviteMembers.add(memberId);
-//
-//        memberIdKeyData.put("inviteMemberIdList", inviteMembers);
-//        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, memberIdKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
-//    }
-
     public String createInviteLink(Long memberId) {
         String initLink = "https://www.picktoss.com/invite/";
 
@@ -231,14 +179,13 @@ public class AuthService {
 
         Map<String, Object> memberIdKeyData = Map.of(
                 "inviteCode", uniqueCode,
-                "inviteMemberIdList", inviteMemberIdList,
                 "createdAt", createdAt,
                 "expiresAt", createdAt.plusDays(3)
         );
 
         Map<String, Object> inviteCodeKeyData = Map.of(
-                "creatorMemberId", memberId,
-                "inviteMemberIdList", inviteMemberIdList,
+                "inviteMemberId", memberId,
+                "invitedMemberIdList", inviteMemberIdList,
                 "createdAt", createdAt,
                 "expiresAt", createdAt.plusDays(3)
         );
@@ -258,21 +205,39 @@ public class AuthService {
         }
 
         Map inviteCodeKeyData = inviteCodeData.get();
-        Object inviteMemberIdListObject = inviteCodeKeyData.get("inviteMemberIdList");
+        Object inviteMemberIdListObject = inviteCodeKeyData.get("invitedMemberIdList");
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        List<Object> inviteMemberIdList = objectMapper.convertValue(inviteMemberIdListObject, new TypeReference<List<Object>>() {});
+        List<Long> inviteMemberIdList = new ObjectMapper().convertValue(inviteMemberIdListObject, new TypeReference<List<Long>>() {});
         inviteMemberIdList.add(memberId);
 
-        inviteCodeKeyData.put("inviteMemberIdList", inviteMemberIdList);
+        inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
         redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
     }
 
+    // 초대 코드로 회원가입했는지 체크
     public void checkInviteCodeBySignUp(Long memberId) {
         String memberIdKey = memberId.toString();
 
-        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);
+        Optional<Map> memberIdKeyObject = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);
+        Map memberIdKeyData = memberIdKeyObject.get();
+        Object inviteCodeObject = memberIdKeyData.get("inviteCode");
+
+        String inviteCode = new ObjectMapper().convertValue(inviteCodeObject, new TypeReference<String>() {});
+        Optional<Map> inviteCodeKeyDataObject = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+        Map inviteCodeKeyData = inviteCodeKeyDataObject.get();
+        Object invitedMemberIdListObject = inviteCodeKeyData.get("invitedMemberIdList");
+
+        List<Long> inviteMemberIdList = new ObjectMapper().convertValue(invitedMemberIdListObject, new TypeReference<List<Long>>() {});
+        for (Long invitedMemberId : inviteMemberIdList) {
+            if (invitedMemberId == memberId) {
+                inviteMemberIdList = inviteMemberIdList.stream()
+                        .filter(item -> !item.equals(memberId))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
+        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
     }
 
     public String decodeIdToken(String idToken) {

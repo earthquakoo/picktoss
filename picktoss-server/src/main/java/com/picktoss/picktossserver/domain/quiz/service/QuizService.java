@@ -11,13 +11,11 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.request.UpdateRandomQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.controller.response.*;
-import com.picktoss.picktossserver.domain.quiz.entity.Option;
-import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
-import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
-import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
+import com.picktoss.picktossserver.domain.quiz.entity.*;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
+import com.picktoss.picktossserver.domain.quiz.repository.RandomQuizRecordRepository;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
@@ -34,6 +32,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
@@ -46,6 +46,8 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizSetRepository quizSetRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
+    private final RandomQuizRecordRepository randomQuizRecordRepository;
+
     private final JdbcTemplate jdbcTemplate;
     private final EmailSenderPublisher emailSenderPublisher;
 
@@ -790,17 +792,39 @@ public class QuizService {
     }
 
     @Transactional
-    public void updateRandomQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Long memberId) {
+    public void updateRandomQuizResult(List<UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto> quizDtos, Member member) {
         List<Long> quizIds = new ArrayList<>();
         for (UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto quizDto : quizDtos) {
             quizIds.add(quizDto.getId());
         }
 
-        List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(memberId, quizIds);
-        for (int i = 0; i <= quizDtos.size(); i++) {
-            if (!quizDtos.get(i).isAnswer()) {
-                quizzes.get(i).updateIsReviewNeededTrueByIncorrectAnswer();
+        List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(member.getId(), quizIds);
+        Map<Long, Quiz> quizMap = quizzes.stream()
+                .collect(Collectors.toMap(Quiz::getId, Function.identity()));
+
+        for (UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto quizDto : quizDtos) {
+            Quiz quiz = quizMap.get(quizDto.getId());
+            if (quiz != null) {
+                if (quizDto.isAnswer()) {
+                    quiz.updateIsReviewNeededFalseByCorrectAnswer();
+                } else {
+                    quiz.updateIsReviewNeededTrueByIncorrectAnswer();
+                }
             }
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        Optional<RandomQuizRecord> optionalRandomQuizRecord = randomQuizRecordRepository.findRandomQuizRecordByMemberId(member.getId(), startOfDay, endOfDay);
+
+        if (optionalRandomQuizRecord.isEmpty()) {
+            RandomQuizRecord randomQuizRecord = RandomQuizRecord.createRandomQuizRecord(quizIds, member);
+            randomQuizRecordRepository.save(randomQuizRecord);
+        } else {
+            RandomQuizRecord randomQuizRecord = optionalRandomQuizRecord.get();
+            randomQuizRecord.updateTodaySolvedQuizzes(quizIds);
         }
     }
 
@@ -812,9 +836,17 @@ public class QuizService {
         }
 
         List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(memberId, quizIds);
-        for (int i = 0; i <= quizDtos.size(); i++) {
-            if (quizDtos.get(i).isAnswer()) {
-                quizzes.get(i).updateIsReviewNeededFalseByCorrectAnswer();
+        Map<Long, Quiz> quizMap = quizzes.stream()
+                .collect(Collectors.toMap(Quiz::getId, Function.identity()));
+
+        for (UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto quizDto : quizDtos) {
+            Quiz quiz = quizMap.get(quizDto.getId());
+            if (quiz != null) {
+                if (quizDto.isAnswer()) {
+                    quiz.updateIsReviewNeededFalseByCorrectAnswer();
+                } else {
+                    quiz.updateIsReviewNeededTrueByIncorrectAnswer();
+                }
             }
         }
     }
@@ -839,17 +871,25 @@ public class QuizService {
         String quizSetId = createQuizSetId();
         QuizSet quizSet = QuizSet.createQuizSet(quizSetId, quizSetName, QuizSetType.TODAY_QUIZ_SET, member);
 
+        int quizCount = 0;
+
         for (Quiz quiz : quizzes) {
+            if (quizCount == 10) {
+                break;
+            }
             quiz.addDeliveredCount();
 
             QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
             quizSetQuizzes.add(quizSetQuiz);
+
+            quizCount += 1;
         }
 
+        LocalDateTime createdAt = LocalDateTime.now();
         quizSetRepository.save(quizSet);
         quizSetQuizRepository.saveAll(quizSetQuizzes);
 
-        return new CreateQuizzesResponse(quizSetId, QuizSetType.TODAY_QUIZ_SET, quizSet.getCreatedAt());
+        return new CreateQuizzesResponse(quizSetId, QuizSetType.TODAY_QUIZ_SET, createdAt);
     }
 
     public void createSampleQuiz(Long documentId) {
