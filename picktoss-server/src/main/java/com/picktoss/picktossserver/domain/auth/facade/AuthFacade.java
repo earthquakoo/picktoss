@@ -142,7 +142,10 @@ public class AuthFacade {
         authService.verifyInviteCode(inviteLink, memberId);
     }
 
+    @Transactional
     public void checkInviteCodeBySignUp(Long memberId) {
-
+        authService.checkInviteCodeBySignUp(memberId);
+        Member member = memberService.findMemberById(memberId);
+        starService.depositStarByInviteFriend(member.getStar());
     }
 }

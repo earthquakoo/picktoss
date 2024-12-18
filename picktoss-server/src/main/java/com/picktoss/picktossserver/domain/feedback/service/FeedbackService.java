@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.feedback.service;
 
+import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.domain.feedback.entity.Feedback;
 import com.picktoss.picktossserver.domain.feedback.entity.FeedbackFile;
 import com.picktoss.picktossserver.domain.feedback.repository.FeedbackFileRepository;
@@ -18,6 +19,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class FeedbackService {
 
+    private final MailgunEmailSenderManager mailgunEmailSenderManager;
     private final FeedbackRepository feedbackRepository;
     private final FeedbackFileRepository feedbackFileRepository;
 
@@ -33,5 +35,9 @@ public class FeedbackService {
 
         feedbackRepository.save(feedback);
         feedbackFileRepository.saveAll(feedbackFiles);
+
+//        String recipientEmail = "cream5343@gmail.com";
+
+//        mailgunEmailSenderManager.sendEmail(recipientEmail, "문의하기 이메일", content);
     }
 }
