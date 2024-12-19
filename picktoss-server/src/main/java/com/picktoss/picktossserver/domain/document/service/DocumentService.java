@@ -18,6 +18,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import com.picktoss.picktossserver.global.enums.document.DocumentType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -274,6 +275,11 @@ public class DocumentService {
         Set<Long> processedQuizIds = new HashSet<>(); // 이미 처리된 Quiz ID를 추적하는 Set -> 중복 방지
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             QuizSet quizSet = quizSetQuiz.getQuizSet();
+
+            if (quizSet.getQuizSetType() == QuizSetType.COLLECTION_QUIZ_SET) {
+                continue;
+            }
+
             if (!quizSet.isSolved()) {
                 continue;
             }
