@@ -288,8 +288,10 @@ public class DocumentService {
 
             if (!quizSetQuiz.getIsAnswer() || quizSetQuiz.getElapsedTimeMs() >= 20000) {
                 Document document = quizSetQuiz.getQuiz().getDocument();
-                documentsNeedingReviewCountMap.put(document, documentsNeedingReviewCountMap.get(document) + 1);
+                documentsNeedingReviewCountMap.put(document,
+                        documentsNeedingReviewCountMap.getOrDefault(document, 0) + 1);
             }
+
         }
         List<GetDocumentsNeedingReviewResponse.GetReviewNeededDocumentsDto> documentsDtos = new ArrayList<>();
 
