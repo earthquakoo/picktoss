@@ -223,6 +223,7 @@ public class QuizService {
                     .options(optionList)
                     .quizType(quiz.getQuizType())
                     .description(description)
+                    .choseAnswer(quizSetQuiz.getChoseAnswer())
                     .build();
 
             quizDtos.add(quizDto);
