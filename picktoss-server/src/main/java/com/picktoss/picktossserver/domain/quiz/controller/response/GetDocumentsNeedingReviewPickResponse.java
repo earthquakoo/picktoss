@@ -23,5 +23,6 @@ public class GetDocumentsNeedingReviewPickResponse {
         private List<String> options;
         private QuizType quizType;
         private String description;
+        private String choseAnswer;
     }
 }
