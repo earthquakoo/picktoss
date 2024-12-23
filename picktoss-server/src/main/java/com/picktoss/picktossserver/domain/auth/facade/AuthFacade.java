@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
+import com.picktoss.picktossserver.domain.auth.controller.response.CheckInviteCodeBySignUpResponse;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
@@ -143,9 +144,9 @@ public class AuthFacade {
     }
 
     @Transactional
-    public void checkInviteCodeBySignUp(Long memberId) {
-        authService.checkInviteCodeBySignUp(memberId);
+    public CheckInviteCodeBySignUpResponse checkInviteCodeBySignUp(Long memberId) {
         Member member = memberService.findMemberById(memberId);
         starService.depositStarByInviteFriend(member.getStar());
+        return authService.checkInviteCodeBySignUp(memberId);
     }
 }

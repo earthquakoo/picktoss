@@ -275,14 +275,14 @@ public class QuizService {
             quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndDirectoryIdAndSolvedTrue(memberId, directoryId);
         }
         if (startMonthDate != null) {
-            return quizAnalysisByMonth(quizSetQuizzes, startMonthDate);
+            return quizAnalysisByMonth(quizSetQuizzes, startMonthDate, memberId);
         }
 
         if (startWeekDate == null) {
             startWeekDate = LocalDate.now().minusDays(6);
         }
 
-        return quizAnalysisByWeek(quizSetQuizzes, startWeekDate);
+        return quizAnalysisByWeek(quizSetQuizzes, startWeekDate, memberId);
     }
 
     @Transactional
@@ -382,9 +382,9 @@ public class QuizService {
     }
 
     public GetSingleQuizRecordByDateResponse findAllQuizSetRecordByDate(Long memberId, LocalDate solvedDate) {
-        List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
-        int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
-        int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        int currentConsecutiveDays = checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
+        int maxConsecutiveDays = checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
         LocalDateTime startDateTime = solvedDate.atStartOfDay();
         LocalDateTime endDateTime = solvedDate.atTime(LocalTime.MAX);
@@ -417,9 +417,8 @@ public class QuizService {
 
     public GetQuizRecordsResponse findAllQuizAndCollectionRecords(Long memberId) {
         List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
-        List<QuizSet> todayQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
-        int currentConsecutiveDays = checkCurrentConsecutiveTodayQuiz(todayQuizSets);
-        int maxConsecutiveDays = checkMaxConsecutiveTodayQuiz(todayQuizSets);
+        int currentConsecutiveDays = checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
+        int maxConsecutiveDays = checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
         HashMap<LocalDate, List<QuizSet>> dateQuizSetsMap = new HashMap<>();
 
@@ -526,9 +525,9 @@ public class QuizService {
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
-        int currentConsecutiveTodayQuizDate = checkCurrentConsecutiveTodayQuiz(quizSets);
-        int maxConsecutiveTodayQuizDate = checkMaxConsecutiveTodayQuiz(quizSets);
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        int currentConsecutiveTodayQuizDate = checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
+        int maxConsecutiveTodayQuizDate = checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
         return new GetCurrentTodayQuizInfo(currentConsecutiveTodayQuizDate, maxConsecutiveTodayQuizDate);
     }
@@ -537,7 +536,7 @@ public class QuizService {
         return quizRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
     }
 
-    public int checkCurrentConsecutiveTodayQuiz(List<QuizSet> quizSets) {
+    public int checkCurrentConsecutiveSolvedQuizSet(List<QuizSet> quizSets) {
         if (quizSets.isEmpty()) {
             return 0;
         }
@@ -566,7 +565,7 @@ public class QuizService {
         return currentConsecutiveDays;
     }
 
-    public int checkMaxConsecutiveTodayQuiz(List<QuizSet> quizSets) {
+    public int checkMaxConsecutiveSolvedQuizSet(List<QuizSet> quizSets) {
         if (quizSets.isEmpty()) {
             return 0;
         }
@@ -673,42 +672,21 @@ public class QuizService {
         return quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
     }
 
-    public List<QuizSet> findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(Long memberId) {
-        return quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId, QuizSetType.TODAY_QUIZ_SET);
+    public List<QuizSet> findAllByMemberIdAndSolvedTrue(Long memberId) {
+        return quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
     }
 
     private static String createQuizSetId() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    private HashMap<String, Integer> quizAnalysis(List<QuizSetQuiz> quizSetQuizzes) {
-        HashMap<String, Integer> quizAnalysis = new HashMap<>();
-        quizAnalysis.put("totalQuizCount", quizSetQuizzes.size());
-        quizAnalysis.put("incorrectAnswerCount", 0);
-        quizAnalysis.put("totalElapsedTimeMs", 0);
-
-        for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-            if (!Objects.isNull(quizSetQuiz.getElapsedTimeMs())) {
-                int elapsedTimeMs = quizSetQuiz.getElapsedTimeMs();
-                quizAnalysis.put("totalElapsedTimeMs", quizAnalysis.get("totalElapsedTimeMs") + elapsedTimeMs);
-            }
-            if (!quizSetQuiz.getIsAnswer()) {
-                quizAnalysis.put("incorrectAnswerCount", quizAnalysis.get("incorrectAnswerCount") + 1);
-            }
-        }
-        return quizAnalysis;
-    }
-
     private GetQuizAnswerRateAnalysisResponse quizAnalysisByWeek(
-            List<QuizSetQuiz> quizSetQuizzes, LocalDate startWeekDate) {
+            List<QuizSetQuiz> quizSetQuizzes, LocalDate startDate, Long memberId) {
         HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
 
-        HashMap<String, Integer> quizAnalysis = quizAnalysis(quizSetQuizzes);
-        Integer totalElapsedTimeMs = quizAnalysis.get("totalElapsedTimeMs");
-
         for (int i = 0; i <= 6; i++) {
-            LocalDate date = startWeekDate.plusDays(i);
+            LocalDate date = startDate.plusDays(i);
             incorrectAnswerCountByDate.put(date, 0);
             totalQuizCountByDate.put(date, 0);
         }
@@ -716,12 +694,28 @@ public class QuizService {
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
 
-            if (!date.isBefore(startWeekDate) && !date.isAfter(startWeekDate.plusDays(7))) {
+            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
                 totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
 
                 if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && !quizSetQuiz.getIsAnswer()) {
                     incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.getOrDefault(date, 0) + 1);
                 }
+            }
+        }
+
+        LocalDateTime startOfDay = startDate.atStartOfDay();
+        LocalDateTime endOfDay = startDate.plusDays(6).atTime(LocalTime.MAX);
+
+        List<RandomQuizRecord> randomQuizRecords = randomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
+        for (RandomQuizRecord randomQuizRecord : randomQuizRecords) {
+            LocalDate date = randomQuizRecord.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
+                Integer solvedQuizCount = randomQuizRecord.getSolvedQuizCount();
+                Integer incorrectQuizCount = randomQuizRecord.getIncorrectQuizCount();
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
+                incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.getOrDefault(date, 0) + incorrectQuizCount);
+
             }
         }
 
@@ -731,33 +725,25 @@ public class QuizService {
             if (!incorrectAnswerCountByDate.isEmpty() && !totalQuizCountByDate.isEmpty()) {
                 GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto quizzesDto = GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto.builder()
                         .date(date)
-                        .quizCount(totalQuizCountByDate.getOrDefault(date, 0))
+                        .totalQuizCount(totalQuizCountByDate.getOrDefault(date, 0))
                         .incorrectAnswerCount(incorrectAnswerCountByDate.getOrDefault(date, 0))
                         .build();
 
                 quizzesDtos.add(quizzesDto);
             }
         }
-        return new GetQuizAnswerRateAnalysisResponse(
-                totalElapsedTimeMs,
-                quizzesDtos
-        );
+        return new GetQuizAnswerRateAnalysisResponse(quizzesDtos);
     }
 
-    private GetQuizAnswerRateAnalysisResponse quizAnalysisByMonth(List<QuizSetQuiz> quizSetQuizzes, LocalDate startDateMonth) {
+    private GetQuizAnswerRateAnalysisResponse quizAnalysisByMonth(List<QuizSetQuiz> quizSetQuizzes, LocalDate startDate, Long memberId) {
         HashMap<LocalDate, Integer> incorrectAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
 
-        HashMap<String, Integer> quizAnalysis = quizAnalysis(quizSetQuizzes);
-        Integer totalQuizCount = quizAnalysis.get("totalQuizCount");
-        Integer totalIncorrectAnswerCount = quizAnalysis.get("totalIncorrectAnswerCount");
-        Integer totalElapsedTimeMs = quizAnalysis.get("totalElapsedTimeMs");
+        YearMonth yearMonth = YearMonth.of(startDate.getYear(), startDate.getMonth());
+        LocalDate startOfDate = yearMonth.atDay(1);
+        LocalDate endOfDate = yearMonth.atEndOfMonth();
 
-        YearMonth yearMonth = YearMonth.of(startDateMonth.getYear(), startDateMonth.getMonth());
-        LocalDate startDate = yearMonth.atDay(1);
-        LocalDate endDate = yearMonth.atEndOfMonth();
-
-        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+        for (LocalDate date = startOfDate; !date.isAfter(endOfDate); date = date.plusDays(1)) {
             incorrectAnswerCountByDate.put(date, 0);
             totalQuizCountByDate.put(date, 0);
         }
@@ -765,7 +751,7 @@ public class QuizService {
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
 
-            if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+            if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
                 totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
 
                 if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && !quizSetQuiz.getIsAnswer()) {
@@ -774,22 +760,31 @@ public class QuizService {
             }
         }
 
+        List<RandomQuizRecord> randomQuizRecords = randomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDate.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
+        for (RandomQuizRecord randomQuizRecord : randomQuizRecords) {
+            LocalDate date = randomQuizRecord.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
+                Integer solvedQuizCount = randomQuizRecord.getSolvedQuizCount();
+                Integer incorrectQuizCount = randomQuizRecord.getIncorrectQuizCount();
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
+                incorrectAnswerCountByDate.put(date, incorrectAnswerCountByDate.getOrDefault(date, 0) + incorrectQuizCount);
+            }
+        }
+
         List<GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto> quizzesDtos = new ArrayList<>();
 
         for (LocalDate date : incorrectAnswerCountByDate.keySet()) {
             GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto quizzesDto = GetQuizAnswerRateAnalysisResponse.QuizAnswerRateAnalysisDto.builder()
                     .date(date)
-                    .quizCount(totalQuizCountByDate.get(date))
+                    .totalQuizCount(totalQuizCountByDate.get(date))
                     .incorrectAnswerCount(incorrectAnswerCountByDate.get(date))
                     .build();
 
             quizzesDtos.add(quizzesDto);
         }
 
-        return new GetQuizAnswerRateAnalysisResponse(
-                totalElapsedTimeMs,
-                quizzesDtos
-        );
+        return new GetQuizAnswerRateAnalysisResponse(quizzesDtos);
     }
 
     @Transactional
@@ -798,6 +793,8 @@ public class QuizService {
         for (UpdateRandomQuizResultRequest.UpdateRandomQuizResultDto quizDto : quizDtos) {
             quizIds.add(quizDto.getId());
         }
+
+        RandomQuizRecord todayRandomQuizRecord = findTodayRandomQuizRecordByMemberIdAndCreatedAtBetween(member);
 
         List<Quiz> quizzes = quizRepository.findAllByMemberIdAndQuizIds(member.getId(), quizIds);
         Map<Long, Quiz> quizMap = quizzes.stream()
@@ -808,24 +805,12 @@ public class QuizService {
             if (quiz != null) {
                 if (quizDto.isAnswer()) {
                     quiz.updateIsReviewNeededFalseByCorrectAnswer();
+                    todayRandomQuizRecord.updateQuizCountByCorrectAnswer();
                 } else {
                     quiz.updateIsReviewNeededTrueByIncorrectAnswer();
+                    todayRandomQuizRecord.updateQuizCountByIncorrectAnswer();
                 }
             }
-        }
-
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-
-        Optional<RandomQuizRecord> optionalRandomQuizRecord = randomQuizRecordRepository.findRandomQuizRecordByMemberId(member.getId(), startOfDay, endOfDay);
-
-        if (optionalRandomQuizRecord.isEmpty()) {
-            RandomQuizRecord randomQuizRecord = RandomQuizRecord.createRandomQuizRecord(quizIds, member);
-            randomQuizRecordRepository.save(randomQuizRecord);
-        } else {
-            RandomQuizRecord randomQuizRecord = optionalRandomQuizRecord.get();
-            randomQuizRecord.updateTodaySolvedQuizzes(quizIds);
         }
     }
 
@@ -856,8 +841,24 @@ public class QuizService {
         return quizRepository.findAllByMemberIdAndIsReviewNeededTrue(memberId);
     }
 
-    public List<QuizSet> findAllByMemberIdAndSolvedTrueAndQuizSetType(Long memberId, QuizSetType quizSetType) {
-        return quizSetRepository.findAllByMemberIdAndSolvedTrueAndQuizSetType(memberId, quizSetType);
+    public RandomQuizRecord findTodayRandomQuizRecordByMemberIdAndCreatedAtBetween(Member member) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        Optional<RandomQuizRecord> optionalRandomQuizRecord = randomQuizRecordRepository.findByMemberIdAndCreatedAtBetween(member.getId(), startOfDay, endOfDay);
+
+        if (optionalRandomQuizRecord.isEmpty()) {
+            RandomQuizRecord randomQuizRecord = RandomQuizRecord.createRandomQuizRecord(member);
+            randomQuizRecordRepository.save(randomQuizRecord);
+            return randomQuizRecord;
+        } else {
+            return optionalRandomQuizRecord.get();
+        }
+    }
+
+    public List<RandomQuizRecord> findAllByMemberIdAndCreatedAtBetween(Long memberId, LocalDateTime startOfDay, LocalDateTime endOfDay) {
+        return randomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
     }
 
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
@@ -893,7 +894,12 @@ public class QuizService {
         return new CreateQuizzesResponse(quizSetId, QuizSetType.TODAY_QUIZ_SET, createdAt);
     }
 
-    public void createSampleQuiz(Long documentId) {
+    /**
+     * ADMIN-related quiz service
+     */
 
+    @Transactional
+    public void createQuizForAdmin(String question, String answer, String explanation, QuizType quizType,  List<String> options) {
     }
+
 }

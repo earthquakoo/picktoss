@@ -47,6 +47,7 @@ logging.level:
 springdoc:
   packages-to-scan:
     - com.picktoss.picktossserver.domain.payment.controller
+    - com.picktoss.picktossserver.domain.admin.controller
     - com.picktoss.picktossserver.domain.auth.controller
     - com.picktoss.picktossserver.domain.fcm.controller
     - com.picktoss.picktossserver.domain.directory.controller

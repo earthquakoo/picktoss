@@ -21,8 +21,4 @@ public class FcmFacade {
     public void sendByToken(String title, String body, String content, Long memberId) {
         fcmService.sendByToken(title, body, content, memberId);
     }
-
-    public void pushNotification(Long memberId, String content) {
-        fcmService.pushNotification(memberId, content);
-    }
 }

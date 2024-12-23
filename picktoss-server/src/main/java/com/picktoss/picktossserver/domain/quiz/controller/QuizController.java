@@ -51,7 +51,7 @@ public class QuizController {
     @Operation(summary = "quiz_set_id와 quiz-set-type으로 퀴즈 가져오기")
     @GetMapping("/quiz-sets/{quiz_set_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetQuizSetResponse> getQuizSet(
+    public ResponseEntity<GetQuizSetResponse> getQuizSets(
             @RequestParam(value = "quiz-set-type") QuizSetType quizSetType,
             @PathVariable("quiz_set_id") String quizSetId
     ) {
@@ -115,7 +115,7 @@ public class QuizController {
     }
 
     @Operation(summary = "퀴즈 분석")
-    @GetMapping("/quiz-analysis")
+    @GetMapping("/quizzes/analysis")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizAnswerRateAnalysisResponse> getQuizAnswerRateAnalysis(
             @RequestParam(required = false, value = "directory-id") Long directoryId,

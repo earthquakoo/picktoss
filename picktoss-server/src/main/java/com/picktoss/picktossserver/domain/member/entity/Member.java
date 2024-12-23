@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.member.entity;
 
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
@@ -82,6 +83,9 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<RandomQuizRecord> randomQuizRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<CollectionComplaint> collectionComplaints = new ArrayList<>();
 
     public static Member createGoogleMember(String name, String clientId, String email) {
         return Member.builder()

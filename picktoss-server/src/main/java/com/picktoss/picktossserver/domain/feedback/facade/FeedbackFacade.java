@@ -1,7 +1,7 @@
 package com.picktoss.picktossserver.domain.feedback.facade;
 
-import com.picktoss.picktossserver.core.eventlistener.event.s3.S3UploadFeedbackImageEvent;
-import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadFeedbackImagePublisher;
+import com.picktoss.picktossserver.core.eventlistener.event.s3.S3UploadImagesEvent;
+import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadImagesPublisher;
 import com.picktoss.picktossserver.domain.feedback.service.FeedbackService;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.service.MemberService;
@@ -23,7 +23,7 @@ public class FeedbackFacade {
     private final FeedbackService feedbackService;
     private final MemberService memberService;
 
-    private final S3UploadFeedbackImagePublisher s3UploadFeedbackImagePublisher;
+    private final S3UploadImagesPublisher s3UploadImagesPublisher;
 
     @Transactional
     public void createFeedback(List<MultipartFile> files, String title, String content, FeedbackType type, String email, Long memberId) {
@@ -39,7 +39,7 @@ public class FeedbackFacade {
             s3Keys.add(fullS3Key);
         }
 
-        s3UploadFeedbackImagePublisher.s3UploadFeedbackImagePublisher(new S3UploadFeedbackImageEvent(files, s3Keys));
+        s3UploadImagesPublisher.s3UploadImagesPublisher(new S3UploadImagesEvent(files, s3Keys));
         feedbackService.createFeedback(title, content, s3Keys, type, email, member);
     }
 }

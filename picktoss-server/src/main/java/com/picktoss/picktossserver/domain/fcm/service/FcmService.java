@@ -35,17 +35,6 @@ public class FcmService {
 
         Message message = Message.builder()
                 .setToken(fcmToken)
-                .setNotification(
-                        Notification.builder()
-                                .setTitle(title)
-                                .setBody(body)
-                                .build()
-                )
-                .setWebpushConfig(WebpushConfig.builder()
-                        .putHeader("ttl", "300")
-                        .setNotification(new WebpushNotification("Picktoss", content))
-                        .build()
-                )
                 .setAndroidConfig(AndroidConfig.builder()
                         .setNotification(
                                 AndroidNotification.builder()
@@ -57,12 +46,16 @@ public class FcmService {
                 )
                 .setApnsConfig(ApnsConfig.builder()
                         .setAps(Aps.builder()
+                                .setAlert(ApsAlert.builder()
+                                        .setTitle(title)
+                                        .setBody(body)
+                                        .build())
+                                .setSound("default")
                                 .setCategory("push_click")
                                 .build())
                         .build()
                 )
                 .build();
-
         try {
             String response = FirebaseMessaging.getInstance().send(message);
             log.info("FCMsend-"+response);
@@ -70,49 +63,4 @@ public class FcmService {
             log.info("FCMexcept-"+ e.getMessage());
         }
     }
-
-    public void pushNotification(Long memberId, String content) {
-        Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, memberId.toString(), String.class);
-        if (optionalToken.isEmpty()) {
-            throw new CustomException(ErrorInfo.FCM_TOKEN_NOT_FOUND);
-        }
-        String fcmToken = optionalToken.get();
-        try {
-            Message message = Message.builder()
-                    .setToken(fcmToken)
-                    .setWebpushConfig(WebpushConfig.builder()
-                            .putHeader("ttl", "300")
-                            .setNotification(new WebpushNotification("Picktoss", content))
-                            .build())
-                    .build();
-            String response = FirebaseMessaging.getInstance().send(message);
-            log.info("FCMsend-"+response);
-        } catch (Exception e) {
-            log.info("FCMexcept-"+ e.getMessage());
-        }
-    }
-
-//    public void pushNotification(Long memberId, String content) {
-//        Map<String, Object> resultMap = new HashMap<>();
-//        try {
-//            Optional<String> optionalToken = redisUtil.getData(memberId.toString(), String.class);
-//            if (optionalToken.isEmpty()) {
-//                resultMap.put("message", "유저의 FireBase 토큰이 없습니다.");
-//            }
-//            else {
-//                String fcmToken = optionalToken.get();
-//                Message message = Message.builder()
-//                        .setToken(fcmToken)
-//                        .setWebpushConfig(WebpushConfig.builder()
-//                                .putHeader("ttl", "300")
-//                                .setNotification(new WebpushNotification("Gappa", content))
-//                                .build())
-//                        .build();
-//                String response = FirebaseMessaging.getInstance().sendAsync(message).get();
-//                log.info("FCMsend-"+response);
-//            }
-//        } catch (Exception e) {
-//            log.info("FCMexcept-"+ e.getMessage());
-//        }
-//    }
 }

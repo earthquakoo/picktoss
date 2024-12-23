@@ -6,10 +6,7 @@ import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.collection.controller.dto.CollectionResponseDto;
 import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionDtoMapper;
-import com.picktoss.picktossserver.domain.collection.controller.request.AddQuizToCollectionRequest;
-import com.picktoss.picktossserver.domain.collection.controller.request.CreateCollectionRequest;
-import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionInfoRequest;
-import com.picktoss.picktossserver.domain.collection.controller.request.UpdateCollectionQuizzesRequest;
+import com.picktoss.picktossserver.domain.collection.controller.request.*;
 import com.picktoss.picktossserver.domain.collection.controller.response.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
@@ -21,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -125,7 +123,7 @@ public class CollectionController {
     }
 
     @Operation(summary = "컬렉션 분석")
-    @GetMapping("/collections-analysis")
+    @GetMapping("/collections/analysis")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetCollectionSAnalysisResponse> getCollectionAnalysis() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
@@ -187,6 +185,19 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         collectionFacade.createCollectionBookmark(memberId, collectionId);
+    }
+
+    @Operation(summary = "컬렉션 신고하기")
+    @PostMapping(value = "/collections/{collection_id}/complaint", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createCollectionComplaint(
+            @Valid @ModelAttribute CreateCollectionComplaintRequest request,
+            @PathVariable("collection_id") Long collectionId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        collectionFacade.createCollectionComplaint(request.getFiles(), request.getContent(), collectionId, memberId);
     }
 
     /**

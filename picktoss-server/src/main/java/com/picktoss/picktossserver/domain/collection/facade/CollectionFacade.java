@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.collection.facade;
 
+import com.picktoss.picktossserver.core.eventlistener.event.s3.S3UploadImagesEvent;
+import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadImagesPublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionCategoriesResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
@@ -17,9 +19,11 @@ import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_FOUND_ERROR;
 
@@ -31,6 +35,7 @@ public class CollectionFacade {
     private final CollectionService collectionService;
     private final QuizService quizService;
     private final MemberService memberService;
+    private final S3UploadImagesPublisher s3UploadImagesPublisher;
 
     @Transactional
     public Long createCollection(
@@ -115,6 +120,24 @@ public class CollectionFacade {
         Member member = memberService.findMemberById(memberId);
         Collection collection = collectionService.findCollectionByCollectionId(collectionId);
         collectionService.deleteCollectionBookmark(member, collection);
+    }
+
+    @Transactional
+    public void createCollectionComplaint(List<MultipartFile> files, String content, Long collectionId, Long memberId) {
+        Member member = memberService.findMemberById(memberId);
+
+        String s3Key = UUID.randomUUID().toString();
+        String s3FolderPath = "picktoss-collection-complaint-images/";
+
+        List<String> s3Keys = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String fileName = file.getOriginalFilename();
+            String fullS3Key = s3FolderPath + s3Key + "_" + fileName;
+            s3Keys.add(fullS3Key);
+        }
+
+        s3UploadImagesPublisher.s3UploadImagesPublisher(new S3UploadImagesEvent(files, s3Keys));
+        collectionService.createCollectionComplaint(collectionId, content, s3Keys, member);
     }
 
     public List<Collection> findInterestCategoryCollections(Long memberId) {

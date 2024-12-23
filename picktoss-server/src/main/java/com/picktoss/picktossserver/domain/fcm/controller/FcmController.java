@@ -2,7 +2,6 @@ package com.picktoss.picktossserver.domain.fcm.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.fcm.controller.request.FcmMessageDto;
 import com.picktoss.picktossserver.domain.fcm.controller.request.FcmNotificationRequestDto;
 import com.picktoss.picktossserver.domain.fcm.controller.request.SaveFcmTokenRequest;
 import com.picktoss.picktossserver.domain.fcm.facade.FcmFacade;
@@ -33,7 +32,7 @@ public class FcmController {
         fcmFacade.saveFcmToken(memberId, request.getFcmToken());
     }
 
-    @Operation(summary = "메시지 전송 1")
+    @Operation(summary = "앱 알림 푸시")
     @PostMapping("/message-send")
     @ResponseStatus(HttpStatus.OK)
     public void messageSend(@Valid @RequestBody FcmNotificationRequestDto request) {
@@ -42,15 +41,4 @@ public class FcmController {
 
         fcmFacade.sendByToken(request.getTitle(), request.getBody(), request.getContent(), memberId);
     }
-
-    @Operation(summary = "메시지 전송 2")
-    @PostMapping("/message/send")
-    @ResponseStatus(HttpStatus.OK)
-    public void messageSendSend(@Valid @RequestBody FcmMessageDto request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        fcmFacade.pushNotification(memberId, request.getContent());
-    }
-
 }

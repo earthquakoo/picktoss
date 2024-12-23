@@ -101,4 +101,16 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     List<Collection> findByCollectionContaining(
             @Param("keyword") String keyword
     );
+
+    /**
+     * Admin-related collection repo
+     */
+
+    @Query("SELECT c FROM Collection c " +
+            "LEFT JOIN FETCH c.collectionBookmarks " +
+            "LEFT JOIN FETCH c.collectionSolvedRecords " +
+            "JOIN FETCH c.collectionQuizzes cq " +
+            "JOIN FETCH cq.quiz q " +
+            "JOIN FETCH c.member m")
+    List<Collection> findAllWithAdminPrivileges();
 }

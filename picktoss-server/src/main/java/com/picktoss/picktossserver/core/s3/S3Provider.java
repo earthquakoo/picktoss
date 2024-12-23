@@ -43,7 +43,7 @@ public class S3Provider {
         return s3Key;
     }
 
-    public void uploadFeedbackImage(List<MultipartFile> multipartFiles, List<String> s3Keys) {
+    public void uploadImages(List<MultipartFile> multipartFiles, List<String> s3Keys) {
         ObjectMetadata metadata = new ObjectMetadata();
 
         for (int i = 0; i < multipartFiles.size(); i++) {

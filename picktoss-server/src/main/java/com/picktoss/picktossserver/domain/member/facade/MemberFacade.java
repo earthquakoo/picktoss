@@ -60,6 +60,11 @@ public class MemberFacade {
     }
 
     @Transactional
+    public void deleteMember(Long memberId) {
+        memberService.deleteMember(memberId);
+    }
+
+    @Transactional
     public void updateMemberName(Long memberId, String name) {
         memberService.updateMemberName(memberId, name);
     }

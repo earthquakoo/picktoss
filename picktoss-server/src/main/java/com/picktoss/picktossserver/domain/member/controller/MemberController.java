@@ -102,6 +102,20 @@ public class MemberController {
     }
 
     /**
+     * DELETE
+     */
+
+    @Operation(summary = "회원 탈퇴")
+    @DeleteMapping("/members/withdrawal")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMember() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        memberFacade.deleteMember(memberId);
+    }
+
+    /**
      * TEST
      */
 

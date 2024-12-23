@@ -13,31 +13,11 @@ import java.util.Optional;
 public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
 
     @Query("SELECT qs FROM QuizSet qs " +
-            "WHERE qs.member.id = :memberId " +
-            "AND qs.solved = true " +
-            "AND qs.quizSetType = :quizSetType " +
-            "ORDER BY qs.createdAt DESC")
-    List<QuizSet> findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(
-            @Param("memberId") Long memberId,
-            @Param("quizSetType") QuizSetType quizSetType
-    );
-
-    @Query("SELECT qs FROM QuizSet qs " +
             "JOIN FETCH qs.quizSetQuizzes qsq " +
             "JOIN FETCH qsq.quiz q " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true " +
-            "AND qs.quizSetType = :quizSetType")
-    List<QuizSet> findAllByMemberIdAndSolvedTrueAndQuizSetType(
-            @Param("memberId") Long memberId,
-            @Param("quizSetType") QuizSetType quizSetType
-    );
-
-    @Query("SELECT qs FROM QuizSet qs " +
-            "JOIN FETCH qs.quizSetQuizzes qsq " +
-            "JOIN FETCH qsq.quiz q " +
-            "WHERE qs.member.id = :memberId " +
-            "AND qs.solved = true")
+            "AND qs.quizSetType != FIRST_QUIZ_SET")
     List<QuizSet> findAllByMemberIdAndSolvedTrue(
             @Param("memberId") Long memberId
     );
