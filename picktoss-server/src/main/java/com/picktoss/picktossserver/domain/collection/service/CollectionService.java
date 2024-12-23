@@ -6,14 +6,9 @@ import com.picktoss.picktossserver.domain.collection.controller.response.GetColl
 import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionCategory;
 import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
+import com.picktoss.picktossserver.domain.collection.entity.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionBookmarkRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionSolvedRecordRepository;
+import com.picktoss.picktossserver.domain.collection.repository.*;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
@@ -38,6 +33,8 @@ public class CollectionService {
     private final CollectionQuizRepository collectionQuizRepository;
     private final CollectionBookmarkRepository collectionBookmarkRepository;
     private final CollectionSolvedRecordRepository collectionSolvedRecordRepository;
+    private final CollectionComplaintRepository collectionComplaintRepository;
+    private final CollectionComplaintFileRepository collectionComplaintFileRepository;
 
     @Transactional
     public Long createCollection(
@@ -260,6 +257,22 @@ public class CollectionService {
         collectionBookmarkRepository.delete(collectionBookmark);
     }
 
+    @Transactional
+    public void createCollectionComplaint(Long collectionId, String content, List<String> s3Keys, Member member) {
+        Collection collection = findCollectionByCollectionId(collectionId);
+        CollectionComplaint collectionComplaint = CollectionComplaint.createCollectionComplaint(content, collection, member);
+
+        List<CollectionComplaintFile> collectionComplaintFiles = new ArrayList<>();
+
+        for (String s3Key : s3Keys) {
+            CollectionComplaintFile collectionComplaintFile = CollectionComplaintFile.createCollectionComplaintFile(s3Key, collectionComplaint);
+            collectionComplaintFiles.add(collectionComplaintFile);
+        }
+
+        collectionComplaintRepository.save(collectionComplaint);
+        collectionComplaintFileRepository.saveAll(collectionComplaintFiles);
+    }
+
     // 사용자 관심 분야 컬렉션
     public List<Collection> findInterestCategoryCollections(List<String> collectionFields) {
         List<CollectionCategory> interestCollectionCategories = new ArrayList<>();
@@ -383,4 +396,13 @@ public class CollectionService {
 
         return collections;
     }
+
+    /**
+     * ADMIN-related collection service
+     */
+
+    public List<Collection> findCollectionsByAdmin() {
+        return collectionRepository.findAllWithAdminPrivileges();
+    }
+
 }

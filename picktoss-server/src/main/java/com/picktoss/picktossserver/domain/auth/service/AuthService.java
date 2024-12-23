@@ -13,10 +13,12 @@ import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
+import com.picktoss.picktossserver.domain.auth.controller.response.CheckInviteCodeBySignUpResponse;
 import com.picktoss.picktossserver.domain.auth.entity.EmailVerification;
 import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepository;
 import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.global.enums.auth.CheckInviteCodeResponseType;
 import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -215,10 +217,13 @@ public class AuthService {
     }
 
     // 초대 코드로 회원가입했는지 체크
-    public void checkInviteCodeBySignUp(Long memberId) {
+    public CheckInviteCodeBySignUpResponse checkInviteCodeBySignUp(Long memberId) {
         String memberIdKey = memberId.toString();
 
         Optional<Map> memberIdKeyObject = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);
+        if (memberIdKeyObject.isEmpty()) {
+            return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.NONE);
+        }
         Map memberIdKeyData = memberIdKeyObject.get();
         Object inviteCodeObject = memberIdKeyData.get("inviteCode");
 
@@ -238,6 +243,7 @@ public class AuthService {
 
         inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
         redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
+        return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.READY);
     }
 
     public String decodeIdToken(String idToken) {

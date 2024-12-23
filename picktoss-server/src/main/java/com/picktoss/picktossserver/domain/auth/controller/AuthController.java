@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyInviteCode;
 import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.controller.response.CheckInviteCodeBySignUpResponse;
 import com.picktoss.picktossserver.domain.auth.controller.response.CreateInviteLinkResponse;
 import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
@@ -77,11 +78,12 @@ public class AuthController {
     @Operation(summary = "초대 코드로 회원가입했는지 체크")
     @GetMapping("/auth/invite-code/check")
     @ResponseStatus(HttpStatus.OK)
-    public void checkInviteCodeBySignUp() {
+    public ResponseEntity<CheckInviteCodeBySignUpResponse> checkInviteCodeBySignUp() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.checkInviteCodeBySignUp(memberId);
+        CheckInviteCodeBySignUpResponse response = authFacade.checkInviteCodeBySignUp(memberId);
+        return ResponseEntity.ok().body(response);
     }
 
     /**

@@ -1,13 +1,15 @@
 package com.picktoss.picktossserver.domain.admin.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
+import com.picktoss.picktossserver.domain.admin.controller.request.CreateCollectionForAdminRequest;
+import com.picktoss.picktossserver.domain.admin.controller.response.GetCollectionsForAdminResponse;
+import com.picktoss.picktossserver.domain.admin.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Admin")
 @RestController
@@ -16,16 +18,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final AdminService adminService;
 
-    @Operation(summary = "모든 사용자 조회")
-    @GetMapping("/members")
-    public void getMembers() {
-        
+    /**
+     * GET
+     */
+
+    @Operation(summary = "컬렉션 관리")
+    @GetMapping("/collections")
+    public ResponseEntity<GetCollectionsForAdminResponse> getCollections() {
+        GetCollectionsForAdminResponse response = adminService.findCollections();
+        return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "컬렉션 퀴즈 만들기")
-    @PostMapping("/quizzes")
-    public void createQuizInCollection() {
+    /**
+     * POST
+     */
+
+    @Operation(summary = "컬렉션 만들기")
+    @PostMapping("/collections")
+    public void createQuizInCollection(
+            @Valid @RequestBody CreateCollectionForAdminRequest request
+    ) {
 
     }
 }

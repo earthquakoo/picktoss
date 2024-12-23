@@ -67,8 +67,8 @@ public class QuizFacade {
     public UpdateQuizResultResponse updateQuizResult(List<UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizzes, String quizSetId, Long memberId) {
         QuizSetType quizSetType = quizService.updateQuizResult(quizzes, quizSetId, memberId);
         if (quizSetType == QuizSetType.TODAY_QUIZ_SET) {
-            List<QuizSet> quizSets = quizService.findAllByMemberIdAndSolvedTrueAndQuizSetTypeOrderByCreatedAtDesc(memberId);
-            int currentConsecutiveTodayQuizDate = quizService.checkCurrentConsecutiveTodayQuiz(quizSets);
+            List<QuizSet> quizSets = quizService.findAllByMemberIdAndSolvedTrue(memberId);
+            int currentConsecutiveTodayQuizDate = quizService.checkCurrentConsecutiveSolvedQuizSet(quizSets);
             if (currentConsecutiveTodayQuizDate % 5 == 0) {
                 return new UpdateQuizResultResponse(QuizConstant.FIVE_DAYS_CONSECUTIVE_REWARD, currentConsecutiveTodayQuizDate);
             }

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class S3UploadFeedbackImageEvent {
+public class S3UploadImagesEvent {
     private List<MultipartFile> files;
     private List<String> s3Keys;
 }

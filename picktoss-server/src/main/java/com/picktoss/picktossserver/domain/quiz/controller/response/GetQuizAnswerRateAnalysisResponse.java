@@ -12,14 +12,13 @@ import java.util.List;
 @AllArgsConstructor
 public class GetQuizAnswerRateAnalysisResponse {
 
-    private Integer totalElapsedTime;
     private List<QuizAnswerRateAnalysisDto> quizzes;
 
     @Getter
     @Builder
     public static class QuizAnswerRateAnalysisDto {
         private LocalDate date;
-        private int quizCount;
+        private int totalQuizCount;
         private int incorrectAnswerCount;
     }
 }

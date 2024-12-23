@@ -47,6 +47,9 @@ public class Collection extends AuditBase {
     @OneToMany(mappedBy = "collection", orphanRemoval = true)
     private Set<CollectionSolvedRecord> collectionSolvedRecords = new HashSet<>();
 
+    @OneToMany(mappedBy = "collection", orphanRemoval = true)
+    private Set<CollectionComplaint> collectionComplaints = new HashSet<>();
+
     // Constructor methods
     public static Collection createCollection(
             String name, String emoji, String description, CollectionCategory collectionCategory, Member member
