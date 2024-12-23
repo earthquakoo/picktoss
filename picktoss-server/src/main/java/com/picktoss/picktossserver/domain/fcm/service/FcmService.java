@@ -35,6 +35,12 @@ public class FcmService {
 
         Message message = Message.builder()
                 .setToken(fcmToken)
+                .setNotification(
+                        Notification.builder()
+                                .setTitle(title)
+                                .setBody(body)
+                                .build()
+                )
                 .setAndroidConfig(AndroidConfig.builder()
                         .setNotification(
                                 AndroidNotification.builder()
