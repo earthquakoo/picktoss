@@ -63,11 +63,11 @@ public class DocumentCreateService {
 
         String s3Key = UUID.randomUUID().toString();
         Document document = Document.createDocument(documentName, s3Key, UNPROCESSED, documentType, directory);
+        documentRepository.save(document);
 
         s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));
         sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(memberId, s3Key, document.getId(), quizType, starCount));
 
-        documentRepository.save(document);
         Outbox outbox = Outbox.createOutbox(OutboxStatus.WAITING, quizType, starCount, document);
         outboxRepository.save(outbox);
 
