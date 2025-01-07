@@ -2,11 +2,7 @@ package com.picktoss.picktossserver.domain.admin.service;
 
 import com.picktoss.picktossserver.domain.admin.controller.response.GetCollectionsForAdminResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.service.CollectionService;
-import com.picktoss.picktossserver.domain.document.service.DocumentService;
-import com.picktoss.picktossserver.domain.member.service.MemberService;
-import com.picktoss.picktossserver.domain.quiz.service.QuizService;
-import com.picktoss.picktossserver.domain.star.service.StarService;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,15 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminService {
 
-    private final DocumentService documentService;
-    private final QuizService quizService;
-    private final MemberService memberService;
-    private final StarService starService;
-    private final CollectionService collectionService;
-
+    private final CollectionRepository collectionRepository;
 
     public GetCollectionsForAdminResponse findCollections() {
-        List<Collection> collections = collectionService.findCollectionsByAdmin();
+        List<Collection> collections = collectionRepository.findAllWithAdminPrivileges();
 
         List<GetCollectionsForAdminResponse.GetCollectionsForAdminCollectionDto> collectionDtos = new ArrayList<>();
 
@@ -47,9 +38,5 @@ public class AdminService {
         }
 
         return new GetCollectionsForAdminResponse(collectionDtos);
-    }
-
-    public void createCollections() {
-
     }
 }

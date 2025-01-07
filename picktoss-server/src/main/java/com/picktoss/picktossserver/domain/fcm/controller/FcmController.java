@@ -2,9 +2,10 @@ package com.picktoss.picktossserver.domain.fcm.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.fcm.controller.request.FcmNotificationRequestDto;
-import com.picktoss.picktossserver.domain.fcm.controller.request.SaveFcmTokenRequest;
-import com.picktoss.picktossserver.domain.fcm.facade.FcmFacade;
+import com.picktoss.picktossserver.domain.fcm.dto.request.FcmNotificationRequestDto;
+import com.picktoss.picktossserver.domain.fcm.dto.request.SaveFcmTokenRequest;
+import com.picktoss.picktossserver.domain.fcm.service.FcmCreateService;
+import com.picktoss.picktossserver.domain.fcm.service.FcmSendService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,8 +20,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v2")
 public class FcmController {
 
-    private final FcmFacade fcmFacade;
     private final JwtTokenProvider jwtTokenProvider;
+    private final FcmCreateService fcmCreateService;
+    private final FcmSendService fcmSendService;
 
     @Operation(summary = "Fcm token 저장")
     @PostMapping("/tokens")
@@ -29,7 +31,7 @@ public class FcmController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        fcmFacade.saveFcmToken(memberId, request.getFcmToken());
+        fcmCreateService.saveFcmToken(memberId, request.getFcmToken());
     }
 
     @Operation(summary = "앱 알림 푸시")
@@ -39,6 +41,6 @@ public class FcmController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        fcmFacade.sendByToken(request.getTitle(), request.getBody(), request.getContent(), memberId);
+        fcmSendService.sendByToken(request.getTitle(), request.getBody(), request.getContent(), memberId);
     }
 }

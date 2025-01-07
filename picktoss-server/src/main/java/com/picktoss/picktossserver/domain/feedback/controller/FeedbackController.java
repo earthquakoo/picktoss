@@ -4,7 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.feedback.controller.request.CreateFeedbackRequest;
-import com.picktoss.picktossserver.domain.feedback.facade.FeedbackFacade;
+import com.picktoss.picktossserver.domain.feedback.service.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FO
 public class FeedbackController {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final FeedbackFacade feedbackFacade;
+    private final FeedbackService feedbackService;
 
     @Operation(summary = "Create Feedback")
     @PostMapping(value = "/feedback", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,6 +33,6 @@ public class FeedbackController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        feedbackFacade.createFeedback(request.getFiles(), request.getTitle(), request.getContent(), request.getType(), request.getEmail(), memberId);
+        feedbackService.createFeedback(request.getFiles(), request.getTitle(), request.getContent(), request.getType(), request.getEmail(), memberId);
     }
 }

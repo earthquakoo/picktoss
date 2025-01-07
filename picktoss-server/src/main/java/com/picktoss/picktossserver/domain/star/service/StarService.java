@@ -45,7 +45,7 @@ public class StarService {
     }
 
     @Transactional
-    public void depositStarByTodayQuizSolvedReward(Star star, boolean isContinuousFiveDays) {
+    public void depositStarByQuizSetSolvedReward(Star star, boolean isContinuousFiveDays) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
         Integer changeAmount = StarConstant.TODAY_QUIZ_REWARD_BY_ONE_DAY;
         if (isContinuousFiveDays) {
@@ -54,9 +54,9 @@ public class StarService {
         Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
 
         StarHistory starHistory = StarHistory.createStarHistory(
-                "오늘의 퀴즈 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD,  star);
+                "퀴즈셋 풀이 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD,  star);
 
-        star.depositStarByTodayQuizSolvedReward(StarConstant.TODAY_QUIZ_REWARD_BY_ONE_DAY);
+        star.depositStarByTodayQuizSolvedReward(changeAmount);
         starHistoryRepository.save(starHistory);
     }
 

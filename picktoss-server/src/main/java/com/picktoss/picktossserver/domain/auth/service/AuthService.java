@@ -7,19 +7,33 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
+import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.core.s3.S3Provider;
-import com.picktoss.picktossserver.domain.auth.controller.dto.GoogleMemberDto;
-import com.picktoss.picktossserver.domain.auth.controller.dto.KakaoMemberDto;
-import com.picktoss.picktossserver.domain.auth.controller.dto.OauthResponseDto;
-import com.picktoss.picktossserver.domain.auth.controller.response.CheckInviteCodeBySignUpResponse;
+import com.picktoss.picktossserver.domain.auth.dto.GoogleMemberDto;
+import com.picktoss.picktossserver.domain.auth.dto.KakaoMemberDto;
+import com.picktoss.picktossserver.domain.auth.dto.OauthResponseDto;
+import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
+import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.entity.EmailVerification;
 import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepository;
-import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.directory.repository.DirectoryRepository;
+import com.picktoss.picktossserver.domain.member.dto.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
+import com.picktoss.picktossserver.domain.star.constant.StarConstant;
+import com.picktoss.picktossserver.domain.star.entity.Star;
+import com.picktoss.picktossserver.domain.star.entity.StarHistory;
+import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
+import com.picktoss.picktossserver.domain.star.repository.StarRepository;
 import com.picktoss.picktossserver.global.enums.auth.CheckInviteCodeResponseType;
 import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
+import com.picktoss.picktossserver.global.enums.star.Source;
+import com.picktoss.picktossserver.global.enums.star.TransactionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -42,6 +56,11 @@ public class AuthService {
     private final EmailVerificationRepository emailVerificationRepository;
     private final S3Provider s3Provider;
     private final RedisUtil redisUtil;
+    private final StarRepository starRepository;
+    private final StarHistoryRepository starHistoryRepository;
+    private final MemberRepository memberRepository;
+    private final DirectoryRepository directoryRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Value("${oauth.google.client_id}")
     private String oauthClientId;
@@ -82,6 +101,72 @@ public class AuthService {
             return responseEntity.getBody().getIdToken().split("\\.")[1];
         }
         return null;
+    }
+
+    @Transactional
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteLink) {
+        String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
+
+        if (socialPlatform == SocialPlatform.KAKAO) {
+            KakaoMemberDto kakaoMemberDto = transJsonToKakaoMemberDto(memberInfo);
+            Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
+
+            if (optionalMember.isEmpty()) {
+                String uniqueCode = generateUniqueCode();
+                String nickname = "Picktoss#" + uniqueCode;
+                Member member = Member.createKakaoMember(nickname, kakaoMemberDto.getId());
+                memberRepository.save(member);
+
+                Star star = Star.createStar(StarConstant.SIGN_UP_STAR, member);
+                StarHistory starHistory = StarHistory.createStarHistory("회원 가입", StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
+
+                starRepository.save(star);
+                starHistoryRepository.save(starHistory);
+
+                Directory directory = Directory.createDefaultDirectory(member);
+                directoryRepository.save(directory);
+
+
+                if (inviteLink != null) {
+                    verifyInviteCode(inviteLink, member.getId());
+                }
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
+            } else {
+                Member member = optionalMember.get();
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
+            }
+        } else if (socialPlatform == SocialPlatform.GOOGLE) {
+            GoogleMemberDto googleMemberDto = transJsonToGoogleMemberDto(memberInfo);
+            Optional<Member> optionalMember = memberRepository.findByClientId(googleMemberDto.getId());
+
+            if (optionalMember.isEmpty()) {
+                Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
+                memberRepository.save(member);
+
+                if (inviteLink != null) {
+                    verifyInviteCode(inviteLink, member.getId());
+                }
+                Star star = Star.createStar(StarConstant.SIGN_UP_STAR, member);
+                StarHistory starHistory = StarHistory.createStarHistory("회원 가입", StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
+
+                starRepository.save(star);
+                starHistoryRepository.save(starHistory);
+
+                Directory directory = Directory.createDefaultDirectory(member);
+                directoryRepository.save(directory);
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
+            } else {
+                Member member = optionalMember.get();
+                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
+                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
+            }
+
+        } else {
+            throw new CustomException(ErrorInfo.INVALID_SOCIAL_PLATFORM);
+        }
     }
 
     public String getOauthAccessMemberInfo(String accessToken, SocialPlatform socialPlatform) {
@@ -136,7 +221,10 @@ public class AuthService {
      * 이메일 인증코드 인증
      */
     @Transactional
-    public void verifyVerificationCode(String email, String verificationCode, Member member) {
+    public void verifyVerificationCode(String email, String verificationCode, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);
         if (optionalEmailVerification.isEmpty()) {
             throw new CustomException(EMAIL_VERIFICATION_NOT_FOUND);
@@ -217,7 +305,14 @@ public class AuthService {
     }
 
     // 초대 코드로 회원가입했는지 체크
+    @Transactional
     public CheckInviteCodeBySignUpResponse checkInviteCodeBySignUp(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        Star star = member.getStar();
+        StarHistory starHistory = star.depositStarByInviteFriendReward(star);
+        starHistoryRepository.save(starHistory);
+
         String memberIdKey = memberId.toString();
 
         Optional<Map> memberIdKeyObject = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);

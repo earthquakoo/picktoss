@@ -4,9 +4,12 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.document.controller.request.*;
-import com.picktoss.picktossserver.domain.document.controller.response.*;
-import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
+import com.picktoss.picktossserver.domain.document.dto.request.*;
+import com.picktoss.picktossserver.domain.document.dto.response.*;
+import com.picktoss.picktossserver.domain.document.service.DocumentCreateService;
+import com.picktoss.picktossserver.domain.document.service.DocumentDeleteService;
+import com.picktoss.picktossserver.domain.document.service.DocumentSearchService;
+import com.picktoss.picktossserver.domain.document.service.DocumentUpdateService;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +31,10 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 public class DocumentController {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final DocumentFacade documentFacade;
+    private final DocumentCreateService documentCreateService;
+    private final DocumentDeleteService documentDeleteService;
+    private final DocumentSearchService documentSearchService;
+    private final DocumentUpdateService documentUpdateService;
 
     /**
      * GET
@@ -43,7 +49,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleDocumentResponse documents = documentFacade.findSingleDocument(memberId, documentId);
+        GetSingleDocumentResponse documents = documentSearchService.findSingleDocument(memberId, documentId);
         return ResponseEntity.ok().body(documents);
     }
 
@@ -57,7 +63,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocumentsInDirectory(memberId, directoryId, documentSortOption);
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentSearchService.findAllDocumentsInDirectory(memberId, directoryId, documentSortOption);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
@@ -68,7 +74,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetDocumentsNeedingReviewResponse response = documentFacade.findDocumentsNeedingReview(memberId);
+        GetDocumentsNeedingReviewResponse response = documentSearchService.findDocumentsNeedingReview(memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -88,7 +94,7 @@ public class DocumentController {
         Long directoryId = Long.valueOf(request.getDirectoryId());
         Integer star = Integer.valueOf(request.getStar());
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, directoryId, star, request.getQuizType(), request.getDocumentType());
+        Long documentId = documentCreateService.createDocument(request.getDocumentName(), request.getFile(), request.getDocumentType(), request.getQuizType(), star, directoryId, memberId);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -100,7 +106,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        SearchDocumentResponse response = documentFacade.searchDocumentByKeyword(request.getKeyword(), memberId);
+        SearchDocumentResponse response = documentSearchService.searchDocumentByKeyword(request.getKeyword(), memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -114,21 +120,22 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        IntegratedSearchResponse response = documentFacade.integratedSearchByKeyword(memberId, request.getKeyword());
+        IntegratedSearchResponse response = documentSearchService.integratedSearchByKeyword(memberId, request.getKeyword());
         return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "문서에서 추가 퀴즈 생성")
     @PostMapping("/documents/{document_id}/add-quizzes")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createQuizzes(
+    public ResponseEntity<CreateDocumentResponse> createQuizzes(
             @PathVariable("document_id") Long documentId,
             @Valid @RequestBody CreateQuizzesRequest request
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.createQuizzes(documentId, memberId, request.getStar(), request.getQuizType());
+        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getQuizType(), request.getStar());
+        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
     /**
@@ -143,7 +150,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.moveDocumentToDirectory(request.getDocumentIds(), memberId, request.getDirectoryId());
+        documentUpdateService.moveDocumentToDirectory(request.getDocumentIds(), memberId, request.getDirectoryId());
     }
 
     @Operation(summary = "문서 내용 업데이트")
@@ -156,7 +163,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.updateDocumentContent(documentId, memberId, request.getName(), request.getFile());
+        documentUpdateService.updateDocumentContent(request.getFile(), documentId, memberId, request.getName());
     }
 
     @Operation(summary = "문서 이름 변경")
@@ -169,7 +176,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.updateDocumentName(documentId, memberId, request.getName());
+        documentUpdateService.updateDocumentName(documentId, memberId, request.getName());
     }
 
     @Operation(summary = "오늘의 퀴즈 관리(문제를 가져올 노트 선택)", description = "Request map에서 key값은 number, value값은 boolean입니다.")
@@ -181,7 +188,7 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIdTodayQuizMap(), memberId);
+        documentUpdateService.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIdTodayQuizMap(), memberId);
     }
 
     /**
@@ -198,6 +205,6 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.deleteDocument(memberId, request.getDocumentIds());
+        documentDeleteService.deleteDocument(memberId, request.getDocumentIds());
     }
 }

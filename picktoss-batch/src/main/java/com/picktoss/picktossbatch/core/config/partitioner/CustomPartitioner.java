@@ -1,6 +1,5 @@
 package com.picktoss.picktossbatch.core.config.partitioner;
 
-import com.picktoss.picktossserver.domain.member.service.MemberService;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.partition.support.Partitioner;

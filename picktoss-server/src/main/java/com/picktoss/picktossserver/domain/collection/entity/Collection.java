@@ -5,7 +5,10 @@ import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +18,8 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@SQLDelete(sql = "UPDATE collection SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("is_deleted = false")
 public class Collection extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +39,12 @@ public class Collection extends AuditBase {
     @Column(name = "collection_category")
     private CollectionCategory collectionCategory;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
+    @Column(name = "deleted_at", nullable = false)
+    private LocalDateTime deleteAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -43,9 +54,6 @@ public class Collection extends AuditBase {
 
     @OneToMany(mappedBy = "collection", orphanRemoval = true)
     private Set<CollectionBookmark> collectionBookmarks = new HashSet<>();
-
-    @OneToMany(mappedBy = "collection", orphanRemoval = true)
-    private Set<CollectionSolvedRecord> collectionSolvedRecords = new HashSet<>();
 
     @OneToMany(mappedBy = "collection", orphanRemoval = true)
     private Set<CollectionComplaint> collectionComplaints = new HashSet<>();
@@ -60,6 +68,8 @@ public class Collection extends AuditBase {
                 .description(description)
                 .collectionCategory(collectionCategory)
                 .member(member)
+                .isDeleted(false)
+                .deleteAt(LocalDateTime.now())
                 .build();
     }
 

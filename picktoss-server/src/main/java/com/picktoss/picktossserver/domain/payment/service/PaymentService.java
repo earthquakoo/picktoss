@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.payment.controller.dto.TossPaymentResponseDto;
 import com.picktoss.picktossserver.domain.payment.entity.TossPayment;
 import com.picktoss.picktossserver.domain.payment.repository.PaymentRepository;
@@ -33,6 +34,7 @@ public class PaymentService {
 
     private final RedisUtil redisUtil;
     private final PaymentRepository paymentRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${payment.secret-key}")
     private String tossSecretKey;
@@ -60,7 +62,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public void confirmPayment(String paymentKey, String orderId, Integer amount, Member member) {
+    public void confirmPayment(String paymentKey, String orderId, Integer amount, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
+
         HttpHeaders httpHeaders = createTossPaymentRequestHeaders();
 
         HashMap<String, String> params = new HashMap<>();

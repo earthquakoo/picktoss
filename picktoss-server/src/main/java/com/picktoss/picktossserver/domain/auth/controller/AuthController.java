@@ -5,17 +5,16 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.auth.controller.request.LoginRequest;
-import com.picktoss.picktossserver.domain.auth.controller.request.SendVerificationCodeRequest;
-import com.picktoss.picktossserver.domain.auth.controller.request.VerifyInviteCode;
-import com.picktoss.picktossserver.domain.auth.controller.request.VerifyVerificationCodeRequest;
-import com.picktoss.picktossserver.domain.auth.controller.response.CheckInviteCodeBySignUpResponse;
-import com.picktoss.picktossserver.domain.auth.controller.response.CreateInviteLinkResponse;
-import com.picktoss.picktossserver.domain.auth.controller.response.LoginResponse;
-import com.picktoss.picktossserver.domain.auth.facade.AuthFacade;
+import com.picktoss.picktossserver.domain.auth.dto.request.LoginRequest;
+import com.picktoss.picktossserver.domain.auth.dto.request.SendVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.dto.request.VerifyInviteCode;
+import com.picktoss.picktossserver.domain.auth.dto.request.VerifyVerificationCodeRequest;
+import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
+import com.picktoss.picktossserver.domain.auth.dto.response.CreateInviteLinkResponse;
+import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
+import com.picktoss.picktossserver.domain.auth.service.AuthCreateService;
 import com.picktoss.picktossserver.domain.auth.service.AuthService;
-import com.picktoss.picktossserver.domain.member.controller.dto.MemberInfoDto;
-import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
+import com.picktoss.picktossserver.domain.member.dto.dto.MemberInfoDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,10 +32,9 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 @RequestMapping("/api/v2")
 public class AuthController {
 
-    private final MemberFacade memberFacade;
     private final AuthService authService;
-    private final AuthFacade authFacade;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthCreateService authCreateService;
 
     /**
      * GET
@@ -58,7 +56,7 @@ public class AuthController {
 
         String decodeJson = authService.decodeIdToken(idToken);
         MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
-        JwtTokenDto jwtTokenDto = memberFacade.createMember(memberInfoDto);
+        JwtTokenDto jwtTokenDto = authCreateService.createMember(memberInfoDto);
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
         return jwtTokenDto.getAccessToken();
     }
@@ -71,7 +69,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String inviteLink = authFacade.createInviteLink(memberId);
+        String inviteLink = authService.createInviteLink(memberId);
         return ResponseEntity.ok().body(new CreateInviteLinkResponse(inviteLink));
     }
 
@@ -82,7 +80,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        CheckInviteCodeBySignUpResponse response = authFacade.checkInviteCodeBySignUp(memberId);
+        CheckInviteCodeBySignUpResponse response = authService.checkInviteCodeBySignUp(memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -98,7 +96,7 @@ public class AuthController {
             @RequestParam(required = false, value = "invite-link") String inviteLink
     ) {
 
-        LoginResponse response = authFacade.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
+        LoginResponse response = authService.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
         return ResponseEntity.ok().body(response);
     }
 
@@ -109,7 +107,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.sendVerificationCode(request.getEmail());
+        authService.sendVerificationCode(request.getEmail());
     }
 
     @Operation(summary = "이메일 코드 인증")
@@ -120,7 +118,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
+        authService.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
     }
 
     @Operation(summary = "초대 코드 인증")
@@ -131,7 +129,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authFacade.verifyInviteCode(request.getInviteCode(), memberId);
+        authService.verifyInviteCode(request.getInviteCode(), memberId);
     }
 
     /**

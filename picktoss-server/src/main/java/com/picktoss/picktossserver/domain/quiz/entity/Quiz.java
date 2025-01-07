@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.quiz.entity;
 
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
 import com.picktoss.picktossserver.domain.document.entity.Document;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import jakarta.persistence.*;
@@ -40,8 +41,8 @@ public class Quiz extends AuditBase {
     @Column(name = "quiz_type", nullable = false)
     private QuizType quizType;
 
-    @Column(name = "incorrect_answer_count", nullable = false)
-    private int incorrectAnswerCount;
+    @Column(name = "correct_answer_count", nullable = false)
+    private int correctAnswerCount;
 
     @Column(name = "is_review_needed", nullable = false)
     private boolean isReviewNeeded;
@@ -60,8 +61,8 @@ public class Quiz extends AuditBase {
     private List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
 
     // Business Logics
-    public void addIncorrectAnswerCount() {
-        this.incorrectAnswerCount += 1;
+    public void addCorrectAnswerCount() {
+        this.correctAnswerCount += 1;
     }
 
     public void addDeliveredCount() {
@@ -74,5 +75,9 @@ public class Quiz extends AuditBase {
 
     public void updateIsReviewNeededFalseByCorrectAnswer() {
         this.isReviewNeeded = false;
+    }
+
+    public Member findMemberById(Long memberId) {
+        return document.getDirectory().getMember();
     }
 }

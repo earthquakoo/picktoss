@@ -1,13 +1,12 @@
 package com.picktoss.picktossserver.domain.collection.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionCategoryMapper;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionCategoriesResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetCollectionSAnalysisResponse;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetQuizzesInCollectionByCollectionCategory;
-import com.picktoss.picktossserver.domain.collection.controller.response.GetSingleCollectionResponse;
-import com.picktoss.picktossserver.domain.collection.entity.*;
+import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionCategoryMapper;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionCategoriesResponse;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetQuizzesInCollectionByCollectionCategory;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.entity.*;
 import com.picktoss.picktossserver.domain.collection.repository.*;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
@@ -32,7 +31,6 @@ public class CollectionService {
     private final CollectionRepository collectionRepository;
     private final CollectionQuizRepository collectionQuizRepository;
     private final CollectionBookmarkRepository collectionBookmarkRepository;
-    private final CollectionSolvedRecordRepository collectionSolvedRecordRepository;
     private final CollectionComplaintRepository collectionComplaintRepository;
     private final CollectionComplaintFileRepository collectionComplaintFileRepository;
 
@@ -146,7 +144,7 @@ public class CollectionService {
                 .creatorName(createdMember.getName())
                 .build();
 
-        int solvedMemberCount = findSolvedCountCollectionByCollectionId(collection);
+//        int solvedMemberCount = findSolvedCountCollectionByCollectionId(collection);
         String collectionCategoryName = CollectionCategoryMapper.mapCollectionCategoryName(collection.getCollectionCategory());
         Set<CollectionBookmark> collectionBookmarks = collection.getCollectionBookmarks();
         boolean isBookmarked = collectionBookmarks.stream()
@@ -159,7 +157,7 @@ public class CollectionService {
                 .bookmarked(isBookmarked)
                 .emoji(collection.getEmoji())
                 .collectionCategory(collectionCategoryName)
-                .solvedMemberCount(solvedMemberCount)
+//                .solvedMemberCount(solvedMemberCount)
                 .bookmarkCount(collection.getCollectionBookmarks().size())
                 .member(memberDto)
                 .quizzes(quizzesDtos)
@@ -333,32 +331,32 @@ public class CollectionService {
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
     }
 
-    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
-        List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
+//    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
+//        List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
+//
+//        Map<Collection, CollectionCategory> quizMap = new HashMap<>();
+//        // 중복된 컬렉션 제거 후 map으로 변경
+//        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
+//            Collection collection = collectionSolvedRecord.getCollection();
+//            quizMap.putIfAbsent(collection, collection.getCollectionCategory());
+//        }
+//
+//        Map<CollectionCategory, Integer> collectionFieldMap = new HashMap<>();
+//        for (Collection collection : quizMap.keySet()) {
+//            collectionFieldMap.put(collection.getCollectionCategory(), collectionFieldMap.getOrDefault(collection.getCollectionCategory(), 0) + 1);
+//        }
+//        return GetCollectionSAnalysisResponse.builder()
+//                .collectionsAnalysis(collectionFieldMap)
+//                .build();
+//    }
 
-        Map<Collection, CollectionCategory> quizMap = new HashMap<>();
-        // 중복된 컬렉션 제거 후 map으로 변경
-        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
-            Collection collection = collectionSolvedRecord.getCollection();
-            quizMap.putIfAbsent(collection, collection.getCollectionCategory());
-        }
-
-        Map<CollectionCategory, Integer> collectionFieldMap = new HashMap<>();
-        for (Collection collection : quizMap.keySet()) {
-            collectionFieldMap.put(collection.getCollectionCategory(), collectionFieldMap.getOrDefault(collection.getCollectionCategory(), 0) + 1);
-        }
-        return GetCollectionSAnalysisResponse.builder()
-                .collectionsAnalysis(collectionFieldMap)
-                .build();
-    }
-
-    private int findSolvedCountCollectionByCollectionId(Collection collection) {
-        return (int) collection.getCollectionSolvedRecords().stream()
-                .map(CollectionSolvedRecord::getMember)
-                .map(Member::getId)
-                .distinct()
-                .count();
-    }
+//    private int findSolvedCountCollectionByCollectionId(Collection collection) {
+//        return (int) collection.getCollectionSolvedRecords().stream()
+//                .map(CollectionSolvedRecord::getMember)
+//                .map(Member::getId)
+//                .distinct()
+//                .count();
+//    }
 
     private List<Collection> filterCollections(CollectionSortOption collectionSortOption, List<CollectionCategory> collectionCategories, QuizType quizType, Integer quizCount) {
         List<Collection> collections;
