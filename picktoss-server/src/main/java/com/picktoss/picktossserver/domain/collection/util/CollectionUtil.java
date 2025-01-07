@@ -19,8 +19,10 @@ public class CollectionUtil {
         Map<Collection, CollectionQuizSet> collectionQuizMap = new HashMap<>();
 
         for (CollectionQuiz collectionQuiz : collectionQuizzes) {
-            CollectionQuizSet collectionQuizSet = collectionQuiz.getCollectionQuizSetCollectionQuizzes().getFirst().getCollectionQuizSet();
-            collectionQuizMap.putIfAbsent(collectionQuiz.getCollection(), collectionQuizSet);
+            if (!collectionQuiz.getCollectionQuizSetCollectionQuizzes().isEmpty()) {
+                CollectionQuizSet collectionQuizSet = collectionQuiz.getCollectionQuizSetCollectionQuizzes().getFirst().getCollectionQuizSet();
+                collectionQuizMap.putIfAbsent(collectionQuiz.getCollection(), collectionQuizSet);
+            }
         }
 
         for (CollectionQuizSet collectionQuizSet : collectionQuizMap.values()) {
