@@ -5,6 +5,9 @@ import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Table(name = "collection_quiz")
@@ -24,6 +27,9 @@ public class CollectionQuiz extends AuditBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "collection_id", nullable = false)
     private Collection collection;
+
+    @OneToMany(mappedBy = "collectionQuiz", orphanRemoval = true)
+    private List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = new ArrayList<>();
 
     // Constructor methods
     public static CollectionQuiz createQuizCollection(Quiz quiz, Collection collection) {

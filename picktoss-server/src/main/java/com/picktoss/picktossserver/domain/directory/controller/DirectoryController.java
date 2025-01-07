@@ -4,12 +4,15 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.directory.controller.request.CreateDirectoryRequest;
-import com.picktoss.picktossserver.domain.directory.controller.request.UpdateDirectoryInfoRequest;
-import com.picktoss.picktossserver.domain.directory.controller.response.CreateDirectoryResponse;
-import com.picktoss.picktossserver.domain.directory.controller.response.GetAllDirectoriesResponse;
-import com.picktoss.picktossserver.domain.directory.controller.response.GetSingleDirectoryResponse;
-import com.picktoss.picktossserver.domain.directory.facade.DirectoryFacade;
+import com.picktoss.picktossserver.domain.directory.dto.request.CreateDirectoryRequest;
+import com.picktoss.picktossserver.domain.directory.dto.request.UpdateDirectoryInfoRequest;
+import com.picktoss.picktossserver.domain.directory.dto.response.CreateDirectoryResponse;
+import com.picktoss.picktossserver.domain.directory.dto.response.GetAllDirectoriesResponse;
+import com.picktoss.picktossserver.domain.directory.dto.response.GetSingleDirectoryResponse;
+import com.picktoss.picktossserver.domain.directory.service.DirectoryCreateService;
+import com.picktoss.picktossserver.domain.directory.service.DirectoryDeleteService;
+import com.picktoss.picktossserver.domain.directory.service.DirectorySearchService;
+import com.picktoss.picktossserver.domain.directory.service.DirectoryUpdateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,8 +31,11 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 @RequestMapping("/api/v2")
 public class DirectoryController {
 
-    private final DirectoryFacade directoryFacade;
     private final JwtTokenProvider jwtTokenProvider;
+    private final DirectoryCreateService directoryCreateService;
+    private final DirectoryDeleteService directoryDeleteService;
+    private final DirectoryUpdateService directoryUpdateService;
+    private final DirectorySearchService directorySearchService;
 
     /**
      * GET
@@ -42,7 +48,7 @@ public class DirectoryController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDirectoriesResponse.GetAllDirectoriesDirectoryDto> directories = directoryFacade.findAllDirectories(memberId);
+        List<GetAllDirectoriesResponse.GetAllDirectoriesDirectoryDto> directories = directorySearchService.findAllDirectories(memberId);
         return ResponseEntity.ok().body(new GetAllDirectoriesResponse(directories));
     }
 
@@ -54,7 +60,7 @@ public class DirectoryController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleDirectoryResponse response = directoryFacade.findSingleDirectory(directoryId, memberId);
+        GetSingleDirectoryResponse response = directorySearchService.findSingleDirectory(directoryId, memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -70,7 +76,7 @@ public class DirectoryController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long directoryId = directoryFacade.createDirectory(memberId, request.getName(), request.getEmoji());
+        Long directoryId = directoryCreateService.createDirectory(request.getName(), request.getEmoji(), memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(new CreateDirectoryResponse(directoryId));
     }
 
@@ -88,7 +94,7 @@ public class DirectoryController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        directoryFacade.updateDirectoryInfo(memberId, directoryId, request.getName(), request.getEmoji());
+        directoryUpdateService.updateDirectoryInfo(memberId, directoryId, request.getName(), request.getEmoji());
     }
 
     /**
@@ -102,6 +108,6 @@ public class DirectoryController {
     public void deleteDirectory(@PathVariable(name = "directory_id") Long directoryId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
-        directoryFacade.deleteDirectory(memberId, directoryId);
+        directoryDeleteService.deleteDirectory(memberId, directoryId);
     }
 }

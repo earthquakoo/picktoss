@@ -4,12 +4,16 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.collection.controller.dto.CollectionResponseDto;
-import com.picktoss.picktossserver.domain.collection.controller.mapper.CollectionDtoMapper;
-import com.picktoss.picktossserver.domain.collection.controller.request.*;
-import com.picktoss.picktossserver.domain.collection.controller.response.*;
+import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionDtoMapper;
+import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionResponseDto;
+import com.picktoss.picktossserver.domain.collection.dto.request.*;
+import com.picktoss.picktossserver.domain.collection.dto.response.CreateCollectionResponse;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionCategoriesResponse;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetQuizzesInCollectionByCollectionCategory;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.facade.CollectionFacade;
+import com.picktoss.picktossserver.domain.collection.service.*;
+import com.picktoss.picktossserver.domain.quiz.dto.response.CreateQuizzesResponse;
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.collection.CollectionSortOption;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
@@ -33,10 +37,21 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 public class CollectionController {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final CollectionFacade collectionFacade;
+
+    private final CollectionBookmarkService collectionBookmarkService;
+    private final CollectionComplaintService collectionComplaintService;
+    private final CollectionCreateService collectionCreateService;
+    private final CollectionDeleteService collectionDeleteService;
+    private final CollectionQuizSetCreateService collectionQuizSetCreateService;
+    private final CollectionSearchService collectionSearchService;
+    private final CollectionUpdateService collectionUpdateService;
 
     /**
      * GET
+     */
+
+    /**
+     * CollectionSearchService
      */
 
     @Operation(summary = "모든 컬렉션 가져오기(탐색)")
@@ -51,7 +66,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findAllCollections(collectionSortOption, collectionCategoryOption, quizType, quizCount);
+        List<Collection> collections = collectionSearchService.findAllCollections(collectionSortOption, collectionCategoryOption, quizType, quizCount);
         CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
@@ -63,7 +78,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findAllByMemberIdAndBookmarked(memberId);
+        List<Collection> collections = collectionSearchService.findAllByMemberIdAndBookmarked(memberId);
         CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
@@ -77,7 +92,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto> response = collectionFacade.findAllByMemberIdAndCollectionCategoryAndBookmarked(memberId, collectionCategory);
+        List<GetQuizzesInCollectionByCollectionCategory.QuizInCollectionDto> response = collectionSearchService.findAllByMemberIdAndCollectionCategoryAndBookmarked(memberId, collectionCategory);
         return ResponseEntity.ok().body(new GetQuizzesInCollectionByCollectionCategory(response));
     }
 
@@ -88,7 +103,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findMemberGeneratedCollections(memberId);
+        List<Collection> collections = collectionSearchService.findMemberGeneratedCollections(memberId);
         CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
@@ -104,7 +119,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleCollectionResponse response = collectionFacade.findCollectionInfoByCollectionId(collectionId);
+        GetSingleCollectionResponse response = collectionSearchService.findCollectionInfoByCollectionId(collectionId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -117,19 +132,8 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.searchCollections(keyword);
+        List<Collection> collections = collectionSearchService.searchCollections(keyword);
         CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @Operation(summary = "컬렉션 분석")
-    @GetMapping("/collections/analysis")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetCollectionSAnalysisResponse> getCollectionAnalysis() {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        GetCollectionSAnalysisResponse response = collectionFacade.findCollectionsAnalysis(memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -141,7 +145,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<Collection> collections = collectionFacade.findInterestCategoryCollections(memberId);
+        List<Collection> collections = collectionSearchService.findInterestCategoryCollections(memberId);
         CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
         return ResponseEntity.ok().body(response);
     }
@@ -153,13 +157,17 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetCollectionCategoriesResponse.GetCollectionCategoriesDto> response = collectionFacade.findCollectionCategoriesByMemberId(memberId);
+        List<GetCollectionCategoriesResponse.GetCollectionCategoriesDto> response = collectionSearchService.findCollectionCategoriesByMemberId(memberId);
         return ResponseEntity.ok().body(new GetCollectionCategoriesResponse(response));
     }
 
 
     /**
      * POST
+     */
+
+    /*
+     * CollectionCreateService
      */
 
     @Operation(summary = "컬렉션 생성")
@@ -170,9 +178,13 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long collectionId = collectionFacade.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionCategory(), memberId);
+        Long collectionId = collectionCreateService.createCollection(request.getQuizzes(), request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionCategory(), memberId);
         return ResponseEntity.ok().body(new CreateCollectionResponse(collectionId));
     }
+
+    /*
+     * CollectionBookmarkService
+     */
 
     @Operation(summary = "컬렉션 북마크하기")
     @PostMapping("/collections/{collection_id}/create-bookmark")
@@ -184,8 +196,12 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.createCollectionBookmark(memberId, collectionId);
+        collectionBookmarkService.createCollectionBookmark(memberId, collectionId);
     }
+
+    /*
+     * CollectionComplaintService
+     */
 
     @Operation(summary = "컬렉션 신고하기")
     @PostMapping(value = "/collections/{collection_id}/complaint", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -197,11 +213,30 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.createCollectionComplaint(request.getFiles(), request.getContent(), collectionId, memberId);
+        collectionComplaintService.createCollectionComplaint(collectionId, request.getContent(), memberId, request.getFiles());
+    }
+
+    /*
+     * CollectionQuizSetCreateService
+     */
+
+    @Operation(summary = "컬렉션 퀴즈 시작하기")
+    @PostMapping("/collections/{collection_id}/collection-quizzes")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateQuizzesResponse> createCollectionQuizSet(@PathVariable("collection_id") Long collectionId) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        CreateQuizzesResponse response = collectionQuizSetCreateService.createCollectionQuizSet(collectionId, memberId);
+        return ResponseEntity.ok().body(response);
     }
 
     /**
      * PATCH
+     */
+
+    /*
+     * CollectionUpdateService
      */
 
     @Operation(summary = "컬렉션 정보 수정")
@@ -215,7 +250,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.updateCollectionInfo(collectionId, memberId, request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionCategory());
+        collectionUpdateService.updateCollectionInfo(collectionId, memberId, request.getName(), request.getDescription(), request.getEmoji(), request.getCollectionCategory());
     }
 
     @Operation(summary = "컬렉션에 퀴즈 추가", description = "노트 상세에서 특정 퀴즈를 특정 컬렉션에 추가")
@@ -229,7 +264,7 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.addQuizToCollection(collectionId, memberId, request.getQuizId());
+        collectionUpdateService.addQuizToCollection(collectionId, memberId, request.getQuizId());
     }
 
     @Operation(summary = "컬렉션 문제 편집")
@@ -243,11 +278,15 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.updateCollectionQuizzes(request.getQuizzes(), collectionId, memberId);
+        collectionUpdateService.updateCollectionQuizzes(request.getQuizzes(), collectionId, memberId);
     }
 
     /**
      * DELETE
+     */
+
+    /*
+     * CollectionDeleteService
      */
 
     @Operation(summary = "컬렉션 삭제")
@@ -260,8 +299,12 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.deleteCollection(collectionId, memberId);
+        collectionDeleteService.deleteCollection(collectionId, memberId);
     }
+
+    /*
+     * CollectionBookmarkService
+     */
 
     @Operation(summary = "컬렉션 북마크 취소하기")
     @DeleteMapping("/collections/{collection_id}/delete-bookmark")
@@ -273,6 +316,6 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionFacade.deleteCollectionBookmark(memberId, collectionId);
+        collectionBookmarkService.deleteCollectionBookmark(memberId, collectionId);
     }
 }

@@ -18,10 +18,10 @@ public class RandomQuizRecord extends AuditBase {
     private Long id;
 
     @Column(name = "solved_quiz_count", nullable = false)
-    private Integer solvedQuizCount;
+    private int solvedQuizCount;
 
-    @Column(name = "incorrect_quiz_count")
-    private Integer incorrectQuizCount;
+    @Column(name = "correct_quiz_count", nullable = false)
+    private int correctQuizCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -30,17 +30,17 @@ public class RandomQuizRecord extends AuditBase {
     public static RandomQuizRecord createRandomQuizRecord(Member member) {
         return RandomQuizRecord.builder()
                 .solvedQuizCount(0)
-                .incorrectQuizCount(0)
+                .correctQuizCount(0)
                 .member(member)
                 .build();
     }
 
     public void updateQuizCountByCorrectAnswer() {
         this.solvedQuizCount += 1;
+        this.correctQuizCount += 1;
     }
 
     public void updateQuizCountByIncorrectAnswer() {
         this.solvedQuizCount += 1;
-        this.incorrectQuizCount += 1;
     }
 }

@@ -13,7 +13,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "ORDER BY c.updatedAt DESC")
@@ -21,7 +20,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "WHERE c.collectionCategory IN :collectionCategories " +
@@ -46,7 +44,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "WHERE cb.member.id = :memberId")
@@ -56,7 +53,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "JOIN FETCH c.member m " +
@@ -85,7 +81,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     @Query("SELECT c FROM Collection c " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH cq.quiz q " +
             "WHERE c.id = :collectionId")
     Optional<Collection> findCollectionWithSolvedRecordAndBookmarkAndQuizzesByCollectionId(
@@ -94,7 +89,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "WHERE c.name LIKE %:keyword%")
@@ -108,7 +102,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks " +
-            "LEFT JOIN FETCH c.collectionSolvedRecords " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "JOIN FETCH c.member m")

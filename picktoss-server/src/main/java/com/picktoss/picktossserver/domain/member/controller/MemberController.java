@@ -4,12 +4,11 @@ package com.picktoss.picktossserver.domain.member.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
-import com.picktoss.picktossserver.domain.member.controller.request.UpdateInterestCollectionCategoriesRequest;
-import com.picktoss.picktossserver.domain.member.controller.request.UpdateMemberNameRequest;
-import com.picktoss.picktossserver.domain.member.controller.request.UpdateQuizNotificationRequest;
-import com.picktoss.picktossserver.domain.member.controller.request.UpdateTodayQuizCountRequest;
-import com.picktoss.picktossserver.domain.member.controller.response.GetMemberInfoResponse;
-import com.picktoss.picktossserver.domain.member.facade.MemberFacade;
+import com.picktoss.picktossserver.domain.member.dto.request.*;
+import com.picktoss.picktossserver.domain.member.dto.response.GetMemberInfoResponse;
+import com.picktoss.picktossserver.domain.member.service.MemberDeleteService;
+import com.picktoss.picktossserver.domain.member.service.MemberSearchService;
+import com.picktoss.picktossserver.domain.member.service.MemberUpdateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,7 +26,9 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FO
 public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberFacade memberFacade;
+    private final MemberDeleteService memberDeleteService;
+    private final MemberSearchService memberSearchService;
+    private final MemberUpdateService memberUpdateService;
 
     /**
      * GET
@@ -41,7 +42,7 @@ public class MemberController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetMemberInfoResponse memberInfo = memberFacade.findMemberInfo(memberId);
+        GetMemberInfoResponse memberInfo = memberSearchService.findMemberInfo(memberId);
         return ResponseEntity.ok().body(memberInfo);
     }
 
@@ -65,7 +66,7 @@ public class MemberController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.updateMemberName(memberId, request.getName());
+        memberUpdateService.updateMemberName(memberId, request.getName());
     }
 
     @Operation(summary = "사용자 퀴즈 알림 ON/OFF")
@@ -76,7 +77,7 @@ public class MemberController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.updateQuizNotification(memberId, request.isQuizNotificationEnabled());
+        memberUpdateService.updateQuizNotification(memberId, request.isQuizNotificationEnabled());
     }
 
     @Operation(summary = "관심분야 태그 설정")
@@ -87,7 +88,7 @@ public class MemberController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.updateInterestCollectionCategories(memberId, request.getInterestCollectionCategories());
+        memberUpdateService.updateInterestCollectionCategories(memberId, request.getInterestCollectionCategories());
     }
 
     @Operation(summary = "오늘의 퀴즈 관리(오늘의 퀴즈 개수 설정)")
@@ -98,7 +99,7 @@ public class MemberController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.updateTodayQuizCount(memberId, request.getTodayQuizCount());
+        memberUpdateService.updateTodayQuizCount(memberId, request.getTodayQuizCount());
     }
 
     /**
@@ -108,20 +109,10 @@ public class MemberController {
     @Operation(summary = "회원 탈퇴")
     @DeleteMapping("/members/withdrawal")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMember() {
+    public void deleteMember(@Valid @RequestBody DeleteMemberRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberFacade.deleteMember(memberId);
-    }
-
-    /**
-     * TEST
-     */
-
-    @PostMapping("/test/create-member")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void createMemberForTest() {
-        memberFacade.createMemberForTest();
+        memberDeleteService.deleteMember(memberId);
     }
 }

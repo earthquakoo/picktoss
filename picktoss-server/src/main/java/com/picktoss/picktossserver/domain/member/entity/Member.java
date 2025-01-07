@@ -4,7 +4,7 @@ package com.picktoss.picktossserver.domain.member.entity;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionSolvedRecord;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.payment.entity.TossPayment;
@@ -72,11 +72,11 @@ public class Member extends AuditBase {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Collection> collections = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<CollectionBookmark> collectionBookmarks = new ArrayList<>();
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CollectionQuizSet> collectionQuizSets = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<CollectionSolvedRecord> collectionSolvedRecords = new ArrayList<>();
+    private List<CollectionBookmark> collectionBookmarks = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<TossPayment> tossPayments = new ArrayList<>();
