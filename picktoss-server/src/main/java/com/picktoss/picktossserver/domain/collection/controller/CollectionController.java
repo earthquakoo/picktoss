@@ -13,6 +13,7 @@ import com.picktoss.picktossserver.domain.collection.dto.response.GetQuizzesInCo
 import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleCollectionResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.*;
+import com.picktoss.picktossserver.domain.quiz.dto.request.UpdateRandomQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.dto.response.CreateQuizzesResponse;
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.collection.CollectionSortOption;
@@ -45,6 +46,7 @@ public class CollectionController {
     private final CollectionQuizSetCreateService collectionQuizSetCreateService;
     private final CollectionSearchService collectionSearchService;
     private final CollectionUpdateService collectionUpdateService;
+    private final CollectionRandomQuizService collectionRandomQuizService;
 
     /**
      * GET
@@ -279,6 +281,16 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         collectionUpdateService.updateCollectionQuizzes(request.getQuizzes(), collectionId, memberId);
+    }
+
+    @Operation(summary = "컬렉션 랜덤 퀴즈 결과 업데이트")
+    @PatchMapping("/collections/random-quiz/result")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCollectionRandomQuizResult(@Valid @RequestBody UpdateRandomQuizResultRequest request) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        collectionRandomQuizService.updateCollectionRandomQuizResult(request.getQuizzes(), memberId);
     }
 
     /**

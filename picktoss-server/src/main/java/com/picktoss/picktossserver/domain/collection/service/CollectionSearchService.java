@@ -8,7 +8,6 @@ import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleColle
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.collection.util.CollectionUtil;

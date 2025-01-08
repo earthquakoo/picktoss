@@ -1,11 +1,21 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionRandomQuizRecord;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
+import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetCurrentTodayQuizInfo;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizSetTodayResponse;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
+import com.picktoss.picktossserver.domain.quiz.entity.RandomQuizRecord;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
+import com.picktoss.picktossserver.domain.quiz.repository.RandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetResponseType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
@@ -22,11 +32,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class TodayQuizSetService {
+public class TodayQuizService {
 
     private final QuizUtil quizUtil;
     private final QuizSetRepository quizSetRepository;
     private final DocumentRepository documentRepository;
+    private final MemberRepository memberRepository;
+    private final RandomQuizRecordRepository randomQuizRecordRepository;
+    private final CollectionQuizSetRepository collectionQuizSetRepository;
+    private final CollectionRandomQuizRecordRepository collectionRandomQuizRecordRepository;
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
@@ -81,4 +95,46 @@ public class TodayQuizSetService {
         return new GetCurrentTodayQuizInfo(currentConsecutiveTodayQuizDate, maxConsecutiveTodayQuizDate);
     }
 
+    public int findTodaySolvedQuizCount(Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
+        LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
+
+        int todaySolvedQuizCount = 0;
+
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, todayStartTime, todayEndTime);
+        for (QuizSet quizSet : quizSets) {
+            todaySolvedQuizCount += quizSet.getQuizSetQuizzes().size();
+        }
+
+        List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, todayStartTime, todayEndTime);
+        for (CollectionQuizSet collectionQuizSet : collectionQuizSets) {
+            todaySolvedQuizCount += collectionQuizSet.getCollectionQuizSetCollectionQuizzes().size();
+        }
+
+        List<RandomQuizRecord> randomQuizRecords = randomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, todayStartTime, todayEndTime);
+        for (RandomQuizRecord randomQuizRecord : randomQuizRecords) {
+            todaySolvedQuizCount += randomQuizRecord.getSolvedQuizCount();
+        }
+
+        List<CollectionRandomQuizRecord> collectionRandomQuizRecords = collectionRandomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, todayStartTime, todayEndTime);
+        for (CollectionRandomQuizRecord collectionRandomQuizRecord : collectionRandomQuizRecords) {
+            todaySolvedQuizCount += collectionRandomQuizRecord.getSolvedQuizCount();
+        }
+
+        return todaySolvedQuizCount;
+    }
+
+    public void findTodaySolvedQuizCountByMember(Long memberId) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
+        LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
+
+        List<QuizSet> quizSets = member.getQuizSets();
+        List<CollectionQuizSet> collectionQuizSets = member.getCollectionQuizSets();
+        List<RandomQuizRecord> randomQuizRecords = member.getRandomQuizRecords();
+    }
 }
