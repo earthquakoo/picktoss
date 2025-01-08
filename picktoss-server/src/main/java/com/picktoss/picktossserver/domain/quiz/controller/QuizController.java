@@ -47,7 +47,7 @@ public class QuizController {
     private final QuizRecordService quizRecordService;
     private final QuizResultUpdateService quizResultUpdateService;
     private final QuizSearchService quizSearchService;
-    private final TodayQuizSetService todayQuizSetService;
+    private final TodayQuizService todayQuizService;
     private final QuizDownloadService quizDownloadService;
 
     /**
@@ -126,7 +126,7 @@ public class QuizController {
     }
 
     /*
-     * TodayQuizSetService
+     * TodayQuizService
      */
 
     @Operation(summary = "오늘의 퀴즈 세트 정보 가져오기")
@@ -136,7 +136,7 @@ public class QuizController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizSetTodayResponse quizSetToday = todayQuizSetService.findQuizSetToday(memberId);
+        GetQuizSetTodayResponse quizSetToday = todayQuizService.findQuizSetToday(memberId);
         return ResponseEntity.ok().body(quizSetToday);
     }
 
@@ -147,8 +147,19 @@ public class QuizController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetCurrentTodayQuizInfo response = todayQuizSetService.findCurrentTodayQuizInfo(memberId);
+        GetCurrentTodayQuizInfo response = todayQuizService.findCurrentTodayQuizInfo(memberId);
         return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "오늘 푼 퀴즈 수")
+    @GetMapping("/quizzes/solved/today")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetTodaySolvedQuizCountResponse> getTodaySolvedQuizCount() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        int todaySolvedQuizCount = todayQuizService.findTodaySolvedQuizCount(memberId);
+        return ResponseEntity.ok().body(new GetTodaySolvedQuizCountResponse(todaySolvedQuizCount));
     }
 
     /*

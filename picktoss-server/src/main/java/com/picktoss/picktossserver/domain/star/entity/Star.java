@@ -54,17 +54,20 @@ public class Star extends AuditBase {
         star.withdrawalStarByCreateDocument(starCount);
         Integer curStarCount = star.getStar();
         Integer changeStarCount = curStarCount - starCount;
+        StarHistory starHistory = StarHistory.createStarHistory("문서 생성으로 인한 지출", starCount, changeStarCount, TransactionType.WITHDRAWAL, Source.SERVICE, star);
 
         this.star -= starCount;
-        return StarHistory.createStarHistory("문서 생성으로 인한 지출", starCount, changeStarCount, TransactionType.WITHDRAWAL, Source.SERVICE, star);
+        return starHistory;
     }
 
     public StarHistory depositStarByQuizSetSolvedReward(Star star, int reward) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
         Integer balanceAfter = lastStarHistory.getBalanceAfter() + reward;
 
+        StarHistory starHistory = StarHistory.createStarHistory("퀴즈셋 풀이 보상", reward, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+
         this.star += reward;
-        return StarHistory.createStarHistory("퀴즈셋 풀이 보상", reward, balanceAfter, TransactionType.DEPOSIT, Source.REWARD,  star);
+        return starHistory;
     }
 
     public void depositStarByTodayQuizSolvedReward(Integer star) {
@@ -76,10 +79,10 @@ public class Star extends AuditBase {
         Integer changeAmount = StarConstant.INVITE_FRIEND_REWARD;
         Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
 
-        this.star += StarConstant.INVITE_FRIEND_REWARD;
+        StarHistory starHistory = StarHistory.createStarHistory("친구 초대 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
 
-        return StarHistory.createStarHistory(
-                "친구 초대 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+        this.star += StarConstant.INVITE_FRIEND_REWARD;
+        return starHistory;
     }
 
     public void depositStarByInviteFriendReward(Integer star) {
@@ -92,10 +95,10 @@ public class Star extends AuditBase {
         Integer changeAmount = StarConstant.INVALID_QUIZ_REWARD;
         Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
 
-        this.star += StarConstant.INVALID_QUIZ_REWARD;
+        StarHistory starHistory = StarHistory.createStarHistory(errorContent, changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
 
-        return StarHistory.createStarHistory(
-                errorContent, changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+        this.star += StarConstant.INVALID_QUIZ_REWARD;
+        return starHistory;
     }
 
     public void depositStarByInvalidQuizReward(Integer star) {
