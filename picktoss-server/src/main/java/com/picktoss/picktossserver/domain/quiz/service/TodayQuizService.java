@@ -3,7 +3,9 @@ package com.picktoss.picktossserver.domain.quiz.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionRandomQuizRecord;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -38,6 +40,7 @@ public class TodayQuizService {
     private final MemberRepository memberRepository;
     private final RandomQuizRecordRepository randomQuizRecordRepository;
     private final CollectionQuizSetRepository collectionQuizSetRepository;
+    private final CollectionRandomQuizRecordRepository collectionRandomQuizRecordRepository;
 
     public GetQuizSetTodayResponse findQuizSetToday(Long memberId) {
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
@@ -113,6 +116,12 @@ public class TodayQuizService {
         for (RandomQuizRecord randomQuizRecord : randomQuizRecords) {
             todaySolvedQuizCount += randomQuizRecord.getSolvedQuizCount();
         }
+
+        List<CollectionRandomQuizRecord> collectionRandomQuizRecords = collectionRandomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, todayStartTime, todayEndTime);
+        for (CollectionRandomQuizRecord collectionRandomQuizRecord : collectionRandomQuizRecords) {
+            todaySolvedQuizCount += collectionRandomQuizRecord.getSolvedQuizCount();
+        }
+
         return todaySolvedQuizCount;
     }
 

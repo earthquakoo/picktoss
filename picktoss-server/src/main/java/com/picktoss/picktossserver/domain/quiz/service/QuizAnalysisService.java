@@ -3,7 +3,9 @@ package com.picktoss.picktossserver.domain.quiz.service;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSetCollectionQuiz;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionRandomQuizRecord;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizMonthlyAnalysisResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizWeeklyAnalysisResponse;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
@@ -30,6 +32,7 @@ public class QuizAnalysisService {
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final RandomQuizRecordRepository randomQuizRecordRepository;
     private final CollectionQuizSetRepository collectionQuizSetRepository;
+    private final CollectionRandomQuizRecordRepository collectionRandomQuizRecordRepository;
 
     public GetQuizWeeklyAnalysisResponse findQuizWeeklyAnalysis(Long memberId, Long directoryId, LocalDate startDate, LocalDate endDate) {
         List<QuizSetQuiz> quizSetQuizzes;
@@ -86,6 +89,18 @@ public class QuizAnalysisService {
             if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
                 int solvedQuizCount = randomQuizRecord.getSolvedQuizCount();
                 int correctQuizCount = randomQuizRecord.getCorrectQuizCount();
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
+                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
+            }
+        }
+
+        List<CollectionRandomQuizRecord> collectionRandomQUizRecords = collectionRandomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
+        for (CollectionRandomQuizRecord collectionRandomQUizRecord : collectionRandomQUizRecords) {
+            LocalDate date = collectionRandomQUizRecord.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
+                int solvedQuizCount = collectionRandomQUizRecord.getSolvedQuizCount();
+                int correctQuizCount = collectionRandomQUizRecord.getCorrectQuizCount();
                 totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
                 correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
             }
@@ -191,6 +206,18 @@ public class QuizAnalysisService {
             if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
                 int solvedQuizCount = randomQuizRecord.getSolvedQuizCount();
                 int correctQuizCount = randomQuizRecord.getCorrectQuizCount();
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
+                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
+            }
+        }
+
+        List<CollectionRandomQuizRecord> collectionRandomQUizRecords = collectionRandomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
+        for (CollectionRandomQuizRecord collectionRandomQUizRecord : collectionRandomQUizRecords) {
+            LocalDate date = collectionRandomQUizRecord.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
+                int solvedQuizCount = collectionRandomQUizRecord.getSolvedQuizCount();
+                int correctQuizCount = collectionRandomQUizRecord.getCorrectQuizCount();
                 totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
                 correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
             }
