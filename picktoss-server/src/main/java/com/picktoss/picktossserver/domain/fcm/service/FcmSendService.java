@@ -25,6 +25,7 @@ public class FcmSendService {
         }
         String fcmToken = optionalToken.get();
 
+
         Message message = Message.builder()
                 .setToken(fcmToken)
                 .setNotification(
@@ -33,26 +34,26 @@ public class FcmSendService {
                                 .setBody(body)
                                 .build()
                 )
-                .setAndroidConfig(AndroidConfig.builder()
-                        .setNotification(
-                                AndroidNotification.builder()
-                                        .setTitle(title)
-                                        .setBody(body)
-                                        .setClickAction("push_click")
-                                        .build())
-                        .build()
-                )
-                .setApnsConfig(ApnsConfig.builder()
-                        .setAps(Aps.builder()
-                                .setAlert(ApsAlert.builder()
-                                        .setTitle(title)
-                                        .setBody(body)
-                                        .build())
-                                .setSound("default")
-                                .setCategory("push_click")
-                                .build())
-                        .build()
-                )
+//                .setAndroidConfig(AndroidConfig.builder()
+//                        .setNotification(
+//                                AndroidNotification.builder()
+//                                        .setTitle(title)
+//                                        .setBody(body)
+//                                        .setClickAction("push_click")
+//                                        .build())
+//                        .build()
+//                )
+//                .setApnsConfig(ApnsConfig.builder()
+//                        .setAps(Aps.builder()
+//                                .setAlert(ApsAlert.builder()
+//                                        .setTitle(title)
+//                                        .setBody(body)
+//                                        .build())
+//                                .setSound("default")
+//                                .setCategory("push_click")
+//                                .build())
+//                        .build()
+//                )
                 .build();
         try {
             String response = FirebaseMessaging.getInstance().send(message);

@@ -6,7 +6,6 @@ import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -19,7 +18,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE collection SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("is_deleted = false")
+//@SQLRestriction("is_deleted = false")
 public class Collection extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,13 +48,13 @@ public class Collection extends AuditBase {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "collection", orphanRemoval = true)
+    @OneToMany(mappedBy = "collection")
     private Set<CollectionQuiz> collectionQuizzes = new HashSet<>();
 
-    @OneToMany(mappedBy = "collection", orphanRemoval = true)
+    @OneToMany(mappedBy = "collection")
     private Set<CollectionBookmark> collectionBookmarks = new HashSet<>();
 
-    @OneToMany(mappedBy = "collection", orphanRemoval = true)
+    @OneToMany(mappedBy = "collection")
     private Set<CollectionComplaint> collectionComplaints = new HashSet<>();
 
     // Constructor methods
@@ -89,5 +88,9 @@ public class Collection extends AuditBase {
         if (collectionCategory != null) {
             this.collectionCategory = collectionCategory;
         }
+    }
+
+    public void updateCollectionByIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

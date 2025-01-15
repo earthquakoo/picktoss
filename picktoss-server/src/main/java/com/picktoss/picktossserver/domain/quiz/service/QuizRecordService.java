@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSetCol
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetCollectionQuizRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.dto.SolvedQuizRecordDto;
+import com.picktoss.picktossserver.domain.quiz.dto.response.GetCurrentTodayQuizInfo;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizRecordsResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleQuizRecordByDateResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleQuizSetRecordResponse;
@@ -40,8 +41,6 @@ public class QuizRecordService {
 
     public GetSingleQuizRecordByDateResponse findAllQuizSetRecordByDate(Long memberId, LocalDate solvedDate) {
         List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
-        int currentConsecutiveDays = quizUtil.checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
-        int maxConsecutiveDays = quizUtil.checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
         LocalDateTime startDateTime = solvedDate.atStartOfDay();
         LocalDateTime endDateTime = solvedDate.atTime(LocalTime.MAX);
@@ -51,14 +50,12 @@ public class QuizRecordService {
 
         List<GetQuizRecordsResponse.GetQuizRecordsDto> quizRecordsDtos = quizSetsToRecordDtos(quizSets, collectionQuizSets);
 
-        return new GetSingleQuizRecordByDateResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordsDtos);
+        return new GetSingleQuizRecordByDateResponse(quizRecordsDtos);
     }
 
     public GetQuizRecordsResponse findAllQuizAndCollectionRecords(Long memberId) {
         List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
         List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
-        int currentConsecutiveDays = quizUtil.checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
-        int maxConsecutiveDays = quizUtil.checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
         List<SolvedQuizRecordDto> solvedQuizRecords = new ArrayList<>();
 
@@ -129,7 +126,7 @@ public class QuizRecordService {
                             .quizRecords(quizRecordDtos)
                             .build());
         }
-        return new GetQuizRecordsResponse(currentConsecutiveDays, maxConsecutiveDays, quizRecordSolvedDateDtos);
+        return new GetQuizRecordsResponse(quizRecordSolvedDateDtos);
     }
 
     public GetSingleQuizSetRecordResponse findQuizSetRecordByMemberIdAndQuizSetId(Long memberId, String quizSetId, QuizSetType quizSetType) {
@@ -137,6 +134,14 @@ public class QuizRecordService {
             return collectionQuizSetRecordResponse(memberId, quizSetId, quizSetType);
         }
         return quizSetRecordResponse(memberId, quizSetId, quizSetType);
+    }
+
+    public GetCurrentTodayQuizInfo findCurrentConsecutiveSolvedQuizSet(Long memberId) {
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        int currentConsecutiveTodayQuizDate = quizUtil.checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
+        int maxConsecutiveTodayQuizDate = quizUtil.checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
+
+        return new GetCurrentTodayQuizInfo(currentConsecutiveTodayQuizDate, maxConsecutiveTodayQuizDate);
     }
 
     private List<GetQuizRecordsResponse.GetQuizRecordsDto> quizSetsToRecordDtos(List<QuizSet> quizSets, List<CollectionQuizSet> collectionQuizSets) {

@@ -1,14 +1,11 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionRandomQuizRecord;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
-import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetCurrentTodayQuizInfo;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizSetTodayResponse;
@@ -88,7 +85,7 @@ public class TodayQuizService {
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {
-        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSet(memberId);
         int currentConsecutiveTodayQuizDate = quizUtil.checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
         int maxConsecutiveTodayQuizDate = quizUtil.checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
@@ -123,18 +120,5 @@ public class TodayQuizService {
         }
 
         return todaySolvedQuizCount;
-    }
-
-    public void findTodaySolvedQuizCountByMember(Long memberId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime todayStartTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MIN);
-        LocalDateTime todayEndTime = LocalDateTime.of(now.toLocalDate(), LocalTime.MAX);
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
-
-        List<QuizSet> quizSets = member.getQuizSets();
-        List<CollectionQuizSet> collectionQuizSets = member.getCollectionQuizSets();
-        List<RandomQuizRecord> randomQuizRecords = member.getRandomQuizRecords();
     }
 }
