@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.core.jwt;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.domain.admin.entity.Admin;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -39,6 +40,22 @@ public class JwtTokenProvider {
                 .setExpiration(accessTokenExpiration)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .claim("role", member.getRole().name())
+                .compact();
+
+        return JwtTokenDto.builder()
+                .accessToken(accessToken)
+                .accessTokenExpiration(accessTokenExpiration)
+                .build();
+    }
+
+    public JwtTokenDto generateAdminToken(Admin admin) {
+        Date accessTokenExpiration = getTokenExpiration(accessTokenExpirationTimeMs);
+
+        String accessToken = Jwts.builder()
+                .setSubject(admin.getId().toString())
+                .setExpiration(accessTokenExpiration)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .claim("role", "ROLE_ADMIN")
                 .compact();
 
         return JwtTokenDto.builder()

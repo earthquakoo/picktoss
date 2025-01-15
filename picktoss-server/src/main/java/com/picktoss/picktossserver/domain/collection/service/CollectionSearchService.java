@@ -195,6 +195,7 @@ public class CollectionSearchService {
                 GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto collectionDto = GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto.builder()
                         .id(collection.getId())
                         .name(collection.getName())
+                        .isDeleted(collection.getIsDeleted())
                         .build();
 
                 collectionDtos.add(collectionDto);

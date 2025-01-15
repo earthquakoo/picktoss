@@ -24,6 +24,8 @@ public class GetCollectionsForAdminResponse {
         private int bookmarkCount;
         private MemberRole memberRole;
         private String memberName;
+        private String description;
         private int complaintCount;
+        private Boolean isDeleted;
     }
 }

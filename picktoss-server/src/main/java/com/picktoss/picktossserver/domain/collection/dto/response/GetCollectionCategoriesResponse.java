@@ -28,5 +28,6 @@ public class GetCollectionCategoriesResponse {
     public static class GetCollectionCategoriesCollectionDto {
         private Long id;
         private String name;
+        private Boolean isDeleted;
     }
 }

@@ -113,6 +113,6 @@ public class MemberController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        memberDeleteService.deleteMember(memberId);
+        memberDeleteService.deleteMember(memberId, request.getDetail(), request.getReason());
     }
 }

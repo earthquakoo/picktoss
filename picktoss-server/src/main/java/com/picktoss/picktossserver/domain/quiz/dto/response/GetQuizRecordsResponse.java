@@ -12,8 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class GetQuizRecordsResponse {
 
-    private int currentConsecutiveDays;
-    private int maxConsecutiveDays;
     private List<GetQuizRecordsSolvedDateDto> quizRecords;
 
     @Getter

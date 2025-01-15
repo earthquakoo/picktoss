@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -44,6 +46,11 @@ public class SecurityConfig {
     private String picktossServerUrl;
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(CsrfConfigurer::disable)
@@ -65,7 +72,8 @@ public class SecurityConfig {
                                 "/api/v2/test/**",
                                 "/api/v2/test/create-member",
                                 "/api/v2/test/quiz-create",
-                                "/api/v2/admin/**",
+                                "/api/v2/admin/login",
+                                "/api/v2/admin/sign-up",
                                 "/api/v2/invite-code/verify"
                         )
                         .permitAll()

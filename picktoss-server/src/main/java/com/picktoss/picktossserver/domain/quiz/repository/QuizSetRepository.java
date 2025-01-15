@@ -27,6 +27,16 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "JOIN FETCH qsq.quiz q " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true " +
+            "AND qs.quizSetType = TODAY_QUIZ_SET")
+    List<QuizSet> findAllByMemberIdAndSolvedTrueAndTodayQuizSet(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT qs FROM QuizSet qs " +
+            "JOIN FETCH qs.quizSetQuizzes qsq " +
+            "JOIN FETCH qsq.quiz q " +
+            "WHERE qs.member.id = :memberId " +
+            "AND qs.solved = true " +
             "AND qs.createdAt >= :startDateTime " +
             "AND qs.createdAt <= :endDateTime")
     List<QuizSet> findAllByMemberIdAndSolvedTrueAndDateTime(

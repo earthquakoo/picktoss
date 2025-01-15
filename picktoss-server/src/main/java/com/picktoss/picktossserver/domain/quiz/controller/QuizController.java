@@ -199,6 +199,17 @@ public class QuizController {
      * QuizRecordService
      */
 
+    @Operation(summary = "전체 퀴즈 연속일 현황")
+    @GetMapping("/quiz-set/consecutive-days")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetCurrentTodayQuizInfo> getCurrentConsecutiveSolvedQuizSet() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetCurrentTodayQuizInfo response = quizRecordService.findCurrentConsecutiveSolvedQuizSet(memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
     @Operation(summary = "날짜별 퀴즈 기록")
     @GetMapping("/quizzes/{solved_date}/quiz-record")
     @ResponseStatus(HttpStatus.OK)

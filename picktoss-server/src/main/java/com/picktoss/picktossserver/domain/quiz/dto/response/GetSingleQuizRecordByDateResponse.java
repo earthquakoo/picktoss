@@ -9,7 +9,5 @@ import java.util.List;
 @AllArgsConstructor
 public class GetSingleQuizRecordByDateResponse {
 
-    private int currentConsecutiveDays;
-    private int maxConsecutiveDays;
     private List<GetQuizRecordsResponse.GetQuizRecordsDto> quizRecords;
 }
