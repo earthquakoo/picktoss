@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.admin.controller.request.CreateCollectionForAdminRequest;
+import com.picktoss.picktossserver.domain.admin.controller.request.CreateNotificationRequest;
 import com.picktoss.picktossserver.domain.admin.controller.response.GetCollectionsForAdminResponse;
 import com.picktoss.picktossserver.domain.admin.dto.request.AdminLoginRequest;
 import com.picktoss.picktossserver.domain.admin.dto.request.SignUpRequest;
@@ -12,6 +13,7 @@ import com.picktoss.picktossserver.domain.admin.dto.response.AdminLoginResponse;
 import com.picktoss.picktossserver.domain.admin.service.AdminCollectionService;
 import com.picktoss.picktossserver.domain.admin.service.AdminCreateService;
 import com.picktoss.picktossserver.domain.admin.service.AdminLoginService;
+import com.picktoss.picktossserver.domain.admin.service.AdminNotificationService;
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.member.MemberRole;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +36,7 @@ public class AdminController {
     private final AdminCollectionService adminCollectionService;
     private final AdminCreateService adminCreateService;
     private final AdminLoginService adminLoginService;
+    private final AdminNotificationService adminNotificationService;
 
     /**
      * GET
@@ -101,5 +104,10 @@ public class AdminController {
     public ResponseEntity<AdminLoginResponse> login(@Valid @RequestBody AdminLoginRequest request) {
         String accessToken = adminLoginService.login(request.getName(), request.getPassword());
         return ResponseEntity.ok().body(new AdminLoginResponse(accessToken));
+    }
+
+    @Operation(summary = "푸시 알림 생성")
+    public void createNotification(@Valid @RequestBody CreateNotificationRequest request) {
+        adminNotificationService.createNotification(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType());
     }
 }

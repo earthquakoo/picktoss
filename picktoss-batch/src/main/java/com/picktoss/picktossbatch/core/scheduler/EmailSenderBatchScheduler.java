@@ -18,24 +18,15 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
-public class BatchScheduler {
+public class EmailSenderBatchScheduler {
 
-    private final Job transactionOutboxJob;
     private final Job emailSenderJob;
     private final JobLauncher jobLauncher;
     private final JobExplorer jobExplorer;
 
     private final String JOB_NAME = "emailSenderJob";
 
-    @Scheduled(cron = "0 */10 * * * *")
-    public void transactionOutboxJobRun() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException, NoSuchJobException {
-        JobParameters jobParameters = new JobParameters(
-                Collections.singletonMap("requestTime", new JobParameter(System.currentTimeMillis(), Long.class))
-        );
-        jobLauncher.run(transactionOutboxJob, jobParameters);
-    }
-
-//    @Scheduled(cron = "0 */3 * * * *")
+    //    @Scheduled(cron = "0 */3 * * * *")
     @Scheduled(cron = "0 0/20 0-1 * * *") // 00:00부터 01:00까지 20분마다
     public void emailSendJobRun() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException, NoSuchJobException {
         JobInstance lastJobInstance = jobExplorer.getLastJobInstance(JOB_NAME);
