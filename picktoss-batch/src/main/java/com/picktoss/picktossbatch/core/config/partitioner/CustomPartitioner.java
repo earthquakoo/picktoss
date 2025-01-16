@@ -1,5 +1,6 @@
 package com.picktoss.picktossbatch.core.config.partitioner;
 
+import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.partition.support.Partitioner;
@@ -15,13 +16,13 @@ import java.util.Map;
 @ComponentScan(basePackages = {"com.picktoss.picktossserver"})
 public class CustomPartitioner implements Partitioner {
 
-    private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
 
         //isQuizNotificationEnabled = true 일 때만
-        Tuple minIdAndMaxId = memberService.findMinIdAndMaxIdAndIsQuizNotificationEnabled();
+        Tuple minIdAndMaxId = memberRepository.findMinIdAndMaxIdAndIsQuizNotificationEnabled();
 
 //        int minValue = 1;
 //        int maxValue = 40;
