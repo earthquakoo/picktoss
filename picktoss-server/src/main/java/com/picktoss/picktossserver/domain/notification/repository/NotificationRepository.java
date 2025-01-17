@@ -15,4 +15,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findAllByNotificationStatus(
             @Param("notificationStatus") NotificationStatus notificationStatus
     );
+
+    @Query("SELECT n FROM Notification n " +
+            "WHERE n.id IN :notificationIds")
+    List<Notification> findAllByNotificationIds(
+            @Param("notificationIds") List<Long> notificationIds
+    );
 }

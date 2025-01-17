@@ -68,6 +68,11 @@ public enum ErrorInfo {
     STAR_SHORTAGE_IN_POSSESSION(400, "STAR_SHORTAGE_IN_POSSESSION", "보유한 별이 부족합니다."),
 
     /**
+     * Notification
+     */
+    NOTIFICATION_NOT_FOUND(400, "NOTIFICATION_NOT_FOUND", "해당 id의 알림을 찾을 수 없습니다."),
+
+    /**
      * Payment
      */
     PAYMENT_AMOUNT_ERROR(400, "PAYMENT_AMOUNT_ERROR", "결제 전과 결제 후의 요청한 금액이 상이합니다."),

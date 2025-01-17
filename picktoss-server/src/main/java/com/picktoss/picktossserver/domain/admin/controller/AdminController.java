@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.admin.controller.request.CreateCollectionForAdminRequest;
 import com.picktoss.picktossserver.domain.admin.controller.request.CreateNotificationRequest;
+import com.picktoss.picktossserver.domain.admin.controller.request.DeleteNotificationRequest;
 import com.picktoss.picktossserver.domain.admin.controller.response.GetCollectionsForAdminResponse;
 import com.picktoss.picktossserver.domain.admin.dto.request.AdminLoginRequest;
 import com.picktoss.picktossserver.domain.admin.dto.request.SignUpRequest;
@@ -107,7 +108,22 @@ public class AdminController {
     }
 
     @Operation(summary = "푸시 알림 생성")
+    @PostMapping("/notifications")
     public void createNotification(@Valid @RequestBody CreateNotificationRequest request) {
-        adminNotificationService.createNotification(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType());
+        JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long adminId = adminInfo.getMemberId();
+
+        adminNotificationService.createNotification(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getRepeatDays(), adminId);
+    }
+
+    /**
+     * DELETE
+     */
+
+    @Operation(summary = "푸시 알림 삭제")
+    @DeleteMapping("/notifications/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteNotification(@Valid @RequestBody DeleteNotificationRequest request) {
+
     }
 }
