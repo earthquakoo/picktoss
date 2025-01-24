@@ -1,6 +1,5 @@
-package com.picktoss.picktossserver.domain.admin.controller.response;
+package com.picktoss.picktossserver.domain.notification.dto;
 
-import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Builder
 @AllArgsConstructor
 public class GetNotificationsResponse {
 
@@ -19,14 +17,10 @@ public class GetNotificationsResponse {
     @Getter
     @Builder
     public static class GetNotificationsDto {
-        private Long id;
+        private String notificationKey;
         private String title;
         private String content;
-        private String memo;
         private NotificationType notificationType;
-        private List<String> repeatDays;
-        private Boolean isActive;
-        private LocalDateTime notificationTime;
-        private NotificationTarget notificationTarget;
+        private LocalDateTime receivedTime;
     }
 }

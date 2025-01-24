@@ -253,7 +253,7 @@ public class AuthService {
         String memberIdKey = memberId.toString();
 
         // 기존 초대 코드 조회
-        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);
+        Optional<Map> existingCode = redisUtil.getData(RedisConstant.REDIS_INVITE_MEMBER_PREFIX, memberIdKey, Map.class);
         if (existingCode.isPresent()) {
             Map map = existingCode.get();
             String inviteCode = map.get("inviteCode").toString();
@@ -280,7 +280,7 @@ public class AuthService {
                 "expiresAt", createdAt.plusDays(3)
         );
 
-        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, memberIdKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
+        redisUtil.setData(RedisConstant.REDIS_INVITE_MEMBER_PREFIX, memberIdKey, memberIdKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
         redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, uniqueCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
 
         return inviteLink;
@@ -315,7 +315,7 @@ public class AuthService {
 
         String memberIdKey = memberId.toString();
 
-        Optional<Map> memberIdKeyObject = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, memberIdKey, Map.class);
+        Optional<Map> memberIdKeyObject = redisUtil.getData(RedisConstant.REDIS_INVITE_MEMBER_PREFIX, memberIdKey, Map.class);
         if (memberIdKeyObject.isEmpty()) {
             return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.NONE);
         }

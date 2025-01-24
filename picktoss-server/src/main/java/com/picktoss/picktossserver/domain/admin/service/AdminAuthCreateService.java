@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminCreateService {
+public class AdminAuthCreateService {
 
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
