@@ -1,7 +1,5 @@
 package com.picktoss.picktossserver.domain.admin.service;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.admin.controller.response.GetCollectionsForAdminResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
@@ -19,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminCollectionService {
+public class AdminCollectionSearchService {
 
     private final CollectionRepository collectionRepository;
 
@@ -78,13 +76,5 @@ public class AdminCollectionService {
         }
 
         return new GetCollectionsForAdminResponse(collectionDtos);
-    }
-
-    @Transactional
-    public void updateCollectionVisibility(Long collectionId, Boolean isPublic) {
-        Collection collection = collectionRepository.findCollectionById(collectionId)
-                .orElseThrow(() -> new CustomException(ErrorInfo.COLLECTION_NOT_FOUND));
-
-        collection.updateCollectionByIsDeleted(isPublic);
     }
 }

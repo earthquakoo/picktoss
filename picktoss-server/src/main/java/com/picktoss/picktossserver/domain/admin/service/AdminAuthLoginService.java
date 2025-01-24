@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminLoginService {
+public class AdminAuthLoginService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AdminRepository adminRepository;
