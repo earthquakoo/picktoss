@@ -68,6 +68,11 @@ public enum ErrorInfo {
     STAR_SHORTAGE_IN_POSSESSION(400, "STAR_SHORTAGE_IN_POSSESSION", "보유한 별이 부족합니다."),
 
     /**
+     * Subscription
+     */
+    SUBSCRIPTION_NOT_FOUND(400, "SUBSCRIPTION_NOT_FOUND", "해당 사용자 id의 구독권을 찾을 수 없습니다."),
+
+    /**
      * Notification
      */
     NOTIFICATION_NOT_FOUND(400, "NOTIFICATION_NOT_FOUND", "해당 id의 알림을 찾을 수 없습니다."),
@@ -76,6 +81,10 @@ public enum ErrorInfo {
      * Payment
      */
     PAYMENT_AMOUNT_ERROR(400, "PAYMENT_AMOUNT_ERROR", "결제 전과 결제 후의 요청한 금액이 상이합니다."),
+    PAYMENT_AMOUNT_DIFFERENT_FROM_IAMPORT_SERVER(400, "PAYMENT_AMOUNT_DIFFERENT_FROM_IAMPORT_SERVER", "결제된 금액과 아임포트 서버 내역의 금액이 다릅니다."),
+    PAYMENT_AMOUNT_DIFFERENT_FROM_DB(400, "PAYMENT_AMOUNT_DIFFERENT_FROM_DB", "결제된 금액이 DB에서 설정된 금액과 다릅니다."),
+    PAYMENT_NOT_COMPLETED(400, "PAYMENT_NOT_COMPLETED", "결제가 완료되지 않았습니다."),
+
 
     /**
      * Quiz

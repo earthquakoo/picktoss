@@ -2,12 +2,14 @@ package com.picktoss.picktossserver.domain.admin.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.admin.controller.request.CreateNotificationRequest;
-import com.picktoss.picktossserver.domain.admin.controller.request.DeleteNotificationRequest;
-import com.picktoss.picktossserver.domain.admin.controller.request.UpdateNotificationRequest;
-import com.picktoss.picktossserver.domain.admin.controller.response.GetNotificationsResponse;
+import com.picktoss.picktossserver.domain.admin.dto.request.CreateNotificationRequest;
+import com.picktoss.picktossserver.domain.admin.dto.request.DeleteNotificationRequest;
+import com.picktoss.picktossserver.domain.admin.dto.request.UpdateNotificationRequest;
+import com.picktoss.picktossserver.domain.admin.dto.response.GetNotificationsForAdminResponse;
+import com.picktoss.picktossserver.domain.admin.dto.response.GetSingleNotificationForAdminResponse;
 import com.picktoss.picktossserver.domain.admin.service.*;
 import com.picktoss.picktossserver.global.enums.notification.NotificationSearchOption;
+import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -40,25 +42,43 @@ public class AdminNotificationController {
     @Operation(summary = "푸시 알림 관리")
     @GetMapping("/notifications")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetNotificationsResponse> getNotifications() {
+    public ResponseEntity<GetNotificationsForAdminResponse> getNotifications(
+            @RequestParam(value = "page", defaultValue = "0") int page
+    ) {
         JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
         Long adminId = adminInfo.getMemberId();
 
-        GetNotificationsResponse response = adminNotificationSearchService.findAllNotification();
+        GetNotificationsForAdminResponse response = adminNotificationSearchService.findAllNotification(page);
         return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "푸시 알림 검색")
     @GetMapping("/notifications/search")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetNotificationsResponse> getNotificationsByKeyword(
+    public ResponseEntity<GetNotificationsForAdminResponse> getNotificationsByKeyword(
+            @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "notification-search-option") NotificationSearchOption notificationSearchOption,
+            @RequestParam(required = false, value = "notification-type") NotificationType notificationType,
+            @RequestParam(required = false, value = "is-active") Boolean isActive,
             @RequestParam(required = false, value = "keyword") String keyword
     ) {
         JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
         Long adminId = adminInfo.getMemberId();
 
-        GetNotificationsResponse response = adminNotificationSearchService.searchNotifications(keyword, notificationSearchOption);
+        GetNotificationsForAdminResponse response = adminNotificationSearchService.searchNotifications(page, keyword, notificationSearchOption, notificationType, isActive);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "푸시 알림 상세 정보 조회")
+    @GetMapping("/notifications/{notification_id}/info")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetSingleNotificationForAdminResponse> findSingleNotification(
+            @PathVariable("notification_id") Long notificationId
+    ) {
+        JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long adminId = adminInfo.getMemberId();
+
+        GetSingleNotificationForAdminResponse response = adminNotificationSearchService.findSingleNotification(notificationId);
         return ResponseEntity.ok().body(response);
     }
 

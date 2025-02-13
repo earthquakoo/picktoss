@@ -7,10 +7,11 @@ import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
-import com.picktoss.picktossserver.domain.payment.entity.TossPayment;
+import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.RandomQuizRecord;
 import com.picktoss.picktossserver.domain.star.entity.Star;
+import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.member.MemberRole;
 import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
@@ -79,13 +80,16 @@ public class Member extends AuditBase {
     private List<CollectionBookmark> collectionBookmarks = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<TossPayment> tossPayments = new ArrayList<>();
+    private List<Payment> payments = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<RandomQuizRecord> randomQuizRecords = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<CollectionComplaint> collectionComplaints = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<Subscription> subscriptions = new ArrayList<>();
 
     public static Member createGoogleMember(String name, String clientId, String email) {
         return Member.builder()

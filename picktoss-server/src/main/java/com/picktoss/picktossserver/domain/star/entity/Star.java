@@ -7,9 +7,9 @@ import com.picktoss.picktossserver.domain.star.constant.StarConstant;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.star.Source;
 import com.picktoss.picktossserver.global.enums.star.TransactionType;
+import com.picktoss.picktossserver.global.enums.subscription.SubscriptionPlanType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,9 @@ public class Star extends AuditBase {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Column(name = "is_unlimited", nullable = false)
+    private Boolean isUnlimited;
+
     @OneToMany(mappedBy = "star", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StarHistory> starHistories = new ArrayList<>();
 
@@ -40,20 +43,22 @@ public class Star extends AuditBase {
         return Star.builder()
                 .star(star)
                 .member(member)
+                .isUnlimited(false)
                 .build();
     }
 
-    public void withdrawalStarByCreateDocument(Integer star) {
-        this.star -= star;
-    }
+    public StarHistory withdrawalStarByCreateDocument(Star star, Integer starCount, SubscriptionPlanType subscriptionPlanType) {
+        if (star.getIsUnlimited() && subscriptionPlanType == SubscriptionPlanType.PRO) {
+            starCount = 0;
+        }
 
-    public StarHistory withdrawalStarByCreateDocument(Star star, Integer starCount) {
         if (star.getStar() < starCount) {
             throw new CustomException(ErrorInfo.STAR_SHORTAGE_IN_POSSESSION);
         }
-        star.withdrawalStarByCreateDocument(starCount);
+
         Integer curStarCount = star.getStar();
         Integer changeStarCount = curStarCount - starCount;
+
         StarHistory starHistory = StarHistory.createStarHistory("문서 생성으로 인한 지출", starCount, changeStarCount, TransactionType.WITHDRAWAL, Source.SERVICE, star);
 
         this.star -= starCount;
@@ -70,9 +75,6 @@ public class Star extends AuditBase {
         return starHistory;
     }
 
-    public void depositStarByTodayQuizSolvedReward(Integer star) {
-        this.star += star;
-    }
 
     public StarHistory depositStarByInviteFriendReward(Star star) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
@@ -85,11 +87,6 @@ public class Star extends AuditBase {
         return starHistory;
     }
 
-    public void depositStarByInviteFriendReward(Integer star) {
-        this.star += star;
-    }
-
-    @Transactional
     public StarHistory depositStarByInvalidQuiz(Star star, String errorContent) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
         Integer changeAmount = StarConstant.INVALID_QUIZ_REWARD;
@@ -101,7 +98,7 @@ public class Star extends AuditBase {
         return starHistory;
     }
 
-    public void depositStarByInvalidQuizReward(Integer star) {
-        this.star += star;
+    public void updateIsUnlimitedStarsForSubscriptionProType() {
+        this.isUnlimited = true;
     }
 }

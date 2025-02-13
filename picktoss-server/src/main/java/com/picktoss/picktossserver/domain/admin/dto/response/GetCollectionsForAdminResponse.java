@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.domain.admin.controller.response;
+package com.picktoss.picktossserver.domain.admin.dto.response;
 
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.member.MemberRole;

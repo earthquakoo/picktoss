@@ -1,11 +1,18 @@
 package com.picktoss.picktossserver.domain.admin.service;
 
-import com.picktoss.picktossserver.domain.admin.controller.response.GetNotificationsResponse;
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.domain.admin.dto.response.GetNotificationsForAdminResponse;
+import com.picktoss.picktossserver.domain.admin.dto.response.GetSingleNotificationForAdminResponse;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
 import com.picktoss.picktossserver.global.enums.notification.NotificationSearchOption;
+import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +27,14 @@ public class AdminNotificationSearchService {
 
     private final NotificationRepository notificationRepository;
 
-    public GetNotificationsResponse findAllNotification() {
-        List<Notification> notifications = notificationRepository.findAll();
+    public GetNotificationsForAdminResponse findAllNotification(int page) {
+        Pageable pageable = PageRequest.of(page, 15);
+        Page<Notification> notifications = notificationRepository.findAll(pageable);
 
-        List<GetNotificationsResponse.GetNotificationsDto> notificationDtos = new ArrayList<>();
+        List<GetNotificationsForAdminResponse.GetNotificationsForAdminDto> notificationDtos = new ArrayList<>();
 
         for (Notification notification : notifications) {
-            GetNotificationsResponse.GetNotificationsDto notificationDto = GetNotificationsResponse.GetNotificationsDto.builder()
+            GetNotificationsForAdminResponse.GetNotificationsForAdminDto notificationDto = GetNotificationsForAdminResponse.GetNotificationsForAdminDto.builder()
                     .id(notification.getId())
                     .title(notification.getTitle())
                     .content(notification.getContent())
@@ -40,26 +48,22 @@ public class AdminNotificationSearchService {
             notificationDtos.add(notificationDto);
         }
 
-        return new GetNotificationsResponse(notificationDtos);
+        return new GetNotificationsForAdminResponse(notificationDtos);
     }
 
-    public GetNotificationsResponse searchNotifications(String keyword, NotificationSearchOption notificationSearchOption) {
-        List<Notification> notifications;
+    public GetNotificationsForAdminResponse searchNotifications(
+            int page,
+            String keyword,
+            NotificationSearchOption notificationSearchOption,
+            NotificationType notificationType,
+            Boolean isActive) {
 
-        if (notificationSearchOption == NotificationSearchOption.TITLE_AND_CONTENT && keyword != null) {
-            notifications = notificationRepository.findAllByTitleOrContent(keyword);
-        } else if (notificationSearchOption == NotificationSearchOption.TITLE && keyword != null) {
-            notifications = notificationRepository.findAllByTitle(keyword);
-        } else if (notificationSearchOption == NotificationSearchOption.CONTENT && keyword != null) {
-            notifications = notificationRepository.findAllByTitleOrContent(keyword);
-        } else {
-            notifications = notificationRepository.findAll();
-        }
+        Page<Notification> notifications = filterNotificationSearch(page, keyword, notificationSearchOption, notificationType, isActive);
 
-        List<GetNotificationsResponse.GetNotificationsDto> notificationDtos = new ArrayList<>();
+        List<GetNotificationsForAdminResponse.GetNotificationsForAdminDto> notificationDtos = new ArrayList<>();
 
         for (Notification notification : notifications) {
-            GetNotificationsResponse.GetNotificationsDto notificationDto = GetNotificationsResponse.GetNotificationsDto.builder()
+            GetNotificationsForAdminResponse.GetNotificationsForAdminDto notificationDto = GetNotificationsForAdminResponse.GetNotificationsForAdminDto.builder()
                     .id(notification.getId())
                     .title(notification.getTitle())
                     .content(notification.getContent())
@@ -73,6 +77,68 @@ public class AdminNotificationSearchService {
             notificationDtos.add(notificationDto);
         }
 
-        return new GetNotificationsResponse(notificationDtos);
+        return new GetNotificationsForAdminResponse(notificationDtos);
+    }
+
+    public GetSingleNotificationForAdminResponse findSingleNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
+
+        return GetSingleNotificationForAdminResponse.builder()
+                .id(notification.getId())
+                .title(notification.getTitle())
+                .content(notification.getContent())
+                .memo(notification.getMemo())
+                .notificationType(notification.getNotificationType())
+                .repeatDays(notification.getRepeatDays())
+                .notificationTarget(notification.getNotificationTarget())
+                .notificationTime(notification.getNotificationTime())
+                .build();
+    }
+
+//    private List<Notification> filterNotificationSearch(
+//            int page,
+//            String keyword,
+//            NotificationSearchOption notificationSearchOption,
+//            NotificationType notificationType,
+//            Boolean isActive) {
+//
+//        Page<Notification> notifications = getNotificationsBySearchOption(keyword, notificationSearchOption);
+//
+//        // NotificationType 필터링
+//        if (notificationType != null) {
+//            notifications = notifications.stream()
+//                    .filter(notification -> notification.getNotificationType() == notificationType)
+//                    .collect(Collectors.toList());
+//        }
+//
+//        // Notification isActive 필터링
+//        if (isActive != null) {
+//            notifications = notifications.stream()
+//                    .filter(notification -> notification.getIsActive() == isActive)
+//                    .collect(Collectors.toList());
+//        }
+//
+//        return notifications;
+//    }
+
+    private Page<Notification> filterNotificationSearch(
+            int page,
+            String keyword,
+            NotificationSearchOption searchOption,
+            NotificationType notificationType,
+            Boolean isActive
+            ) {
+        Pageable pageable = PageRequest.of(page, 15);
+
+        if (keyword == null || keyword.isBlank()) {
+            return notificationRepository.findAllByNotificationTypeOrIsActive(notificationType, isActive, pageable);
+        }
+
+        return switch (searchOption) {
+            case TITLE_AND_CONTENT -> notificationRepository.findAllByTitleOrContent(keyword, notificationType, isActive, pageable);
+            case TITLE -> notificationRepository.findAllByTitle(keyword, notificationType, isActive, pageable);
+            case CONTENT -> notificationRepository.findAllByContent(keyword, notificationType, isActive, pageable);
+        };
     }
 }
