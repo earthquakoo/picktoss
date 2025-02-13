@@ -39,7 +39,6 @@ public class AdminNotificationCreateService {
     private final MemberRepository memberRepository;
     private final AdminNotificationUtil adminNotificationUtil;
 
-
     @Transactional
     public void createNotification(String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<DayOfWeek> dayOfWeeks, Long memberId) {
         List<String> repeatDays = adminNotificationUtil.dayOfWeeksToString(dayOfWeeks);
@@ -49,7 +48,40 @@ public class AdminNotificationCreateService {
         Notification notification = Notification.createNotification(title, content, memo, notificationKey, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         notificationRepository.save(notification);
 
-        scheduleNextNotification(notification , notificationTime);
+        scheduleNotification(notification , notificationTime);
+    }
+
+    private void scheduleNotification(Notification notification, LocalDateTime notificationTime) {
+        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+
+        if (repeatDays == null || repeatDays.isEmpty()) {
+            // 단일 알림 스케줄
+            scheduleTask(notification, notificationTime);
+        } else {
+            // 반복 조건 기반 알림 스케줄
+            scheduleTask(notification, notificationTime);
+            updateNotificationStatusPendingBySendPushNotification(notification.getId());
+            updateNotificationKeyBySendPushNotification(notification.getId());
+        }
+        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
+    }
+
+    private void scheduleTask(Notification notification, LocalDateTime notificationTime) {
+        taskScheduler.schedule(() -> handleNotification(notification), adminNotificationUtil.toInstant(notificationTime));
+    }
+
+    private void handleNotification(Notification notification) {
+        // 알림 발송
+        sendNotification(notification.getTitle(), notification.getContent(), notification.getId(), notification.getNotificationKey()).run();
+
+        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+        if (repeatDays != null && !repeatDays.isEmpty()) {
+            // 다음 알림 예약
+            DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
+            LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
+            updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
+            scheduleNotification(notification, nextNotificationTime);
+        }
     }
 
     @Transactional
@@ -88,38 +120,6 @@ public class AdminNotificationCreateService {
 
         notification.updateNotificationSendTime(sendTime);
         notificationRepository.save(notification);
-    }
-
-    // 다음 알림 예약
-    private void scheduleNextNotification(Notification notification, LocalDateTime notificationTime) {
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
-
-        if (repeatDays == null || repeatDays.isEmpty()) {
-            // 단일 알림 스케줄
-            taskScheduler.schedule(() -> sendAndScheduleNextNotification(notification), adminNotificationUtil.toInstant(notificationTime));
-        } else {
-            // 반복 조건 기반 첫 알림 스케줄
-            DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, notificationTime.getDayOfWeek());
-            LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notificationTime, nextDay);
-            taskScheduler.schedule(() -> sendAndScheduleNextNotification(notification), adminNotificationUtil.toInstant(nextNotificationTime));
-            updateNotificationStatusPendingBySendPushNotification(notification.getId());
-            updateNotificationKeyBySendPushNotification(notification.getId());
-            updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
-        }
-
-        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
-    }
-
-    // 알림 발송하고 다음 알림이 있다면 예약
-    private void sendAndScheduleNextNotification(Notification notification) {
-        // 알림 발송
-        sendNotification(notification.getTitle(), notification.getContent(), notification.getId(), notification.getNotificationKey()).run();
-
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
-        if (repeatDays != null && !repeatDays.isEmpty()) {
-            // 다음 알림 예약
-            scheduleNextNotification(notification, notification.getNotificationTime());
-        }
     }
 
     private Runnable sendNotification(String title, String body, Long notificationId, String notificationKey) {

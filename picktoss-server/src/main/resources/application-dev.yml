@@ -17,12 +17,16 @@ spring:
     host: ${PICKTOSS_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
-
   datasource:
     url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:templates/
+    suffix: .html
+    cache: false
 
   jpa:
     hibernate.default_batch_fetch_size: 1000
@@ -117,4 +121,6 @@ cloud:
         url: ${PICKTOSS_AWS_SQS_QUEUE_URL}
 
 payment:
-  secret-key: ${PICKTOSS_TOSS_SECRET_KEY}
+  code: ${PICKTOSS_PAYMENT_CODE}
+  api_key: ${PICKTOSS_PAYMENT_API_KEY}
+  secret_key: ${PICKTOSS_PAYMENT_SECRET_KEY}

@@ -46,7 +46,7 @@ public class Document extends AuditBase {
     @JoinColumn(name = "directory_id", nullable = false)
     private Directory directory;
 
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods

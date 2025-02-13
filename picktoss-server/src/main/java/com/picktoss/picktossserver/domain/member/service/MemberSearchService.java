@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.MAX_POSSESS_DOCUMENT_COUNT;
+import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT;
 import static com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus.DEFAULT_DOCUMENT;
 
 @Service
@@ -42,7 +42,7 @@ public class MemberSearchService {
 
         GetMemberInfoResponse.GetMemberInfoDocumentDto documentDto = GetMemberInfoResponse.GetMemberInfoDocumentDto.builder()
                 .possessDocumentCount(possessDocumentCount)
-                .maxPossessDocumentCount(MAX_POSSESS_DOCUMENT_COUNT)
+                .maxPossessDocumentCount(FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT)
                 .build();
 
 

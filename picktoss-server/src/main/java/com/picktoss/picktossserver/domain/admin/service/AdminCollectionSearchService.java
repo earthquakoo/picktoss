@@ -1,6 +1,6 @@
 package com.picktoss.picktossserver.domain.admin.service;
 
-import com.picktoss.picktossserver.domain.admin.controller.response.GetCollectionsForAdminResponse;
+import com.picktoss.picktossserver.domain.admin.dto.response.GetCollectionsForAdminResponse;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;

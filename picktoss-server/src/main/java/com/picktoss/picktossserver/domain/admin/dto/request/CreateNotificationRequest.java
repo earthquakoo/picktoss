@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.domain.admin.controller.request;
+package com.picktoss.picktossserver.domain.admin.dto.request;
 
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;

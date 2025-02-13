@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.domain.admin.controller.request;
+package com.picktoss.picktossserver.domain.admin.dto.request;
 
 import lombok.Getter;
 

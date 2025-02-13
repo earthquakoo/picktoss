@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.auth.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
-import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
@@ -13,8 +12,8 @@ import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySig
 import com.picktoss.picktossserver.domain.auth.dto.response.CreateInviteLinkResponse;
 import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.service.AuthCreateService;
-import com.picktoss.picktossserver.domain.auth.service.AuthService;
-import com.picktoss.picktossserver.domain.member.dto.dto.MemberInfoDto;
+import com.picktoss.picktossserver.domain.auth.service.AuthEmailVerificationService;
+import com.picktoss.picktossserver.domain.auth.service.AuthInviteLinkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
@@ -32,34 +30,14 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 @RequestMapping("/api/v2")
 public class AuthController {
 
-    private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthCreateService authCreateService;
+    private final AuthEmailVerificationService authEmailVerificationService;
+    private final AuthInviteLinkService authInviteLinkService;
 
     /**
      * GET
      */
-
-    @Operation(summary = "Oauth url api")
-    @GetMapping("/oauth/url")
-    public RedirectView oauthUrlApi() {
-        String oauthUrl = authService.getRedirectUri();
-
-        return new RedirectView(oauthUrl);
-    }
-
-    @Operation(summary = "Oauth callback")
-    @GetMapping("/callback")
-    public String googleLogin(@RequestParam("code") String code) {
-        String idToken = authService.getOauthAccessToken(code);
-        System.out.println("idToken = " + idToken);
-
-        String decodeJson = authService.decodeIdToken(idToken);
-        MemberInfoDto memberInfoDto = authService.transJsonToMemberInfoDto(decodeJson);
-        JwtTokenDto jwtTokenDto = authCreateService.createMember(memberInfoDto);
-        System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
-        return jwtTokenDto.getAccessToken();
-    }
 
     @Operation(summary = "초대 링크 생성")
     @GetMapping("/auth/invite-link")
@@ -69,7 +47,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String inviteLink = authService.createInviteLink(memberId);
+        String inviteLink = authInviteLinkService.createInviteLink(memberId);
         return ResponseEntity.ok().body(new CreateInviteLinkResponse(inviteLink));
     }
 
@@ -80,7 +58,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        CheckInviteCodeBySignUpResponse response = authService.checkInviteCodeBySignUp(memberId);
+        CheckInviteCodeBySignUpResponse response = authInviteLinkService.checkInviteCodeBySignUp(memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -96,7 +74,7 @@ public class AuthController {
             @RequestParam(required = false, value = "invite-link") String inviteLink
     ) {
 
-        LoginResponse response = authService.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
+        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
         return ResponseEntity.ok().body(response);
     }
 
@@ -107,7 +85,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authService.sendVerificationCode(request.getEmail());
+        authEmailVerificationService.sendVerificationCode(request.getEmail());
     }
 
     @Operation(summary = "이메일 코드 인증")
@@ -118,7 +96,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authService.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
+        authEmailVerificationService.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
     }
 
     @Operation(summary = "초대 코드 인증")
@@ -129,7 +107,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authService.verifyInviteCode(request.getInviteCode(), memberId);
+        authInviteLinkService.verifyInviteCode(request.getInviteCode(), memberId);
     }
 
     /**

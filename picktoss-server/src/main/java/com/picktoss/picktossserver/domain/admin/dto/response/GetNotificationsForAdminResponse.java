@@ -1,4 +1,4 @@
-package com.picktoss.picktossserver.domain.admin.controller.response;
+package com.picktoss.picktossserver.domain.admin.dto.response;
 
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
@@ -12,13 +12,13 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-public class GetNotificationsResponse {
+public class GetNotificationsForAdminResponse {
 
-    private List<GetNotificationsDto> notifications;
+    private List<GetNotificationsForAdminDto> notifications;
 
     @Getter
     @Builder
-    public static class GetNotificationsDto {
+    public static class GetNotificationsForAdminDto {
         private Long id;
         private String title;
         private String content;
