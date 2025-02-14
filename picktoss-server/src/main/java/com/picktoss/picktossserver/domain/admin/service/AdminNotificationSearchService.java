@@ -96,32 +96,6 @@ public class AdminNotificationSearchService {
                 .build();
     }
 
-//    private List<Notification> filterNotificationSearch(
-//            int page,
-//            String keyword,
-//            NotificationSearchOption notificationSearchOption,
-//            NotificationType notificationType,
-//            Boolean isActive) {
-//
-//        Page<Notification> notifications = getNotificationsBySearchOption(keyword, notificationSearchOption);
-//
-//        // NotificationType 필터링
-//        if (notificationType != null) {
-//            notifications = notifications.stream()
-//                    .filter(notification -> notification.getNotificationType() == notificationType)
-//                    .collect(Collectors.toList());
-//        }
-//
-//        // Notification isActive 필터링
-//        if (isActive != null) {
-//            notifications = notifications.stream()
-//                    .filter(notification -> notification.getIsActive() == isActive)
-//                    .collect(Collectors.toList());
-//        }
-//
-//        return notifications;
-//    }
-
     private Page<Notification> filterNotificationSearch(
             int page,
             String keyword,

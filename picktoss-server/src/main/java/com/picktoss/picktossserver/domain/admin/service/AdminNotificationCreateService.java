@@ -8,10 +8,15 @@ import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.admin.util.AdminNotificationUtil;
+import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
+import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
+import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
+import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +43,9 @@ public class AdminNotificationCreateService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final AdminNotificationUtil adminNotificationUtil;
+    private final QuizSetRepository quizSetRepository;
+    private final QuizUtil quizUtil;
+    private final CollectionRepository collectionRepository;
 
     @Transactional
     public void createNotification(String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<DayOfWeek> dayOfWeeks, Long memberId) {
@@ -72,7 +80,7 @@ public class AdminNotificationCreateService {
 
     private void handleNotification(Notification notification) {
         // 알림 발송
-        sendNotification(notification.getTitle(), notification.getContent(), notification.getId(), notification.getNotificationKey()).run();
+        sendNotification(notification).run();
 
         List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
@@ -122,11 +130,13 @@ public class AdminNotificationCreateService {
         notificationRepository.save(notification);
     }
 
-    private Runnable sendNotification(String title, String body, Long notificationId, String notificationKey) {
+    private Runnable sendNotification(Notification notification) {
         return () -> {
             List<Member> members = memberRepository.findAllByIsQuizNotificationEnabledTrue();
             for (Member member : members) {
-                addNotificationReceivedMemberData(member.getId(), notificationKey);
+                if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
+
+                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
 
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
                 if (optionalToken.isEmpty()) {
@@ -138,15 +148,15 @@ public class AdminNotificationCreateService {
                         .setToken(fcmToken)
                         .setNotification(
                                 com.google.firebase.messaging.Notification.builder()
-                                        .setTitle(title)
-                                        .setBody(body)
+                                        .setTitle(notification.getTitle())
+                                        .setBody(notification.getContent())
                                         .build()
                         )
                         .setAndroidConfig(AndroidConfig.builder()
                                 .setNotification(
                                         AndroidNotification.builder()
-                                                .setTitle(title)
-                                                .setBody(body)
+                                                .setTitle(notification.getTitle())
+                                                .setBody(notification.getContent())
                                                 .setClickAction("push_click")
                                                 .build())
                                 .build()
@@ -154,8 +164,8 @@ public class AdminNotificationCreateService {
                         .setApnsConfig(ApnsConfig.builder()
                                 .setAps(Aps.builder()
                                         .setAlert(ApsAlert.builder()
-                                                .setTitle(title)
-                                                .setBody(body)
+                                                .setTitle(notification.getTitle())
+                                                .setBody(notification.getContent())
                                                 .build())
                                         .setSound("default")
                                         .setCategory("push_click")
@@ -170,7 +180,7 @@ public class AdminNotificationCreateService {
                     System.out.println("FCM Exception = " + e.getMessage());
                 }
             }
-            updateNotificationStatusCompleteBySendPushNotification(notificationId);
+            updateNotificationStatusCompleteBySendPushNotification(notification.getId());
         };
     }
 
@@ -223,5 +233,52 @@ public class AdminNotificationCreateService {
                 "createdAt", LocalDateTime.now()
         );
         redisUtil.setData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdKey, notificationReceivedMemberData);
+    }
+
+    private boolean filterNotificationTarget(NotificationType notificationType, NotificationTarget notificationTarget, Member member) {
+        if (notificationTarget == NotificationTarget.ALL) {
+            return true;
+        }
+
+        if (notificationType == NotificationType.TODAY_QUIZ) {
+            return notificationTargetByTodayQuiz(notificationTarget, member);
+        } else if (notificationType == NotificationType.COLLECTION) {
+            if (notificationTarget == NotificationTarget.COLLECTION_NOT_GENERATE) {
+                return notificationTargetByCollectionNotGenerate(member);
+            }
+            return notificationTargetByInterestCollection(notificationTarget, member);
+        }
+
+        return true;
+    }
+
+    private boolean notificationTargetByTodayQuiz(NotificationTarget notificationTarget, Member member) {
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSet(member.getId());
+
+        if (notificationTarget == NotificationTarget.QUIZ_INCOMPLETE_STATUS) {
+            return quizUtil.checkTodayQuizSetSolvedStatus(quizSets);
+        }
+
+        return quizUtil.checkConsecutiveUnsolvedQuizSetsOverFourDays(quizSets);
+    }
+
+    private boolean notificationTargetByCollectionNotGenerate(Member member) {
+        List<Collection> collections = collectionRepository.findAllByMemberId(member.getId());
+        if (collections.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean notificationTargetByInterestCollection(NotificationTarget notificationTarget, Member member) {
+        List<String> collectionFields = member.getInterestCollectionCategories();
+        for (String collectionFieldString : collectionFields) {
+            String notificationTargetString = notificationTarget.toString();
+
+            if (notificationTargetString == collectionFieldString) {
+                return true;
+            }
+        }
+        return false;
     }
 }

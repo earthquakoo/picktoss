@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,5 +68,54 @@ public class QuizUtil {
 
     public static String createQuizSetId() {
         return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public boolean checkTodayQuizSetSolvedStatus(List<QuizSet> quizSets) {
+        LocalDate today = LocalDate.now();
+
+        if (quizSets.isEmpty()) {
+            return false;
+        }
+
+        for (QuizSet quizSet : quizSets) {
+            if (quizSet.getCreatedAt().toLocalDate().equals(today)) {
+                if (quizSet.isSolved()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public boolean checkConsecutiveUnsolvedQuizSetsOverFourDays(List<QuizSet> quizSets) {
+        LocalDate today = LocalDate.now();
+        LocalDate fourDaysAgo = today.minusDays(4);
+        int consecutiveUnsolvedDays = 0; // 연속적으로 풀지 않은 날 수
+
+        if (quizSets.isEmpty()) {
+            return false;
+        }
+
+        // quizSets를 최신 순으로 정렬
+        Collections.sort(quizSets, (q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
+
+        // 가장 최근에 풀지 않은 quizSet부터 체크
+        for (QuizSet quizSet : quizSets) {
+            LocalDate quizSetDate = quizSet.getCreatedAt().toLocalDate();
+
+            if (quizSetDate.isAfter(fourDaysAgo)) { // 4일 이내의 QuizSet에 대해서만 체크
+                if (!quizSet.isSolved()) { // 풀지 않았다면 연속 미풀이 날짜 증가
+                    consecutiveUnsolvedDays++;
+                    if (consecutiveUnsolvedDays >= 4) {
+                        return true; // 연속적으로 4일 이상 풀지 않았다면 false 반환
+                    }
+                } else {
+                    consecutiveUnsolvedDays = 0; // 풀었다면 연속 미풀이 날짜 초기화
+                }
+            }
+        }
+
+        return false;
     }
 }
