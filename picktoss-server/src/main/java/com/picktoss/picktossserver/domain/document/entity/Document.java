@@ -1,19 +1,17 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
-import com.picktoss.picktossserver.domain.category.entity.Category;
-import com.picktoss.picktossserver.domain.keypoint.entity.KeyPoint;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.DocumentStatus;
+import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static com.picktoss.picktossserver.global.enums.DocumentStatus.*;
+import static com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus.*;
 
 @Entity
 @Getter
@@ -30,12 +28,9 @@ public class Document extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "orders", nullable = false)
-    private int order;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private DocumentStatus status;
+    @Column(name = "quiz_generation_status", nullable = false)
+    private QuizGenerationStatus quizGenerationStatus;
 
     @Column(name = "is_today_quiz_included", nullable = false)
     private boolean isTodayQuizIncluded;
@@ -43,60 +38,49 @@ public class Document extends AuditBase {
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "document_type", nullable = false)
+    private DocumentType documentType;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "directory_id", nullable = false)
+    private Directory directory;
 
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
-    private List<KeyPoint> keyPoints = new ArrayList<>();
-
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL,  orphanRemoval = true)
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Quiz> quizzes = new HashSet<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, int order, DocumentStatus documentStatus, boolean isTodayQuizIncluded, Category category) {
+    public static Document createDocument(String name, String s3Key, QuizGenerationStatus quizGenerationStatus, DocumentType documentType, Directory directory) {
         return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
-                .order(order)
-                .status(documentStatus)
-                .isTodayQuizIncluded(isTodayQuizIncluded)
-                .category(category)
+                .quizGenerationStatus(quizGenerationStatus)
+                .isTodayQuizIncluded(true)
+                .documentType(documentType)
+                .directory(directory)
                 .build();
     }
 
-    public static Document createDefaultDocument(String s3Key, Category category) {
+    public static Document createDefaultDocument(String s3Key, Directory directory) {
         return Document.builder()
                 .name("예시 문서")
                 .s3Key(s3Key)
-                .order(1)
-                .status(DocumentStatus.DEFAULT_DOCUMENT)
+                .quizGenerationStatus(DEFAULT_DOCUMENT)
+                .documentType(DocumentType.FILE)
                 .isTodayQuizIncluded(false)
-                .category(category)
+                .directory(directory)
                 .build();
     }
 
     // 연관관계 메서드
-    public void setCategory(Category category) {
-        this.category = category;
-        category.getDocuments().add(this);
+    public void setDirectory(Directory directory) {
+        this.directory = directory;
+        directory.getDocuments().add(this);
     }
 
     // Business Logics
-    public void updateDocumentOrder(int order) {
-        this.order = order;
-    }
-
-    public void addDocumentOrder() {
-        this.order += 1;
-    }
-
-    public void minusDocumentOrder() {
-        this.order -= 1;
-    }
-
-    public void moveDocumentToCategory(Category category) {
-        this.category = category;
+    public void moveDocumentToDirectory(Directory directory) {
+        this.directory = directory;
     }
 
     public void updateDocumentS3KeyByUpdatedContent(String s3Key) {
@@ -108,21 +92,26 @@ public class Document extends AuditBase {
     }
 
     public void updateDocumentStatusProcessingByGenerateAiPick() {
-        this.status = DocumentStatus.PROCESSING;
+        this.quizGenerationStatus = QuizGenerationStatus.PROCESSING;
     }
 
-    public void updateDocumentStatusKeyPointUpdatePossibleByUpdatedDocument() {
-        this.status = DocumentStatus.KEYPOINT_UPDATE_POSSIBLE;
+    public void updateDocumentStatusProcessingByGenerateQuizzes() {
+        this.quizGenerationStatus = QuizGenerationStatus.PROCESSING;
     }
 
-    public DocumentStatus updateDocumentStatusClientResponse(DocumentStatus documentStatus) {
-        if (documentStatus == PARTIAL_SUCCESS ||
-                documentStatus == PROCESSED ||
-                documentStatus == COMPLETELY_FAILED) {
-            documentStatus = PROCESSED;
+
+    public void updateDocumentIsTodayQuizIncluded(Boolean isTodayQuizIncluded) {
+        this.isTodayQuizIncluded = isTodayQuizIncluded;
+    }
+
+    public QuizGenerationStatus updateDocumentStatusClientResponse(QuizGenerationStatus quizGenerationStatus) {
+        if (quizGenerationStatus == PARTIAL_SUCCESS ||
+                quizGenerationStatus == PROCESSED ||
+                quizGenerationStatus == COMPLETELY_FAILED) {
+            quizGenerationStatus = PROCESSED;
         } else {
-            return documentStatus;
+            return quizGenerationStatus;
         }
-        return documentStatus;
+        return quizGenerationStatus;
     }
 }

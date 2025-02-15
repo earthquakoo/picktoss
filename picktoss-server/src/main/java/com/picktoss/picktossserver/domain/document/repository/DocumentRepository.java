@@ -11,97 +11,88 @@ import java.util.Optional;
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT DISTINCT d FROM Document d " +
-            "LEFT JOIN FETCH d.keyPoints " +
-            "JOIN d.category c " +
-            "WHERE c.id = :categoryId " +
-            "AND c.member.id = :memberId " +
-            "ORDER BY d.createdAt DESC")
-    List<Document> findAllByCategoryIdAndMemberId(
-            @Param("categoryId") Long categoryId,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT DISTINCT d FROM Document d " +
-            "LEFT JOIN FETCH d.keyPoints " +
-            "JOIN FETCH d.category c " +
+            "JOIN FETCH d.directory dir " +
             "WHERE d.id = :documentId " +
-            "AND c.member.id = :memberId")
+            "AND dir.member.id = :memberId")
     Optional<Document> findByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
-            "JOIN FETCH d.category c " +
-            "WHERE c.member.id = :memberId " +
-            "ORDER BY d.createdAt DESC")
-    List<Document> findAllByMemberId(@Param("memberId") Long memberId);
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes q " +
+            "LEFT JOIN FETCH q.options " +
+            "WHERE d.id = :documentId " +
+            "AND dir.member.id = :memberId")
+    Optional<Document> findDocumentWithQuizzesByDocumentIdAndMemberId(
+            @Param("documentId") Long documentId,
+            @Param("memberId") Long memberId
+    );
 
-    @Query("SELECT DISTINCT d FROM Document d " +
-            "LEFT JOIN FETCH d.quizzes " +
-            "JOIN FETCH d.category c " +
+    @Query("SELECT d FROM Document d " +
+            "JOIN FETCH d.directory dir " +
+            "WHERE dir.member.id = :memberId " +
+            "ORDER BY d.createdAt DESC")
+    List<Document> findAllByMemberId(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT d FROM Document d " +
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes " +
             "WHERE d.id IN :documentIds " +
-            "AND c.member.id = :memberId")
-    List<Document> findByMemberIdAndDocumentIdsIn(
+            "AND dir.member.id = :memberId")
+    List<Document> findByDocumentIdsInAndMemberId(
             @Param("documentIds") List<Long> documentIds,
             @Param("memberId") Long memberId
     );
 
-    @Query("SELECT DISTINCT d FROM Document d " +
-            "JOIN FETCH d.category c " +
-            "LEFT JOIN FETCH d.quizzes " +
-            "WHERE c.member.id = :memberId " +
-            "ORDER BY d.id ASC")
-    List<Document> findMostIncorrectDocuments(@Param("memberId") Long memberId);
-
-    @Query("SELECT MAX(d.order) FROM Document d " +
-            "JOIN d.category c " +
-            "WHERE c.id = :categoryId " +
-            "AND c.member.id = :memberId")
-    Integer findLastOrderByCategoryIdAndMemberId(
-            @Param("categoryId") Long categoryId,
-            @Param("memberId") Long memberId
-    );
-
     @Query("SELECT d FROM Document d " +
-            "JOIN d.category c " +
-            "WHERE d.order >= :minDocumentOrder AND d.order < :maxDocumentOrder " +
-            "AND c.member.id = :memberId " +
-            "ORDER BY d.order ASC")
-    List<Document> findByOrderGreaterThanEqualAndOrderLessThanOrderByOrderAsc(
-            @Param("minDocumentOrder") int minDocumentOrder,
-            @Param("maxDocumentOrder") int maxDocumentOrder,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT d FROM Document d " +
-            "JOIN d.category c " +
-            "WHERE d.order > :minDocumentOrder AND d.order <= :maxDocumentOrder " +
-            "AND c.member.id = :memberId " +
-            "ORDER BY d.order ASC")
-    List<Document> findByOrderGreaterThanAndOrderLessThanEqualOrderByOrderAsc(
-            @Param("minDocumentOrder") int minDocumentOrder,
-            @Param("maxDocumentOrder") int maxDocumentOrder,
-            @Param("memberId") Long memberId
-    );
-
-    @Query("SELECT d FROM Document d " +
-            "JOIN d.category c " +
-            "WHERE c.id = :categoryId " +
-            "AND c.member.id = :memberId " +
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes " +
+            "WHERE dir.id = :directoryId " +
+            "AND dir.member.id = :memberId " +
             "ORDER BY d.updatedAt DESC")
-    List<Document> findAllByCategoryIdAndMemberIdOrderByUpdatedAtDesc(
-            @Param("categoryId") Long categoryId,
+    List<Document> findAllByDirectoryIdAndMemberIdOrderByUpdatedAtDesc(
+            @Param("directoryId") Long directoryId,
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
-            "JOIN d.category c " +
-            "WHERE c.id = :categoryId " +
-            "AND c.member.id = :memberId " +
-            "ORDER BY d.name ASC")
-    List<Document> findAllByCategoryIdAndMemberIdOrderByNameAsc(
-            @Param("categoryId") Long categoryId,
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes " +
+            "WHERE dir.id = :directoryId " +
+            "AND dir.member.id = :memberId " +
+            "ORDER BY d.createdAt DESC")
+    List<Document> findAllByDirectoryIdAndMemberIdOrderByCreatedAtDesc(
+            @Param("directoryId") Long directoryId,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT d FROM Document d " +
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes " +
+            "WHERE dir.member.id = :memberId " +
+            "ORDER BY d.updatedAt DESC")
+    List<Document> findAllByMemberIdOrderByUpdatedAtDesc(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT d FROM Document d " +
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes " +
+            "WHERE dir.member.id = :memberId " +
+            "ORDER BY d.createdAt DESC")
+    List<Document> findAllByMemberIdOrderByCreatedAtDesc(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT d FROM Document d " +
+            "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.quizzes q " +
+            "WHERE dir.member.id = :memberId")
+    List<Document> findAllWithDirectoryAndQuizzes(
             @Param("memberId") Long memberId
     );
 }

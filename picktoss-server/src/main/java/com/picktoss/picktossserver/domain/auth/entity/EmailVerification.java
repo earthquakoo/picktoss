@@ -8,9 +8,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 
-//@Table(name = "email_verification", uniqueConstraints = {
-//        @UniqueConstraint(columnNames = {"email", "type"})
-//})
+@Table(name = "email_verification", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"email", "type"})
+})
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

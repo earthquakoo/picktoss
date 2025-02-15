@@ -7,4 +7,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-starter-batch'
+    
+    implementation 'com.google.firebase:firebase-admin:9.4.1'
 }

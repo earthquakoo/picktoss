@@ -1,13 +1,12 @@
 package com.picktoss.picktossserver.core.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public class ErrorResponse extends ErrorResponseDto {
 
-@Getter
-@AllArgsConstructor
-public class ErrorResponse {
+    private ErrorResponse(ErrorInfo errorInfo) {
+        super(errorInfo.getStatusCode(), errorInfo.getErrorCode(), errorInfo.getMessage());
+    }
 
-    private final int statusCode;
-    private final String errorCode;
-    private final String message;
+    public static ErrorResponseDto from(ErrorInfo errorInfo) {
+        return new ErrorResponseDto(errorInfo.getStatusCode(), errorInfo.getErrorCode(), errorInfo.getMessage());
+    }
 }

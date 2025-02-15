@@ -1,9 +1,12 @@
 package com.picktoss.picktossserver.domain.feedback.entity;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.global.enums.FeedbackType;
+import com.picktoss.picktossserver.global.enums.feedback.FeedbackType;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,6 +20,9 @@ public class Feedback {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "title")
+    private String title;
+
     @Column(name = "content")
     private String content;
 
@@ -24,14 +30,22 @@ public class Feedback {
     @Column(name = "type")
     private FeedbackType type;
 
+    @Column(name = "email", nullable = false)
+    private String email;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public static Feedback createFeedback(String content, FeedbackType type, Member member) {
+    @OneToMany(mappedBy = "feedback", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FeedbackFile> feedbackFiles = new ArrayList<>();
+
+    public static Feedback createFeedback(String title, String content, FeedbackType type, String email, Member member) {
         return Feedback.builder()
+                .title(title)
                 .content(content)
                 .type(type)
+                .email(email)
                 .member(member)
                 .build();
     }

@@ -2,13 +2,16 @@ package com.picktoss.picktossserver.domain.document.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.domain.document.controller.request.*;
-import com.picktoss.picktossserver.domain.document.controller.response.*;
-import com.picktoss.picktossserver.domain.document.facade.DocumentFacade;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
+import com.picktoss.picktossserver.domain.document.dto.request.*;
+import com.picktoss.picktossserver.domain.document.dto.response.*;
+import com.picktoss.picktossserver.domain.document.service.DocumentCreateService;
+import com.picktoss.picktossserver.domain.document.service.DocumentDeleteService;
+import com.picktoss.picktossserver.domain.document.service.DocumentSearchService;
+import com.picktoss.picktossserver.domain.document.service.DocumentUpdateService;
+import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,138 +22,153 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "3. Document")
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+
+@Tag(name = "Document")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
 public class DocumentController {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final DocumentFacade documentFacade;
+    private final DocumentCreateService documentCreateService;
+    private final DocumentDeleteService documentDeleteService;
+    private final DocumentSearchService documentSearchService;
+    private final DocumentUpdateService documentUpdateService;
 
-    @Operation(summary = "Create document")
-    @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CreateDocumentResponse> createDocument(
-            CreateDocumentRequest request
-            ) { 
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-        Long categoryId = Long.valueOf(request.getCategoryId());
+    /**
+     * GET
+     */
 
-        Long documentId = documentFacade.createDocument(request.getDocumentName(), request.getFile(), memberId, categoryId);
-        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
-    }
-
-    @Operation(summary = "Create AI Pick")
-    @PostMapping("/documents/{document_id}/ai-pick")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CreateAiPickResponse> createAiPick(
-            @PathVariable(name = "document_id") Long documentId) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        boolean isFirstUseAiPick = documentFacade.createAiPick(documentId, memberId);
-        return ResponseEntity.ok().body(new CreateAiPickResponse(isFirstUseAiPick));
-    }
-
-    @Operation(summary = "Get document by id",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Get document success!",
-                            content = @Content(schema = @Schema(implementation = GetSingleDocumentResponse.class)))})
+    @Operation(summary = "document_id로 문서 가져오기")
     @GetMapping("/documents/{document_id}")
+    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
             @PathVariable(name = "document_id") Long documentId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleDocumentResponse documents = documentFacade.findSingleDocument(memberId, documentId);
+        GetSingleDocumentResponse documents = documentSearchService.findSingleDocument(memberId, documentId);
         return ResponseEntity.ok().body(documents);
     }
 
-    @Operation(summary = "Get all documents by category id",
-            responses = {
-            @ApiResponse(responseCode = "200", description = "Get all document success!",
-                    content = @Content(schema = @Schema(implementation = GetAllDocumentsResponse.class)))})
-    @GetMapping("/categories/{category_id}/documents")
+    @Operation(summary = "모든 문서 가져오기")
+    @GetMapping("/directories/documents")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
-            @PathVariable(name = "category_id") Long categoryId,
-            @RequestParam(required = false, defaultValue = "createdAt", value = "sort-option") String documentSortOption) {
+            @RequestParam(required = false, value = "directory-id") Long directoryId,
+            @RequestParam(defaultValue = "CREATE_AT", value = "sort-option") DocumentSortOption documentSortOption) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentFacade.findAllDocuments(memberId, categoryId, documentSortOption);
+        List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> allDocuments = documentSearchService.findAllDocumentsInDirectory(memberId, directoryId, documentSortOption);
         return ResponseEntity.ok().body(new GetAllDocumentsResponse(allDocuments));
     }
 
-    @Operation(summary = "Get most incorrect top 5 document")
-    @GetMapping("/documents/top-five")
+    @Operation(summary = "복습 필수 노트 top 5")
+    @GetMapping("/documents/review-need-documents")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetMostIncorrectDocumentsResponse> getMostIncorrectDocuments() {
+    public ResponseEntity<GetDocumentsNeedingReviewResponse> getDocumentsNeedingReview() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetMostIncorrectDocumentsResponse response = documentFacade.findMostIncorrectDocuments(memberId);
+        GetDocumentsNeedingReviewResponse response = documentSearchService.findDocumentsNeedingReview(memberId);
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Get document search result")
+    /**
+     * POST
+     */
+
+    @Operation(summary = "문서 생성")
+    @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiErrorCodeExamples({DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR, DIRECTORY_NOT_FOUND, FILE_UPLOAD_ERROR, STAR_SHORTAGE_IN_POSSESSION})
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateDocumentResponse> createDocument(
+            @Valid @ModelAttribute CreateDocumentRequest request
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+        Long directoryId = Long.valueOf(request.getDirectoryId());
+        Integer star = Integer.valueOf(request.getStar());
+
+        Long documentId = documentCreateService.createDocument(request.getDocumentName(), request.getFile(), request.getDocumentType(), request.getQuizType(), star, directoryId, memberId);
+        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
+    }
+
+    @Operation(summary = "문서 검색")
     @PostMapping("/documents/search")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<SearchDocumentResponse> searchDocumentName(@Valid @RequestBody SearchDocumentNameRequest request) {
+    public ResponseEntity<SearchDocumentResponse> searchDocumentByKeyword(@Valid @RequestBody SearchRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        List<SearchDocumentResponse.SearchDocumentDto> documents = documentFacade.searchDocument(request.getWord(), memberId);
-        return ResponseEntity.ok().body(new SearchDocumentResponse(documents));
+        SearchDocumentResponse response = documentSearchService.searchDocumentByKeyword(request.getKeyword(), memberId);
+        return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Delete document by id")
-    @DeleteMapping("/documents/{document_id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDocument(@PathVariable(name = "document_id") Long documentId) {
+    @Operation(summary = "통합(문서, 컬렉션, 퀴즈) 검색")
+    @PostMapping("/integrated-search")
+    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<IntegratedSearchResponse> integratedSearchByKeyword(
+            @Valid @RequestBody SearchRequest request
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.deleteDocument(memberId, documentId);
+        IntegratedSearchResponse response = documentSearchService.integratedSearchByKeyword(memberId, request.getKeyword());
+        return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "Change document order")
-    @PatchMapping("/documents/reorder")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changeDocumentsOrder(@Valid @RequestBody UpdateDocumentsOrderRequest request) {
+    @Operation(summary = "문서에서 추가 퀴즈 생성")
+    @PostMapping("/documents/{document_id}/add-quizzes")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<CreateDocumentResponse> createQuizzes(
+            @PathVariable("document_id") Long documentId,
+            @Valid @RequestBody CreateQuizzesRequest request
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.changeDocumentOrder(request.getDocumentId(), request.getPreDragDocumentOrder(), request.getAfterDragDocumentOrder(), memberId);
+        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getQuizType(), request.getStar());
+        return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
-    @Operation(summary = "Move document to category")
+    /**
+     * PATCH
+     */
+
+    @Operation(summary = "문서 다른 폴더로 옮기기")
     @PatchMapping("/documents/move")
+    @ApiErrorCodeExample(DIRECTORY_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void moveDocumentToCategory(@Valid @RequestBody MoveDocumentToCategoryRequest request) {
+    public void moveDocumentToDirectory(@Valid @RequestBody MoveDocumentToDirectoryRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.moveDocumentToCategory(request.getDocumentId(), request.getCategoryId(), memberId);
+        documentUpdateService.moveDocumentToDirectory(request.getDocumentIds(), memberId, request.getDirectoryId());
     }
 
-    @Operation(summary = "Update document content")
+    @Operation(summary = "문서 내용 업데이트")
     @PatchMapping(value = "/documents/{document_id}/update-content", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changeDocumentContent(
             @PathVariable(name = "document_id") Long documentId,
-            UpdateDocumentContentRequest request) {
+            @Valid @ModelAttribute UpdateDocumentContentRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.updateDocumentContent(documentId, memberId, request.getName(), request.getFile());
+        documentUpdateService.updateDocumentContent(request.getFile(), documentId, memberId, request.getName());
     }
 
-    @Operation(summary = "Change document name")
+    @Operation(summary = "문서 이름 변경")
     @PatchMapping("/documents/{document_id}/update-name")
+    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateDocumentName(
             @PathVariable(name = "document_id") Long documentId,
@@ -158,16 +176,35 @@ public class DocumentController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.updateDocumentName(documentId, memberId, request.getName());
+        documentUpdateService.updateDocumentName(documentId, memberId, request.getName());
     }
 
-    @Operation(summary = "Re-upload document")
-    @PostMapping("/documents/{document_id}/re-upload")
-    @ResponseStatus(HttpStatus.OK)
-    public void reUploadDocument(@PathVariable(name = "document_id") Long documentId) {
+    @Operation(summary = "오늘의 퀴즈 관리(문제를 가져올 노트 선택)", description = "Request map에서 key값은 number, value값은 boolean입니다.")
+    @PatchMapping("/documents/today-quiz-settings")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void selectDocumentToNotGenerateByTodayQuiz(
+            @Valid @RequestBody UpdateTodayQuizSettingsRequest request
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentFacade.reUploadDocument(documentId, memberId);
+        documentUpdateService.selectDocumentToNotGenerateByTodayQuiz(request.getDocumentIdTodayQuizMap(), memberId);
+    }
+
+    /**
+     * DELETE
+     */
+
+    @Operation(summary = "문서 삭제")
+    @DeleteMapping("/documents/delete-documents")
+    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteDocument(
+            @Valid @RequestBody DeleteDocumentRequest request
+            ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        documentDeleteService.deleteDocument(memberId, request.getDocumentIds());
     }
 }
