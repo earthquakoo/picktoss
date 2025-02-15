@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +40,7 @@ public class QuizService {
                         ps.setString(1, quizSet.getId());
                         ps.setString(2, quizSet.getName());
                         ps.setBoolean(3, quizSet.isSolved());
-                        ps.setObject(4, quizSet.getQuizSetType());
+                        ps.setString(4, QuizSetType.TODAY_QUIZ_SET.name());
                         ps.setLong(5, quizSet.getMember().getId());
                         ps.setObject(6, LocalDateTime.now());
                         ps.setObject(7, LocalDateTime.now());
