@@ -15,10 +15,6 @@ spring:
     job:
       enabled: false
       name: emailSenderJob
-  redis:
-    host: ${PICKTOSS_REDIS_HOST}
-    port: ${PICKTOSS_REDIS_PORT}
-    password: ${PICKTOSS_REDIS_PASSWORD}
   datasource:
     url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
