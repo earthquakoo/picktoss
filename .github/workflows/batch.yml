@@ -61,7 +61,7 @@ jobs:
 
       - name: make firebase dir
         run: |
-          cd ./picktoss-server/src/main/resources
+          cd ./picktoss-batch/src/main/resources
           mkdir firebase
       - name: create-json
         id: create-json
