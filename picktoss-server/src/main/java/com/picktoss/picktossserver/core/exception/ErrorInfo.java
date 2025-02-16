@@ -76,6 +76,7 @@ public enum ErrorInfo {
      * Notification
      */
     NOTIFICATION_NOT_FOUND(400, "NOTIFICATION_NOT_FOUND", "해당 id의 알림을 찾을 수 없습니다."),
+    INVALID_NOTIFICATION_TIME(400, "INVALID_NOTIFICATION_TIME", "알림 시간을 과거로 설정할 수 없습니다"),
 
     /**
      * Payment

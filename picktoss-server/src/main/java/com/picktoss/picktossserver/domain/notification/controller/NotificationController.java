@@ -1,7 +1,9 @@
 package com.picktoss.picktossserver.domain.notification.controller;
 
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.notification.dto.GetNotificationsResponse;
 import com.picktoss.picktossserver.domain.notification.service.NotificationSearchService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +37,7 @@ public class NotificationController {
 
     @Operation(summary = "알림 확인")
     @GetMapping("/notifications/{notification_key}/check")
+    @ApiErrorCodeExample(ErrorInfo.NOTIFICATION_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public void getNotificationByNotificationKey(
             @PathVariable("notification_key") String notificationKey
