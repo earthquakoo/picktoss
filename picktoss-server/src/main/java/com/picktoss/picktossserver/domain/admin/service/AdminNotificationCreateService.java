@@ -66,7 +66,7 @@ public class AdminNotificationCreateService {
             // 단일 알림 스케줄
             scheduleTask(notification, notificationTime);
         } else {
-            // 반복 조건 기반 알림 스케줄 2025-02-17 00:05:00 MONDAY
+            // 반복 조건 기반 알림 스케줄
             scheduleTask(notification, notificationTime);
             updateNotificationStatusPendingBySendPushNotification(notification.getId());
             updateNotificationKeyBySendPushNotification(notification.getId());

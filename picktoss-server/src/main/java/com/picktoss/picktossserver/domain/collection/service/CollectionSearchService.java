@@ -25,8 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.COLLECTION_NOT_FOUND;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -215,6 +214,18 @@ public class CollectionSearchService {
         }
 
         return collectionCategoriesDtos;
+    }
+
+    public void checkQuizInCollection(Long collectionId, Long quizId) {
+        Collection collection = collectionRepository.findCollectionWithCollectionQuizByCollectionId(collectionId)
+                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+
+        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+            if (collectionQuiz.getQuiz().getId().equals(quizId)) {
+                throw new CustomException(DUPLICATE_QUIZ_IN_COLLECTION);
+            }
+        }
     }
 
 
