@@ -12,9 +12,12 @@ import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
 import com.picktoss.picktossserver.domain.notification.util.NotificationUtil;
+import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,14 +41,14 @@ public class NotificationScheduleService {
     private final MemberRepository memberRepository;
     private final NotificationUtil notificationUtil;
 
-//    @EventListener(ApplicationReadyEvent.class)
-//    public void initNotificationSchedule() {
-//        List<Notification> notifications = notificationRepository.findAllByNotificationStatus(NotificationStatus.PENDING);
-//
-//        for (Notification notification : notifications) {
-//            scheduleNotification(notification, notification.getNotificationTime());
-//        }
-//    }
+    @EventListener(ApplicationReadyEvent.class)
+    public void initNotificationSchedule() {
+        List<Notification> notifications = notificationRepository.findAllByNotificationStatusAndIsActiveTrue(NotificationStatus.PENDING);
+
+        for (Notification notification : notifications) {
+            scheduleNotification(notification, notification.getNotificationTime());
+        }
+    }
 
     private void scheduleNotification(Notification notification, LocalDateTime notificationTime) {
         List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
