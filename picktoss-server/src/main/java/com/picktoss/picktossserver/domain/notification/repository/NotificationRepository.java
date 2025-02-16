@@ -16,8 +16,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 //    Page<Notification> findAllByPageable(Pageable pageable);
 
     @Query("SELECT n FROM Notification n " +
-            "WHERE n.notificationStatus = :notificationStatus")
-    List<Notification> findAllByNotificationStatus(
+            "WHERE n.notificationStatus = :notificationStatus " +
+            "AND n.isActive = true")
+    List<Notification> findAllByNotificationStatusAndIsActiveTrue(
             @Param("notificationStatus") NotificationStatus notificationStatus
     );
 
