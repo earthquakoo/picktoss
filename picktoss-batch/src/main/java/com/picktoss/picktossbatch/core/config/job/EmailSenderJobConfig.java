@@ -55,10 +55,7 @@ public class EmailSenderJobConfig {
     private final JobListener jobListener;
     private final StepListener stepListener;
     private final QuizService quizService;
-    private final MemberRepository memberRepository;
     private final RedisUtil redisUtil;
-    private final AdminNotificationUtil adminNotificationUtil;
-    private final NotificationRepository notificationRepository;
 
     private final String JOB_NAME = "emailSenderJob";
     private final String STEP_NAME = "masterStep";
