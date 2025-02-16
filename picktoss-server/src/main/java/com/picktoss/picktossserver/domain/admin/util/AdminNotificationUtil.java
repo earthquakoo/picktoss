@@ -1,9 +1,7 @@
 package com.picktoss.picktossserver.domain.admin.util;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -16,8 +14,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AdminNotificationUtil {
 
     // 현재 요일 이후 가장 빠른 반복 요일을 찾음
