@@ -1,15 +1,24 @@
 package com.picktoss.picktossbatch.core.config.job;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.*;
 import com.picktoss.picktossbatch.core.config.listener.JobListener;
 import com.picktoss.picktossbatch.core.config.listener.StepListener;
 import com.picktoss.picktossbatch.core.config.partitioner.CustomPartitioner;
+import com.picktoss.picktossserver.core.redis.RedisConstant;
+import com.picktoss.picktossserver.core.redis.RedisUtil;
+import com.picktoss.picktossserver.domain.admin.util.AdminNotificationUtil;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
+import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
+import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +40,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -45,6 +55,7 @@ public class EmailSenderJobConfig {
     private final JobListener jobListener;
     private final StepListener stepListener;
     private final QuizService quizService;
+    private final RedisUtil redisUtil;
 
     private final String JOB_NAME = "emailSenderJob";
     private final String STEP_NAME = "masterStep";
@@ -94,8 +105,8 @@ public class EmailSenderJobConfig {
         JpaPagingItemReader<Member> jpaPagingItemReader = new JpaPagingItemReader<>();
         jpaPagingItemReader.setQueryString(
                 "SELECT m FROM Member m " +
-                        "JOIN FETCH m.categories c " +
-                        "JOIN FETCH c.documents d " +
+                        "JOIN FETCH m.directories dir " +
+                        "JOIN FETCH dir.documents d " +
                         "JOIN FETCH d.quizzes " +
                         "WHERE m.id >= :start and m.id <= :end"
         );
@@ -124,11 +135,16 @@ public class EmailSenderJobConfig {
                 if (member == null || member.getDirectories() == null) {
                     continue;
                 }
+                String notificationKey = createNotificationKey();
+                Map<String, Object> notificationData = createNotificationForRedis(notificationKey);
+                sendNotification(notificationData, notificationKey, member);
                 members.add(member);
 
+                Integer todayQuizCount = member.getTodayQuizCount();
+
                 List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
-                List<Directory> categories = member.getDirectories();
-                for (Directory directory : categories) {
+                List<Directory> directories = member.getDirectories();
+                for (Directory directory : directories) {
                     if (directory.getDocuments() == null) {
                         continue;
                     }
@@ -142,7 +158,7 @@ public class EmailSenderJobConfig {
                             continue;
                         }
                         // quiz.deliveredCount 순으로 정렬 or List로 정렬
-                        List<Quiz> quizList = quizzes.stream().sorted((e1, e2) -> e1.getDeliveredCount()).limit(10).toList();
+                        List<Quiz> quizList = quizzes.stream().sorted((e1, e2) -> e1.getDeliveredCount()).limit(todayQuizCount).toList();
                         quizzesBySortedDeliveredCount.addAll(quizList);
                         quizListToUpdate.addAll(quizList);
                     }
@@ -158,7 +174,7 @@ public class EmailSenderJobConfig {
                     QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
                     quizSetQuizzes.add(quizSetQuiz);
                     quizCount += 1;
-                    if (quizCount == 10) {
+                    if (quizCount == todayQuizCount) {
                         break;
                     }
                 }
@@ -177,5 +193,110 @@ public class EmailSenderJobConfig {
             long itemDurationTime = itemEndTime - itemStartTime;
             System.out.println("Total item duration time: " + itemDurationTime);
         };
+    }
+
+    private void createNotificationReceivedMemberData(String memberIdKey, String notificationKey) {
+        List<String> notificationKeys = new ArrayList<>();
+        notificationKeys.add(notificationKey);
+
+        Map<String, Object> notificationReceivedMemberData = Map.of(
+                "notificationKeys", notificationKeys,
+                "createdAt", LocalDateTime.now()
+        );
+        redisUtil.setData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdKey, notificationReceivedMemberData);
+    }
+
+    private void addNotificationReceivedMemberData(Long memberId, String notificationKey) {
+        String memberIdKey = memberId.toString();
+
+        Optional<Map> existingNotificationData = redisUtil.getData(RedisConstant.REDIS_NOTIFICATION_PREFIX, notificationKey, Map.class);
+        if (existingNotificationData.isEmpty()) {
+            return ;
+        }
+
+        Optional<Map> existingNotificationReceivedMemberData = redisUtil.getData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdKey, Map.class);
+
+        if (existingNotificationReceivedMemberData.isEmpty()) {
+            createNotificationReceivedMemberData(memberIdKey, notificationKey);
+        }
+
+        if (existingNotificationReceivedMemberData.isPresent()) {
+            Map notificationReceivedMemberData = existingNotificationReceivedMemberData.get();
+            Object notificationKeysObject = notificationReceivedMemberData.get("notificationKeys");
+
+            List<String> notificationKeys = new ObjectMapper().convertValue(notificationKeysObject, new TypeReference<List<String>>() {});
+            notificationKeys.add(notificationKey);
+
+            notificationReceivedMemberData.put("notificationKeys", notificationKeys);
+            redisUtil.setData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdKey, notificationReceivedMemberData);
+        }
+    }
+
+    private void sendNotification(Map<String, Object> notificationData, String notificationKey, Member member) {
+        addNotificationReceivedMemberData(member.getId(), notificationKey);
+
+        Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
+        if (optionalToken.isEmpty()) {
+            return ;
+        }
+        String fcmToken = optionalToken.get();
+
+        Message message = Message.builder()
+                .setToken(fcmToken)
+                .setNotification(
+                        com.google.firebase.messaging.Notification.builder()
+                                .setTitle(notificationData.get("title").toString())
+                                .setBody(notificationData.get("content").toString())
+                                .build()
+                )
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setNotification(
+                                AndroidNotification.builder()
+                                        .setTitle(notificationData.get("title").toString())
+                                        .setBody(notificationData.get("content").toString())
+                                        .setClickAction("push_click")
+                                        .build())
+                        .build()
+                )
+                .setApnsConfig(ApnsConfig.builder()
+                        .setAps(Aps.builder()
+                                .setAlert(ApsAlert.builder()
+                                        .setTitle(notificationData.get("title").toString())
+                                        .setBody(notificationData.get("content").toString())
+                                        .build())
+                                .setSound("default")
+                                .setCategory("push_click")
+                                .build())
+                        .build()
+                )
+                .build();
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("FCM Send Message = " + response);
+        } catch (FirebaseMessagingException e) {
+            System.out.println("FCM Exception = " + e.getMessage());
+        }
+    }
+
+    private Map<String, Object> createNotificationForRedis(String notificationKey) {
+        String title = "오늘의 퀴즈";
+        String content = "오늘의 퀴즈 입니다!";
+        LocalDateTime notificationSendTime = LocalDateTime.now();
+        NotificationType notificationType = NotificationType.TODAY_QUIZ;
+
+        Map<String, Object> notificationData = Map.of(
+                "title", title,
+                "content", content,
+                "notificationSendTime", notificationSendTime,
+                "notificationType", notificationType.toString(),
+                "createdAt", notificationSendTime,
+                "expiresAt", notificationSendTime.plusWeeks(2)
+        );
+        redisUtil.setData(RedisConstant.REDIS_NOTIFICATION_PREFIX, notificationKey, notificationData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
+        return notificationData;
+    }
+
+    public String createNotificationKey() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 }
