@@ -26,7 +26,7 @@ public class EmailSenderBatchScheduler {
 
     private final String JOB_NAME = "emailSenderJob";
 
-    @Scheduled(cron = "0 0/30 23-0 * * *")
+    @Scheduled(cron = "0 0/30 2-3 * * *")
 //    @Scheduled(cron = "0 0/20 0-1 * * *") // 00:00부터 01:00까지 20분마다
     public void emailSendJobRun() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException, NoSuchJobException {
         JobInstance lastJobInstance = jobExplorer.getLastJobInstance(JOB_NAME);
