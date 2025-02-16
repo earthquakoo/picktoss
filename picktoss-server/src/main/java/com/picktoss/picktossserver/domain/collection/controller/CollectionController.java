@@ -163,6 +163,20 @@ public class CollectionController {
         return ResponseEntity.ok().body(new GetCollectionCategoriesResponse(response));
     }
 
+    @Operation(summary = "해당 quizId가 컬렉션에 있는지 확인하기")
+    @GetMapping("/collections/{collection_id}/quizzes/{quiz_id}")
+    @ApiErrorCodeExamples({DUPLICATE_QUIZ_IN_COLLECTION, COLLECTION_NOT_FOUND})
+    @ResponseStatus(HttpStatus.OK)
+    public void checkQuizInCollection(
+            @PathVariable("collection_id") Long collectionId,
+            @PathVariable("quiz_id") Long quizId
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        collectionSearchService.checkQuizInCollection(collectionId, quizId);
+    }
+
 
     /**
      * POST
