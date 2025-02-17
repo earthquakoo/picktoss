@@ -7,10 +7,7 @@ import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionDtoMapper;
 import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionResponseDto;
 import com.picktoss.picktossserver.domain.collection.dto.request.*;
-import com.picktoss.picktossserver.domain.collection.dto.response.CreateCollectionResponse;
-import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionCategoriesResponse;
-import com.picktoss.picktossserver.domain.collection.dto.response.GetQuizzesInCollectionByCollectionCategory;
-import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleCollectionResponse;
+import com.picktoss.picktossserver.domain.collection.dto.response.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.service.*;
 import com.picktoss.picktossserver.domain.quiz.dto.request.UpdateRandomQuizResultRequest;
@@ -164,17 +161,17 @@ public class CollectionController {
     }
 
     @Operation(summary = "해당 quizId가 컬렉션에 있는지 확인하기")
-    @GetMapping("/collections/{collection_id}/quizzes/{quiz_id}")
+    @GetMapping("/collections/quizzes/{quiz_id}")
     @ApiErrorCodeExamples({DUPLICATE_QUIZ_IN_COLLECTION, COLLECTION_NOT_FOUND})
     @ResponseStatus(HttpStatus.OK)
-    public void checkQuizInCollection(
-            @PathVariable("collection_id") Long collectionId,
+    public ResponseEntity<GetCollectionContainingQuiz> getCollectionContainingQuiz(
             @PathVariable("quiz_id") Long quizId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionSearchService.checkQuizInCollection(collectionId, quizId);
+        List<GetCollectionContainingQuiz.GetCollectionContainingQuizDto> response = collectionSearchService.findCollectionContainingQuiz(quizId, memberId);
+        return ResponseEntity.ok().body(new GetCollectionContainingQuiz(response));
     }
 
 
