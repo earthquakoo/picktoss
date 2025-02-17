@@ -15,6 +15,9 @@ import java.util.List;
 public class GetNotificationsForAdminResponse {
 
     private List<GetNotificationsForAdminDto> notifications;
+    private long totalNotifications;
+    private int totalPages;
+
 
     @Getter
     @Builder
