@@ -1,7 +1,9 @@
 package com.picktoss.picktossserver.domain.admin.controller;
 
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.admin.dto.request.CreateNotificationRequest;
 import com.picktoss.picktossserver.domain.admin.dto.request.DeleteNotificationRequest;
 import com.picktoss.picktossserver.domain.admin.dto.request.UpdateNotificationRequest;
@@ -92,20 +94,13 @@ public class AdminNotificationController {
 
     @Operation(summary = "푸시 알림 생성")
     @PostMapping("/notifications")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiErrorCodeExample(ErrorInfo.INVALID_NOTIFICATION_TIME)
     public void createNotification(@Valid @RequestBody CreateNotificationRequest request) {
         JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
         Long adminId = adminInfo.getMemberId();
 
         adminNotificationCreateService.createNotification(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getRepeatDays(), adminId);
-    }
-
-    @Operation(summary = "자신에게 푸시 알림 보내기(테스트 용도)")
-    @PostMapping("/test/notifications")
-    public void createNotificationTest(@Valid @RequestBody CreateNotificationRequest request) {
-        JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long adminId = adminInfo.getMemberId();
-
-        adminNotificationTestService.createNotificationTest(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getRepeatDays(), adminId);
     }
 
     /**

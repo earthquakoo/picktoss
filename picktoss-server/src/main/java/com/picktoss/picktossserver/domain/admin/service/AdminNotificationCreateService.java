@@ -1,5 +1,7 @@
 package com.picktoss.picktossserver.domain.admin.service;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.admin.util.AdminNotificationUtil;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
@@ -30,6 +32,15 @@ public class AdminNotificationCreateService {
         List<String> repeatDays = adminNotificationUtil.dayOfWeeksToString(dayOfWeeks);
 
         String notificationKey = adminNotificationUtil.createNotificationKey();
+
+        if (notificationTime.isBefore(LocalDateTime.now()) && isActive) {
+            if (repeatDays == null || repeatDays.isEmpty()) {
+                throw new CustomException(ErrorInfo.INVALID_NOTIFICATION_TIME);
+            } else {
+                DayOfWeek nextDay = adminNotificationUtil.findNextDay(dayOfWeeks, notificationTime.getDayOfWeek());
+                notificationTime = adminNotificationUtil.calculateNextNotificationTime(notificationTime, nextDay);
+            }
+        }
 
         Notification notification = Notification.createNotification(title, content, memo, notificationKey, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         notificationRepository.save(notification);
