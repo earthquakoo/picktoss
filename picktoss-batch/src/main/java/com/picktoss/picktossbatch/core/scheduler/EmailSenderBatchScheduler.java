@@ -37,8 +37,8 @@ public class EmailSenderBatchScheduler {
             // 마지막 작업의 실행 완료 시간을 확인
             if (lastJobExecution != null && lastJobExecution.getStatus() == BatchStatus.COMPLETED) {
                 LocalDate today = LocalDate.now();
-                LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(3, 0));
-                LocalDateTime endTime = LocalDateTime.of(today, LocalTime.of(4, 0));
+                LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(0, 0));
+                LocalDateTime endTime = LocalDateTime.of(today, LocalTime.of(1, 0));
                 LocalDate lastEndDate = lastJobExecution.getEndTime().toLocalDate();
                 LocalTime lastEndTime = lastJobExecution.getEndTime().toLocalTime();
 
