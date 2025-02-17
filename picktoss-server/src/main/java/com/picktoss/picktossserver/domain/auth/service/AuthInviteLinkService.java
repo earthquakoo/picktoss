@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
+import com.picktoss.picktossserver.domain.auth.dto.response.GetInviteMemberResponse;
 import com.picktoss.picktossserver.domain.auth.util.AuthUtil;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
@@ -129,5 +130,23 @@ public class AuthInviteLinkService {
         inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
         redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
         return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.READY);
+    }
+
+    public GetInviteMemberResponse findInviteMember(String inviteCode) {
+        Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+
+        if (inviteCodeData.isEmpty()) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
+        }
+
+        Map inviteCodeKeyData = inviteCodeData.get();
+        Object inviteCodeCreatorIdObject = inviteCodeKeyData.get("inviteMemberId");
+
+        Long inviteCodeCreatorId = new ObjectMapper().convertValue(inviteCodeCreatorIdObject, new TypeReference<>() {});
+
+        Member member = memberRepository.findById(inviteCodeCreatorId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        return new GetInviteMemberResponse(member.getName());
     }
 }

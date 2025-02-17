@@ -10,6 +10,7 @@ import com.picktoss.picktossserver.domain.auth.dto.request.VerifyInviteCode;
 import com.picktoss.picktossserver.domain.auth.dto.request.VerifyVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
 import com.picktoss.picktossserver.domain.auth.dto.response.CreateInviteLinkResponse;
+import com.picktoss.picktossserver.domain.auth.dto.response.GetInviteMemberResponse;
 import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.service.AuthCreateService;
 import com.picktoss.picktossserver.domain.auth.service.AuthEmailVerificationService;
@@ -40,7 +41,7 @@ public class AuthController {
      */
 
     @Operation(summary = "초대 링크 생성")
-    @GetMapping("/auth/invite-link")
+    @GetMapping("/auth/invite")
     @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateInviteLinkResponse> createInviteLink() {
@@ -52,13 +53,28 @@ public class AuthController {
     }
 
     @Operation(summary = "초대 코드로 회원가입했는지 체크")
-    @GetMapping("/auth/invite-code/check")
+    @GetMapping("/auth/invite/status")
+    @ApiErrorCodeExample(MEMBER_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CheckInviteCodeBySignUpResponse> checkInviteCodeBySignUp() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
         CheckInviteCodeBySignUpResponse response = authInviteLinkService.checkInviteCodeBySignUp(memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "초대 링크 생성자 정보 가져오기")
+    @GetMapping("/auth/invite/{invite_code}/creator")
+    @ApiErrorCodeExample(INVITE_LINK_EXPIRED_OR_NOT_FOUND)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetInviteMemberResponse> getInviteMemberInfo(
+            @PathVariable("invite_code") String inviteCode
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetInviteMemberResponse response = authInviteLinkService.findInviteMember(inviteCode);
         return ResponseEntity.ok().body(response);
     }
 
@@ -100,7 +116,7 @@ public class AuthController {
     }
 
     @Operation(summary = "초대 코드 인증")
-    @PostMapping("/auth/invite-code/verify")
+    @PostMapping("/auth/invite/verify")
     @ApiErrorCodeExample(INVITE_LINK_EXPIRED_OR_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public void verifyInviteCode(@Valid @RequestBody VerifyInviteCode request) {

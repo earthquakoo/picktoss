@@ -222,7 +222,7 @@ public class CollectionSearchService {
 
         List<GetCollectionContainingQuiz.GetCollectionContainingQuizDto> collectionDtos = new ArrayList<>();
         for (Collection collection : collections) {
-            Boolean isQuizIncluded = false;
+            boolean isQuizIncluded = false;
             Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
             for (CollectionQuiz collectionQuiz : collectionQuizzes) {
                 if (collectionQuiz.getQuiz().getId().equals(quizId)) {
@@ -231,10 +231,12 @@ public class CollectionSearchService {
                 }
             }
 
+            String collectionCategoryName = CollectionCategoryMapper.mapCollectionCategoryName(collection.getCollectionCategory());
             GetCollectionContainingQuiz.GetCollectionContainingQuizDto collectionDto = GetCollectionContainingQuiz.GetCollectionContainingQuizDto.builder()
                     .id(collection.getId())
                     .name(collection.getName())
                     .emoji(collection.getEmoji())
+                    .collectionCategory(collectionCategoryName)
                     .isQuizIncluded(isQuizIncluded)
                     .build();
 

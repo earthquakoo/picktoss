@@ -19,6 +19,7 @@ public class GetCollectionContainingQuiz {
         private Long id;
         private String name;
         private String emoji;
+        private String collectionCategory;
         private Boolean isQuizIncluded;
     }
 }
