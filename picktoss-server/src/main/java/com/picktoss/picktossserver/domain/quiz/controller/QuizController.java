@@ -6,8 +6,8 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.pdfgenerator.PdfGenerator;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.quiz.dto.mapper.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.dto.mapper.QuizMapper;
+import com.picktoss.picktossserver.domain.quiz.dto.mapper.QuizResponseDto;
 import com.picktoss.picktossserver.domain.quiz.dto.request.CreateQuizzesByDocumentRequest;
 import com.picktoss.picktossserver.domain.quiz.dto.request.DeleteInvalidQuizRequest;
 import com.picktoss.picktossserver.domain.quiz.dto.request.UpdateQuizResultRequest;
@@ -49,6 +49,7 @@ public class QuizController {
     private final QuizSearchService quizSearchService;
     private final TodayQuizService todayQuizService;
     private final QuizDownloadService quizDownloadService;
+    private final QuizService quizService;
 
     /**
      * GET
@@ -389,17 +390,15 @@ public class QuizController {
      * Test API
      */
 
-    // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
-//    @Tag(name = "Client test 전용 API")
-//    @Operation(summary = "오늘의 퀴즈 생성 API(테스트 혹은 예외처리를 위한 API로서 실제 사용 X)")
-//    @PostMapping("/test/create-today-quiz")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public ResponseEntity<CreateQuizzesResponse> createTodayQuizForTest() {
-//        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-//        Long memberId = jwtUserInfo.getMemberId();
-//
-//        CreateQuizzesResponse response = quizFacade.createTodayQuizForTest(memberId);
-//        return ResponseEntity.ok().body(response);
-//    }
+//     클라이언트 테스트 전용 API(실제 서비스 사용 X)
+    @Tag(name = "Client test 전용 API")
+    @Operation(summary = "오늘의 퀴즈 생성 API(테스트 혹은 예외처리를 위한 API로서 실제 사용 X)")
+    @PostMapping("/test/create-today-quiz")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public String createTodayQuizForTest() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        return quizService.createTodayQuizSetForTest(memberId);
+    }
 }
