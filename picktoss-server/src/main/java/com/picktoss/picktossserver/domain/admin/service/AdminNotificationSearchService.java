@@ -45,6 +45,7 @@ public class AdminNotificationSearchService {
                     .repeatDays(notification.getRepeatDays())
                     .notificationTarget(notification.getNotificationTarget())
                     .notificationTime(notification.getNotificationTime())
+                    .isActive(notification.getIsActive())
                     .build();
 
             notificationDtos.add(notificationDto);
@@ -76,6 +77,7 @@ public class AdminNotificationSearchService {
                     .repeatDays(notification.getRepeatDays())
                     .notificationTarget(notification.getNotificationTarget())
                     .notificationTime(notification.getNotificationTime())
+                    .isActive(notification.getIsActive())
                     .build();
 
             notificationDtos.add(notificationDto);
@@ -97,6 +99,7 @@ public class AdminNotificationSearchService {
                 .repeatDays(notification.getRepeatDays())
                 .notificationTarget(notification.getNotificationTarget())
                 .notificationTime(notification.getNotificationTime())
+                .isActive(notification.getIsActive())
                 .build();
     }
 
