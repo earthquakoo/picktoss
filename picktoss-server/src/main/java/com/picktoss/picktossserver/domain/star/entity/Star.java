@@ -66,10 +66,10 @@ public class Star extends AuditBase {
     }
 
     public StarHistory depositStarByQuizSetSolvedReward(Star star, int reward) {
-        StarHistory lastStarHistory = star.getStarHistories().getLast();
-        Integer balanceAfter = lastStarHistory.getBalanceAfter() + reward;
+        Integer curStarCount = star.getStar();
+        Integer changeStarCount = curStarCount + reward;
 
-        StarHistory starHistory = StarHistory.createStarHistory("퀴즈셋 풀이 보상", reward, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+        StarHistory starHistory = StarHistory.createStarHistory("퀴즈셋 풀이 보상", reward, changeStarCount, TransactionType.DEPOSIT, Source.REWARD, star);
 
         this.star += reward;
         return starHistory;
