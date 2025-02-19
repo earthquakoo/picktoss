@@ -69,8 +69,10 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quiz q " +
             "JOIN FETCH q.document d " +
             "WHERE qs.member.id = :memberId " +
+            "AND qs.solved = true " +
+            "AND (qsq.isAnswer = false OR qsq.elapsedTimeMs >= 20000) " +
             "AND qsq.createdAt >= :sevenDaysAgo")
-    List<QuizSetQuiz> findAllByMemberIdAndCreatedAtAfter(
+    List<QuizSetQuiz> findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(
             @Param("memberId") Long memberId,
             @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
     );
