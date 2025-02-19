@@ -93,7 +93,7 @@ public class DocumentSearchService {
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInDirectory(Long memberId, Long directoryId, DocumentSortOption documentSortOption) {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(memberId, sevenDaysAgo);
 
         List<Document> documents;
 
@@ -219,7 +219,7 @@ public class DocumentSearchService {
 
     public GetDocumentsNeedingReviewResponse findDocumentsNeedingReview(Long memberId) {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(memberId, sevenDaysAgo);
 
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
         HashMap<Document, Integer> documentsNeedingReviewCountMap = new LinkedHashMap<>();
