@@ -34,6 +34,10 @@ public class CollectionQuizSet extends AuditBase {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "collection_id", nullable = false)
+    private Collection collection;
+
     @OneToMany(mappedBy = "collectionQuizSet", orphanRemoval = true)
     private List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = new ArrayList<>();
 

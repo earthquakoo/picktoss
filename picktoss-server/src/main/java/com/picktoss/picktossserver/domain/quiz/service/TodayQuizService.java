@@ -6,7 +6,6 @@ import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSe
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
-import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetCurrentTodayQuizInfo;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizSetTodayResponse;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
@@ -34,7 +33,6 @@ public class TodayQuizService {
     private final QuizUtil quizUtil;
     private final QuizSetRepository quizSetRepository;
     private final DocumentRepository documentRepository;
-    private final MemberRepository memberRepository;
     private final RandomQuizRecordRepository randomQuizRecordRepository;
     private final CollectionQuizSetRepository collectionQuizSetRepository;
     private final CollectionRandomQuizRecordRepository collectionRandomQuizRecordRepository;
@@ -85,7 +83,7 @@ public class TodayQuizService {
     }
 
     public GetCurrentTodayQuizInfo findCurrentTodayQuizInfo(Long memberId) {
-        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSet(memberId);
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(memberId);
         int currentConsecutiveTodayQuizDate = quizUtil.checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
         int maxConsecutiveTodayQuizDate = quizUtil.checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
