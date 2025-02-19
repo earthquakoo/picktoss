@@ -183,7 +183,7 @@ public class QuizResultUpdateService {
 
         if (quizSetType == QuizSetType.TODAY_QUIZ_SET) {
             Member member = quizSet.getMember();
-            List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+            List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(memberId);
             int currentConsecutiveTodayQuizDate = quizUtil.checkCurrentConsecutiveSolvedQuizSet(quizSets);
             if (currentConsecutiveTodayQuizDate % 5 == 0) {
                 solvedTodayQuizSetStarReward(member, QuizConstant.FIVE_DAYS_CONSECUTIVE_REWARD);
