@@ -6,9 +6,8 @@ import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionC
 import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionContainingQuiz;
 import com.picktoss.picktossserver.domain.collection.dto.response.GetQuizzesInCollectionByCollectionCategory;
 import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleCollectionResponse;
+import com.picktoss.picktossserver.domain.collection.entity.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.collection.util.CollectionUtil;
@@ -258,8 +257,7 @@ public class CollectionSearchService {
 
         if (collectionSortOption == CollectionSortOption.POPULARITY) {
             collections.sort((c1, c2) ->
-                    Integer.compare(c2.getCollectionBookmarks().size(), c1.getCollectionBookmarks().size())
-            );
+                    Integer.compare(c2.getCollectionQuizSets().size(), c1.getCollectionQuizSets().size()));
         }
 
         if (quizCount == null && quizType == null) {

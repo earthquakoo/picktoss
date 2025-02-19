@@ -239,7 +239,7 @@ public class NotificationSchedulerUtil {
     }
 
     private boolean notificationTargetByTodayQuiz(NotificationTarget notificationTarget, Member member) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSet(member.getId());
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(member.getId());
 
         if (notificationTarget == NotificationTarget.QUIZ_INCOMPLETE_STATUS) {
             return quizUtil.checkTodayQuizSetSolvedStatus(quizSets);

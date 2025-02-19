@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,7 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE collection SET is_deleted = true, deleted_at = NOW() WHERE id = ?")
-//@SQLRestriction("is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class Collection extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,6 +57,9 @@ public class Collection extends AuditBase {
 
     @OneToMany(mappedBy = "collection")
     private Set<CollectionComplaint> collectionComplaints = new HashSet<>();
+
+    @OneToMany(mappedBy = "collection")
+    private Set<CollectionQuizSet> collectionQuizSets = new HashSet<>();
 
     // Constructor methods
     public static Collection createCollection(

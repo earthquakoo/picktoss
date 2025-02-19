@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class QuizUtil {
@@ -29,9 +28,9 @@ public class QuizUtil {
             LocalDate quizDate = quizSet.getCreatedAt().toLocalDate();
 
             if (previousDate == null) {
-                currentConsecutiveDays++;
+                currentConsecutiveDays += 1;
             } else if (previousDate.minusDays(1).equals(quizDate)) {
-                currentConsecutiveDays++;
+                currentConsecutiveDays += 1;
             } else {
                 break;
             }
@@ -64,10 +63,6 @@ public class QuizUtil {
             previousDate = quizDate;  // 다음 비교를 위해 이전 날짜 업데이트
         }
         return Math.max(maxConsecutiveDays, currentConsecutiveDays);
-    }
-
-    public static String createQuizSetId() {
-        return UUID.randomUUID().toString().replace("-", "");
     }
 
     public boolean checkTodayQuizSetSolvedStatus(List<QuizSet> quizSets) {
