@@ -85,6 +85,39 @@ public class NotificationScheduleService {
         }
     }
 
+//    private void scheduleNotification(Notification notification, LocalDateTime notificationTime) {
+//        List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+//
+//        if (repeatDays == null || repeatDays.isEmpty()) {
+//            // 단일 알림 스케줄
+//            scheduleTask(notification, notificationTime);
+//        } else {
+//            // 반복 조건 기반 알림 스케줄
+//            scheduleTask(notification, notificationTime);
+//            updateNotificationStatusPendingBySendPushNotification(notification.getId());
+//            updateNotificationKeyBySendPushNotification(notification.getId());
+//        }
+//        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
+//    }
+//
+//    private void scheduleTask(Notification notification, LocalDateTime notificationTime) {
+//        taskScheduler.schedule(() -> handleNotification(notification), notificationUtil.toInstant(notificationTime));
+//    }
+//
+//    private void handleNotification(Notification notification) {
+//        // 알림 발송
+//        sendNotification(notification.getTitle(), notification.getContent(), notification.getId(), notification.getNotificationKey()).run();
+//
+//        List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+//        if (repeatDays != null && !repeatDays.isEmpty()) {
+//            // 다음 알림 예약
+//            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
+//            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
+//            updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
+//            scheduleNotification(notification, nextNotificationTime);
+//        }
+//    }
+
     @Transactional
     private void updateNotificationStatusCompleteBySendPushNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
