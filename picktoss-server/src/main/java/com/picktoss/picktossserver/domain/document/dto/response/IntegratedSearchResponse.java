@@ -52,7 +52,7 @@ public class IntegratedSearchResponse {
         private String name;
         private String emoji;
         private int bookmarkCount;
-        private CollectionCategory collectionCategory;
+        private String collectionCategory;
         private String memberName;
         private int quizCount;
     }
