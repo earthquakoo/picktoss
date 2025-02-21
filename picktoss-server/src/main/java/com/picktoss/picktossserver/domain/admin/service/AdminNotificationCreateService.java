@@ -45,6 +45,6 @@ public class AdminNotificationCreateService {
         Notification notification = Notification.createNotification(title, content, memo, notificationKey, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         notificationRepository.save(notification);
 
-        notificationSchedulerUtil.scheduleNotification(notification , notificationTime);
+        notificationSchedulerUtil.scheduleTask(notification, notificationTime);
     }
 }

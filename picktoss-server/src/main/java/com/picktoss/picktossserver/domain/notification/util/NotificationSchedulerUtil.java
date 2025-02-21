@@ -17,9 +17,12 @@ import com.picktoss.picktossserver.domain.notification.repository.NotificationRe
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
+import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -45,26 +50,35 @@ public class NotificationSchedulerUtil {
     private final QuizUtil quizUtil;
     private final CollectionRepository collectionRepository;
 
-    public void scheduleNotification(Notification notification, LocalDateTime notificationTime) {
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+    private Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
-        if (repeatDays == null || repeatDays.isEmpty()) {
-            // 단일 알림 스케줄
-            scheduleTask(notification, notificationTime);
-        } else {
-            // 반복 조건 기반 알림 스케줄
-            scheduleTask(notification, notificationTime);
-            updateNotificationStatusPendingBySendPushNotification(notification.getId());
-            updateNotificationKeyBySendPushNotification(notification.getId());
+    @EventListener(ApplicationReadyEvent.class)
+    public void initNotificationSchedule() {
+        List<Notification> notifications = notificationRepository.findAllByNotificationStatusAndIsActiveTrue(NotificationStatus.PENDING);
+
+        for (Notification notification : notifications) {
+            if (!notification.getNotificationTime().isBefore(LocalDateTime.now())) {
+                scheduleTask(notification, notification.getNotificationTime());
+            }
         }
-        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
     }
 
-    private void scheduleTask(Notification notification, LocalDateTime notificationTime) {
-        taskScheduler.schedule(() -> handleNotification(notification), adminNotificationUtil.toInstant(notificationTime));
+    public void scheduleTask(Notification notification, LocalDateTime notificationTime) {
+        ScheduledFuture<?> schedule = taskScheduler.schedule(() -> handleNotification(notification), adminNotificationUtil.toInstant(notificationTime));
+        scheduledTasks.put(notification.getId(), schedule);
+        System.out.println("scheduledTasks = " + scheduledTasks);
+    }
+
+    public void cancelScheduleTask(Long notificationId) {
+        ScheduledFuture<?> schedule = scheduledTasks.get(notificationId);
+        scheduledTasks.remove(notificationId);
+        schedule.cancel(true);
+        System.out.println("scheduledTasks = " + scheduledTasks);
     }
 
     private void handleNotification(Notification notification) {
+
+        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
         // 알림 발송
         sendNotification(notification).run();
 
@@ -74,7 +88,11 @@ public class NotificationSchedulerUtil {
             DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
             LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
-            scheduleNotification(notification, nextNotificationTime);
+            updateNotificationStatusPendingBySendPushNotification(notification.getId());
+            updateNotificationKeyBySendPushNotification(notification.getId());
+            scheduleTask(notification, nextNotificationTime);
+        } else {
+            updateNotificationIsActiveBySendPushNotification(notification.getId());
         }
     }
 
@@ -113,6 +131,15 @@ public class NotificationSchedulerUtil {
                 .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
 
         notification.updateNotificationSendTime(sendTime);
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    private void updateNotificationIsActiveBySendPushNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
+
+        notification.updateNotificationIsActiveFalse();
         notificationRepository.save(notification);
     }
 
