@@ -87,6 +87,10 @@ public class Notification {
         this.notificationTime = notificationTime;
     }
 
+    public void updateNotificationIsActiveFalse() {
+        this.isActive = false;
+    }
+
     public void updateNotificationInfo(String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<String> repeatDays) {
         if (title != null) {
             this.title = title;
