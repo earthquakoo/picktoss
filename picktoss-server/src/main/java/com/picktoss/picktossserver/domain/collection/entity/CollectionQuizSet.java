@@ -42,13 +42,14 @@ public class CollectionQuizSet extends AuditBase {
     private List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = new ArrayList<>();
 
     // Constructor methods
-    public static CollectionQuizSet createCollectionQuizSet(String id, String name, QuizSetType quizSetType, Member member) {
+    public static CollectionQuizSet createCollectionQuizSet(String id, String name, QuizSetType quizSetType, Member member, Collection collection) {
         return CollectionQuizSet.builder()
                 .id(id)
                 .name(name)
                 .solved(false)
                 .quizSetType(quizSetType)
                 .member(member)
+                .collection(collection)
                 .build();
     }
 

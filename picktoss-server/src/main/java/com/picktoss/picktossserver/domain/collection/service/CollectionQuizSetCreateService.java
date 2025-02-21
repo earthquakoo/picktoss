@@ -48,7 +48,7 @@ public class CollectionQuizSetCreateService {
 
         List<CollectionQuizSetCollectionQuiz> quizSetQuizzes = new ArrayList<>();
         String quizSetId = createQuizSetId();
-        CollectionQuizSet collectionQuizSet = CollectionQuizSet.createCollectionQuizSet(quizSetId, quizSetName, QuizSetType.COLLECTION_QUIZ_SET, member);
+        CollectionQuizSet collectionQuizSet = CollectionQuizSet.createCollectionQuizSet(quizSetId, quizSetName, QuizSetType.COLLECTION_QUIZ_SET, member, collection);
 
         for (CollectionQuiz collectionQuiz : collectionQuizzes) {
             CollectionQuizSetCollectionQuiz collectionQuizSetCollectionQuiz = CollectionQuizSetCollectionQuiz.createCollectionQuizSetCollectionQuiz(collectionQuiz, collectionQuizSet);

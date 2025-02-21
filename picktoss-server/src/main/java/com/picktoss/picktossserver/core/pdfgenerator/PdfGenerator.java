@@ -128,18 +128,18 @@ public class PdfGenerator {
             }
 
             // 정답 및 해설 추가 (이모지 포함)
-            Paragraph answer = new Paragraph("✔ Answer: " + quiz.getAnswer(), new Font(emojiFont, 12, Font.BOLD, Color.BLUE));
+            Paragraph answer = new Paragraph("✔ Answer: " + quiz.getAnswer(), new Font(baseFont, 12, Font.BOLD, Color.BLUE));
             answer.setSpacingBefore(10);
             document.add(answer);
 
-            Paragraph explanation = new Paragraph("📌 Explanation: " + quiz.getExplanation(), new Font(emojiFont, 12, Font.NORMAL, Color.BLACK));
+            Paragraph explanation = new Paragraph("📌 Explanation: " + quiz.getExplanation(), new Font(baseFont, 12, Font.NORMAL, Color.BLACK));
             explanation.setSpacingAfter(15);
             document.add(explanation);
 
             // 구분선 추가
             LineSeparator separator = new LineSeparator();
             separator.setLineColor(Color.LIGHT_GRAY);
-            separator.setPercentage(90);
+            separator.setPercentage(100);
             document.add(new Chunk(separator));
 
             // 줄바꿈 추가
