@@ -110,18 +110,8 @@ public class QuizAnalysisService {
         List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
 
         for (CollectionQuizSet collectionQuizSet : collectionQuizSets) {
-            LocalDate date = collectionQuizSet.getCreatedAt().toLocalDate();
             List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = collectionQuizSet.getCollectionQuizSetCollectionQuizzes();
             int totalQuizCount = collectionQuizSetCollectionQuizzes.size();
-
-            totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + totalQuizCount);
-            for (CollectionQuizSetCollectionQuiz collectionQuizSetCollectionQuiz : collectionQuizSetCollectionQuizzes) {
-                if (!Objects.isNull(collectionQuizSetCollectionQuiz.getIsAnswer()) && collectionQuizSetCollectionQuiz.getIsAnswer()) {
-                    correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
-                }
-
-            }
-
 
             Collection collection = collectionQuizSet.getCollectionQuizSetCollectionQuizzes().getFirst().getCollectionQuiz().getCollection();
             collectionFieldMap.putIfAbsent(collection.getCollectionCategory(), totalQuizCount);
@@ -227,23 +217,8 @@ public class QuizAnalysisService {
         List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
 
         for (CollectionQuizSet collectionQuizSet : collectionQuizSets) {
-            LocalDate date = collectionQuizSet.getCreatedAt().toLocalDate();
             List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = collectionQuizSet.getCollectionQuizSetCollectionQuizzes();
             int totalQuizCount = collectionQuizSetCollectionQuizzes.size();
-
-            if (!date.isBefore(lastMonthStart) && !date.isAfter(lastMonthEnd)) {
-                lastMonthTotalQuizCountDateMap.put(date, lastMonthTotalQuizCountDateMap.getOrDefault(date, 0) + totalQuizCount);
-            }
-
-            if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
-                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + totalQuizCount);
-                for (CollectionQuizSetCollectionQuiz collectionQuizSetCollectionQuiz : collectionQuizSetCollectionQuizzes) {
-                    if (!Objects.isNull(collectionQuizSetCollectionQuiz.getIsAnswer()) && collectionQuizSetCollectionQuiz.getIsAnswer()) {
-                        correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
-                    }
-                }
-            }
-
 
             Collection collection = collectionQuizSet.getCollectionQuizSetCollectionQuizzes().getFirst().getCollectionQuiz().getCollection();
             collectionFieldMap.putIfAbsent(collection.getCollectionCategory(), totalQuizCount);
