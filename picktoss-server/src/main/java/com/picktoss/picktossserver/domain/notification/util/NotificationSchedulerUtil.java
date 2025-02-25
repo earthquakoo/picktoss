@@ -87,6 +87,7 @@ public class NotificationSchedulerUtil {
             // 다음 알림 예약
             DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
             LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
+            System.out.println("nextNotificationTime = " + nextNotificationTime);
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
             updateNotificationStatusPendingBySendPushNotification(notification.getId());
             updateNotificationKeyBySendPushNotification(notification.getId());
