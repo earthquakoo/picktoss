@@ -43,13 +43,12 @@ public class AdminNotificationUpdateService {
             } else {
                 DayOfWeek nextDay = adminNotificationUtil.findNextDay(dayOfWeeks, notification.getNotificationTime().getDayOfWeek());
                 LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notificationTime, nextDay);
-                notificationTime = nextNotificationTime;
                 notificationSchedulerUtil.scheduleTask(notification , nextNotificationTime);
+                notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, nextNotificationTime, repeatDays);
             }
         } else {
             notificationSchedulerUtil.scheduleTask(notification , notificationTime);
+            notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         }
-
-        notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
     }
 }
