@@ -34,7 +34,7 @@ public class NotificationUtil {
     // 다음 알림 날짜 계산
     public LocalDateTime calculateNextNotificationTime(LocalDateTime notificationTime, DayOfWeek nextDay) {
         // nextDay가 현재 요일과 같다면 정확히 1주 후로 설정
-        if (notificationTime.getDayOfWeek() == nextDay) {
+        if (notificationTime.getDayOfWeek() == nextDay && LocalDateTime.now().isAfter(notificationTime)) {
             return notificationTime.plusWeeks(1);
         }
         // 그렇지 않다면, 다음 해당 요일로 이동
