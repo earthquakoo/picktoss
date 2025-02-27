@@ -87,10 +87,10 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
-            @RequestParam(required = false, value = "invite-link") String inviteLink
+            @RequestParam(required = false, value = "invite-code") String inviteCode
     ) {
 
-        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), inviteLink);
+        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), inviteCode);
         return ResponseEntity.ok().body(response);
     }
 

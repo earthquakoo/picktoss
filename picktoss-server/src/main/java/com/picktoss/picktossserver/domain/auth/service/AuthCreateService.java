@@ -56,7 +56,7 @@ public class AuthCreateService {
     private final AuthUtil authUtil;
 
     @Transactional
-    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteLink) {
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteCode) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
 
         if (socialPlatform == SocialPlatform.KAKAO) {
@@ -70,8 +70,8 @@ public class AuthCreateService {
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
-                if (inviteLink != null) {
-                    verifyInviteCode(inviteLink, member.getId());
+                if (inviteCode != null) {
+                    verifyInviteCode(inviteCode, member.getId());
                     depositStarByInviteFriendReward(star);
                 }
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
@@ -92,8 +92,8 @@ public class AuthCreateService {
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
-                if (inviteLink != null) {
-                    verifyInviteCode(inviteLink, member.getId());
+                if (inviteCode != null) {
+                    verifyInviteCode(inviteCode, member.getId());
                     depositStarByInviteFriendReward(star);
                 }
 
