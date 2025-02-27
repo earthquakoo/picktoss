@@ -7,7 +7,6 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
-import com.picktoss.picktossserver.domain.admin.util.AdminNotificationUtil;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -45,7 +44,7 @@ public class NotificationSchedulerUtil {
     private final TaskScheduler taskScheduler;
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
-    private final AdminNotificationUtil adminNotificationUtil;
+    private final NotificationUtil notificationUtil;
     private final QuizSetRepository quizSetRepository;
     private final QuizUtil quizUtil;
     private final CollectionRepository collectionRepository;
@@ -64,7 +63,7 @@ public class NotificationSchedulerUtil {
     }
 
     public void scheduleTask(Notification notification, LocalDateTime notificationTime) {
-        ScheduledFuture<?> schedule = taskScheduler.schedule(() -> handleNotification(notification), adminNotificationUtil.toInstant(notificationTime));
+        ScheduledFuture<?> schedule = taskScheduler.schedule(() -> handleNotification(notification), notificationUtil.toInstant(notificationTime));
         scheduledTasks.put(notification.getId(), schedule);
         System.out.println("scheduledTasks = " + scheduledTasks);
     }
@@ -82,11 +81,12 @@ public class NotificationSchedulerUtil {
         // 알림 발송
         sendNotification(notification).run();
 
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+        List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
             // 다음 알림 예약
-            DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
-            LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
+            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
+            System.out.println("nextDay = " + nextDay);
+            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
             System.out.println("nextNotificationTime = " + nextNotificationTime);
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
             updateNotificationStatusPendingBySendPushNotification(notification.getId());
@@ -120,7 +120,7 @@ public class NotificationSchedulerUtil {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
 
-        String notificationKey = adminNotificationUtil.createNotificationKey();
+        String notificationKey = notificationUtil.createNotificationKey();
 
         notification.updateNotificationKey(notificationKey);
         notificationRepository.save(notification);
