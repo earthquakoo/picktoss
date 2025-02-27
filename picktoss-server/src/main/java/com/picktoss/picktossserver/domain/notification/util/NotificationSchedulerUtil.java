@@ -56,7 +56,7 @@ public class NotificationSchedulerUtil {
         List<Notification> notifications = notificationRepository.findAllByNotificationStatusAndIsActiveTrue(NotificationStatus.PENDING);
 
         for (Notification notification : notifications) {
-            if (!notification.getNotificationTime().isBefore(LocalDateTime.now())) {
+            if (notification.getNotificationTime().isAfter(LocalDateTime.now())) {
                 scheduleTask(notification, notification.getNotificationTime());
             }
         }
