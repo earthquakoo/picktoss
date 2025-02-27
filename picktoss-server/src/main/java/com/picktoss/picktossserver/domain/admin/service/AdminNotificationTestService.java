@@ -5,10 +5,9 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
-import com.picktoss.picktossserver.domain.admin.util.AdminNotificationUtil;
-import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
+import com.picktoss.picktossserver.domain.notification.util.NotificationUtil;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +31,15 @@ public class AdminNotificationTestService {
     private final RedisUtil redisUtil;
     private final TaskScheduler taskScheduler;
     private final NotificationRepository notificationRepository;
-    private final MemberRepository memberRepository;
-    private final AdminNotificationUtil adminNotificationUtil;
+    private final NotificationUtil notificationUtil;
 
 
 
     @Transactional
     public void createNotificationTest(String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<DayOfWeek> dayOfWeeks, Long memberId) {
-        List<String> repeatDays = adminNotificationUtil.dayOfWeeksToString(dayOfWeeks);
+        List<String> repeatDays = notificationUtil.dayOfWeeksToString(dayOfWeeks);
 
-        String notificationKey = adminNotificationUtil.createNotificationKey();
+        String notificationKey = notificationUtil.createNotificationKey();
 
         Notification notification = Notification.createNotification(title, content, memo, notificationKey, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         notificationRepository.save(notification);
@@ -73,7 +71,7 @@ public class AdminNotificationTestService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
 
-        String notificationKey = adminNotificationUtil.createNotificationKey();
+        String notificationKey = notificationUtil.createNotificationKey();
 
         notification.updateNotificationKey(notificationKey);
         notificationRepository.save(notification);
@@ -81,16 +79,16 @@ public class AdminNotificationTestService {
 
     // 다음 알림 예약
     private void scheduleNextNotificationTest(Notification notification, LocalDateTime baseTime, Long memberId) {
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+        List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
 
         if (repeatDays == null || repeatDays.isEmpty()) {
             // 단일 알림 스케줄
-            taskScheduler.schedule(() -> sendAndScheduleNextNotificationTest(notification, memberId), adminNotificationUtil.toInstant(baseTime));
+            taskScheduler.schedule(() -> sendAndScheduleNextNotificationTest(notification, memberId), notificationUtil.toInstant(baseTime));
         } else {
             // 반복 조건 기반 첫 알림 스케줄
-            DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, baseTime.getDayOfWeek());
-            LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(baseTime, nextDay);
-            taskScheduler.schedule(() -> sendAndScheduleNextNotificationTest(notification, memberId), adminNotificationUtil.toInstant(nextNotificationTime));
+            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, baseTime.getDayOfWeek());
+            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(baseTime, nextDay);
+            taskScheduler.schedule(() -> sendAndScheduleNextNotificationTest(notification, memberId), notificationUtil.toInstant(nextNotificationTime));
             updateNotificationStatusPendingBySendPushNotification(notification.getId());
             updateNotificationKeyBySendPushNotification(notification.getId());
         }
@@ -101,12 +99,12 @@ public class AdminNotificationTestService {
         // 알림 발송
         sendNotificationTest(notification.getTitle(), notification.getContent(), notification.getId(), memberId).run();
 
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+        List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
             // 다음 반복 요일 계산
             DayOfWeek currentDay = LocalDateTime.now().getDayOfWeek();
-            DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, currentDay);
-            LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(LocalDateTime.now(), nextDay);
+            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, currentDay);
+            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(LocalDateTime.now(), nextDay);
 
             // 다음 알림 예약
             scheduleNextNotificationTest(notification, nextNotificationTime, memberId);
