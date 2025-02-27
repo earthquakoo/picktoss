@@ -73,6 +73,10 @@ public class AuthCreateService {
                 if (inviteCode != null) {
                     verifyInviteCode(inviteCode, member.getId());
                     depositStarByInviteFriendReward(star);
+                    Long invitedMemberId = findInvitedMemberId(inviteCode);
+                    Member invitedMember = memberRepository.findById(invitedMemberId)
+                            .orElseThrow(() -> new CustomException(ErrorInfo.INVITED_MEMBER_NOT_FOUND));
+                    depositStarByInviteFriendReward(invitedMember.getStar());
                 }
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
                 return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
@@ -95,6 +99,10 @@ public class AuthCreateService {
                 if (inviteCode != null) {
                     verifyInviteCode(inviteCode, member.getId());
                     depositStarByInviteFriendReward(star);
+                    Long invitedMemberId = findInvitedMemberId(inviteCode);
+                    Member invitedMember = memberRepository.findById(invitedMemberId)
+                            .orElseThrow(() -> new CustomException(ErrorInfo.INVITED_MEMBER_NOT_FOUND));
+                    depositStarByInviteFriendReward(invitedMember.getStar());
                 }
 
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
@@ -192,5 +200,18 @@ public class AuthCreateService {
 
         inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
         redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
+    }
+
+    private Long findInvitedMemberId(String inviteCode) {
+        Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+
+        if (inviteCodeData.isEmpty()) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
+        }
+
+        Map inviteCodeKeyData = inviteCodeData.get();
+        Object inviteMemberIdObject = inviteCodeKeyData.get("inviteMemberId");
+        Long inviteMemberId = new ObjectMapper().convertValue(inviteMemberIdObject, new TypeReference<Long>() {});
+        return inviteMemberId;
     }
 }

@@ -16,6 +16,7 @@ public enum ErrorInfo {
     INVITE_LINK_EXPIRED_OR_NOT_FOUND(400, "INVITE_LINK_EXPIRED_OR_NOT_FOUND", "초대 링크가 만료되었거나 잘못된 초대 링크입니다."),
     FCM_TOKEN_NOT_FOUND(400, "FCM_TOKEN_NOT_FOUND", "FCM 토큰을 찾을 수 없습니다."),
     INVALID_PASSWORD(400, "INVALID_PASSWORD", "비밀번호가 틀렸습니다."),
+    INVITED_MEMBER_NOT_FOUND(400, "INVITED_MEMBER_NOT_FOUND", "초대한 사용자를 찾을 수 없습니다."),
 
     /**
      * AWS Exception
