@@ -72,7 +72,7 @@ public class AuthCreateService {
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
-                if (inviteCode != null) {
+                if (inviteCode != null && !inviteCode.isEmpty()) {
                     verifyInviteCode(inviteCode);
                     depositStarByInviteFriendReward(star);
                     Long invitedMemberId = findInvitedMemberId(inviteCode);
@@ -100,7 +100,7 @@ public class AuthCreateService {
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
-                if (inviteCode != null) {
+                if (inviteCode != null && !inviteCode.isEmpty()) {
                     verifyInviteCode(inviteCode);
                     depositStarByInviteFriendReward(star);
                     Long invitedMemberId = findInvitedMemberId(inviteCode);
