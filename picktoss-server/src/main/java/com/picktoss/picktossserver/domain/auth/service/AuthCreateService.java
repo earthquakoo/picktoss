@@ -64,6 +64,7 @@ public class AuthCreateService {
         if (socialPlatform == SocialPlatform.KAKAO) {
             KakaoMemberDto kakaoMemberDto = authUtil.transJsonToKakaoMemberDto(memberInfo);
             Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
+            System.out.println("inviteCode = " + inviteCode);
 
             if (optionalMember.isEmpty()) {
                 Member member = createKakaoMember(kakaoMemberDto);
