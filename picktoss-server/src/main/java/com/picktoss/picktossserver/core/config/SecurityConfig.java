@@ -77,7 +77,7 @@ public class SecurityConfig {
                                 "/api/v2/test/quiz-create",
                                 "/api/v2/admin/login",
                                 "/api/v2/admin/sign-up",
-                                "/api/v2/invite/**"
+                                "/api/v2/auth/invite/**"
                         )
                         .permitAll()
                         .anyRequest().authenticated()
