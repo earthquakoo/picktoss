@@ -16,6 +16,7 @@ import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.directory.repository.DirectoryRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
+import com.picktoss.picktossserver.domain.notification.util.NotificationSendUtil;
 import com.picktoss.picktossserver.domain.star.constant.StarConstant;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.star.entity.StarHistory;
@@ -35,10 +36,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.ALREADY_USED_INVITED_CODE;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.INVITE_LINK_EXPIRED_OR_NOT_FOUND;
 
 @Service
@@ -54,6 +55,7 @@ public class AuthCreateService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
     private final AuthUtil authUtil;
+    private final NotificationSendUtil notificationSendUtil;
 
     @Transactional
     public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteCode) {
@@ -71,12 +73,14 @@ public class AuthCreateService {
                 createMemberSubscription(member);
 
                 if (inviteCode != null) {
-                    verifyInviteCode(inviteCode, member.getId());
+                    verifyInviteCode(inviteCode);
                     depositStarByInviteFriendReward(star);
                     Long invitedMemberId = findInvitedMemberId(inviteCode);
                     Member invitedMember = memberRepository.findById(invitedMemberId)
                             .orElseThrow(() -> new CustomException(ErrorInfo.INVITED_MEMBER_NOT_FOUND));
                     depositStarByInviteFriendReward(invitedMember.getStar());
+                    updateInviteCodeDataIsUsed(inviteCode);
+                    notificationSendUtil.sendNotificationByStarReward(invitedMemberId);
                 }
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
                 return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
@@ -97,12 +101,14 @@ public class AuthCreateService {
                 createMemberSubscription(member);
 
                 if (inviteCode != null) {
-                    verifyInviteCode(inviteCode, member.getId());
+                    verifyInviteCode(inviteCode);
                     depositStarByInviteFriendReward(star);
                     Long invitedMemberId = findInvitedMemberId(inviteCode);
                     Member invitedMember = memberRepository.findById(invitedMemberId)
                             .orElseThrow(() -> new CustomException(ErrorInfo.INVITED_MEMBER_NOT_FOUND));
                     depositStarByInviteFriendReward(invitedMember.getStar());
+                    updateInviteCodeDataIsUsed(inviteCode);
+                    notificationSendUtil.sendNotificationByStarReward(invitedMemberId);
                 }
 
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
@@ -185,21 +191,20 @@ public class AuthCreateService {
         return response.getBody();
     }
 
-    private void verifyInviteCode(String inviteCode, Long memberId) {
-        Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+    private void verifyInviteCode(String inviteCode) {
+        Optional<Map> optionalInviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
 
-        if (inviteCodeData.isEmpty()) {
+        if (optionalInviteCodeData.isEmpty()) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
 
-        Map inviteCodeKeyData = inviteCodeData.get();
-        Object inviteMemberIdListObject = inviteCodeKeyData.get("invitedMemberIdList");
+        Map inviteCodeKeyData = optionalInviteCodeData.get();
+        Object optionalIsUsed = inviteCodeKeyData.get("isUsed");
+        Boolean isUsed = new ObjectMapper().convertValue(optionalIsUsed, new TypeReference<Boolean>() {});
 
-        List<Long> inviteMemberIdList = new ObjectMapper().convertValue(inviteMemberIdListObject, new TypeReference<List<Long>>() {});
-        inviteMemberIdList.add(memberId);
-
-        inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
-        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
+        if (isUsed) {
+            throw new CustomException(ALREADY_USED_INVITED_CODE);
+        }
     }
 
     private Long findInvitedMemberId(String inviteCode) {
@@ -213,5 +218,23 @@ public class AuthCreateService {
         Object inviteMemberIdObject = inviteCodeKeyData.get("inviteMemberId");
         Long inviteMemberId = new ObjectMapper().convertValue(inviteMemberIdObject, new TypeReference<Long>() {});
         return inviteMemberId;
+    }
+
+    private void updateInviteCodeDataIsUsed(String inviteCode) {
+        Optional<Map> optionalInviteCodeKeyData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+        if (optionalInviteCodeKeyData.isEmpty()) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
+        }
+
+        Map inviteCodeKeyData = optionalInviteCodeKeyData.get();
+        Object optionalIsUsed = inviteCodeKeyData.get("isUsed");
+        Boolean isUsed = new ObjectMapper().convertValue(optionalIsUsed, new TypeReference<Boolean>() {});
+
+        if (isUsed) {
+            throw new CustomException(ALREADY_USED_INVITED_CODE);
+        }
+
+        inviteCodeKeyData.put("isUsed", true);
+        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData);
     }
 }

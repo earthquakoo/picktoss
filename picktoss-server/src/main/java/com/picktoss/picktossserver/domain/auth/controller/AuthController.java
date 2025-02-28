@@ -123,7 +123,7 @@ public class AuthController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        authInviteLinkService.verifyInviteCode(request.getInviteCode(), memberId);
+        authInviteLinkService.verifyInviteCode(request.getInviteCode());
     }
 
     /**

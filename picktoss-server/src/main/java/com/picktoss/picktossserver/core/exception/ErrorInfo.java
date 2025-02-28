@@ -17,6 +17,8 @@ public enum ErrorInfo {
     FCM_TOKEN_NOT_FOUND(400, "FCM_TOKEN_NOT_FOUND", "FCM 토큰을 찾을 수 없습니다."),
     INVALID_PASSWORD(400, "INVALID_PASSWORD", "비밀번호가 틀렸습니다."),
     INVITED_MEMBER_NOT_FOUND(400, "INVITED_MEMBER_NOT_FOUND", "초대한 사용자를 찾을 수 없습니다."),
+    ALREADY_USED_INVITED_CODE(400, "ALREADY_USED_INVITE_CODE", "이미 사용된 초대 코드입니다."),
+
 
     /**
      * AWS Exception
