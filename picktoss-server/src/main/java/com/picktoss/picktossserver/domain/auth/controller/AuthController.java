@@ -71,8 +71,6 @@ public class AuthController {
     public ResponseEntity<GetInviteMemberResponse> getInviteMemberInfo(
             @PathVariable("invite_code") String inviteCode
     ) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
 
         GetInviteMemberResponse response = authInviteLinkService.findInviteMember(inviteCode);
         return ResponseEntity.ok().body(response);
@@ -98,8 +96,6 @@ public class AuthController {
     @PostMapping("/auth/verification")
     @ResponseStatus(HttpStatus.OK)
     public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
 
         authEmailVerificationService.sendVerificationCode(request.getEmail());
     }
@@ -120,8 +116,6 @@ public class AuthController {
     @ApiErrorCodeExample(INVITE_LINK_EXPIRED_OR_NOT_FOUND)
     @ResponseStatus(HttpStatus.OK)
     public void verifyInviteCode(@Valid @RequestBody VerifyInviteCode request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
 
         authInviteLinkService.verifyInviteCode(request.getInviteCode());
     }
