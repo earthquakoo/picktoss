@@ -5,10 +5,7 @@ import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSetCol
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetCollectionQuizRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.dto.SolvedQuizRecordDto;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetCurrentTodayQuizInfo;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizRecordsResponse;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleQuizRecordByDateResponse;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleQuizSetRecordResponse;
+import com.picktoss.picktossserver.domain.quiz.dto.response.*;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
@@ -25,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,8 +38,6 @@ public class QuizRecordService {
     private final CollectionQuizSetCollectionQuizRepository collectionQuizSetCollectionQuizRepository;
 
     public GetSingleQuizRecordByDateResponse findAllQuizSetRecordByDate(Long memberId, LocalDate solvedDate) {
-        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
-
         LocalDateTime startDateTime = solvedDate.atStartOfDay();
         LocalDateTime endDateTime = solvedDate.atTime(LocalTime.MAX);
 
@@ -51,6 +47,51 @@ public class QuizRecordService {
         List<GetQuizRecordsResponse.GetQuizRecordsDto> quizRecordsDtos = quizSetsToRecordDtos(quizSets, collectionQuizSets);
 
         return new GetSingleQuizRecordByDateResponse(quizRecordsDtos);
+    }
+
+    public GetConsecutiveSolvedQuizSetDatesResponse findConsecutiveSolvedQuizSetDates(Long memberId, LocalDate solvedDate) {
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+
+        HashMap<LocalDate, Boolean> solvedQuizByDate = new LinkedHashMap<>();
+        List<GetConsecutiveSolvedQuizSetDatesResponse.GetQuizRecordByDateDto> solvedQuizDateRecords = new ArrayList<>();
+
+        YearMonth yearMonth = YearMonth.of(solvedDate.getYear(), solvedDate.getMonth());
+        LocalDate startOfDate = yearMonth.atDay(1);
+        LocalDate endOfDate = yearMonth.atEndOfMonth();
+
+        for (int i = 0; i <= endOfDate.getDayOfMonth() - startOfDate.getDayOfMonth(); i++) {
+            LocalDate date = startOfDate.plusDays(i);
+            solvedQuizByDate.put(date, false);
+        }
+
+        for (QuizSet quizSet : quizSets) {
+            LocalDate date = quizSet.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
+                solvedQuizByDate.put(date, true);
+            }
+        }
+
+        for (CollectionQuizSet collectionQuizSet : collectionQuizSets) {
+            LocalDate date = collectionQuizSet.getUpdatedAt().toLocalDate();
+
+            if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
+                solvedQuizByDate.put(date, true);
+            }
+        }
+
+        for (LocalDate localDate : solvedQuizByDate.keySet()) {
+            Boolean isSolved = solvedQuizByDate.get(localDate);
+            GetConsecutiveSolvedQuizSetDatesResponse.GetQuizRecordByDateDto quizRecordByDateDto = GetConsecutiveSolvedQuizSetDatesResponse.GetQuizRecordByDateDto.builder()
+                    .date(localDate)
+                    .isSolved(isSolved)
+                    .build();
+
+            solvedQuizDateRecords.add(quizRecordByDateDto);
+        }
+
+        return new GetConsecutiveSolvedQuizSetDatesResponse(solvedQuizDateRecords);
     }
 
     public GetQuizRecordsResponse findAllQuizAndCollectionRecords(Long memberId) {

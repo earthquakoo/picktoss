@@ -4,10 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetCurrentTodayQuizInfo;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizRecordsResponse;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleQuizRecordByDateResponse;
-import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleQuizSetRecordResponse;
+import com.picktoss.picktossserver.domain.quiz.dto.response.*;
 import com.picktoss.picktossserver.domain.quiz.service.QuizRecordService;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_SET_TYPE_ERROR;
 
 @Tag(name = "Quiz")
 @RestController
@@ -39,6 +35,19 @@ public class QuizRecordController {
         Long memberId = jwtUserInfo.getMemberId();
 
         GetCurrentTodayQuizInfo response = quizRecordService.findCurrentConsecutiveSolvedQuizSet(memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "월별 퀴즈 연속일 기록")
+    @GetMapping("/quiz-set/{solved_date}/consecutive-days")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetConsecutiveSolvedQuizSetDatesResponse> getConsecutiveSolvedQuizSetDates(
+            @PathVariable("solved_date") LocalDate solvedDate
+    ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetConsecutiveSolvedQuizSetDatesResponse response = quizRecordService.findConsecutiveSolvedQuizSetDates(memberId, solvedDate);
         return ResponseEntity.ok().body(response);
     }
 
