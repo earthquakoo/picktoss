@@ -85,7 +85,6 @@ public class AuthInviteLinkService {
     }
 
     // 초대 코드로 회원가입했는지 체크
-    @Transactional
     public CheckInviteCodeBySignUpResponse checkInviteCodeBySignUp(Long memberId) {
         String memberIdKey = memberId.toString();
 
