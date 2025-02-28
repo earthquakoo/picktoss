@@ -87,7 +87,7 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             @RequestParam(required = false, value = "invite-code") String inviteCode
     ) {
-
+        System.out.println("inviteCode = " + inviteCode);
         LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), inviteCode);
         return ResponseEntity.ok().body(response);
     }

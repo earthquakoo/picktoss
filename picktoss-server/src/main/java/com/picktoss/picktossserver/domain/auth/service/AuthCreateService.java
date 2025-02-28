@@ -28,6 +28,7 @@ import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import com.picktoss.picktossserver.global.enums.star.Source;
 import com.picktoss.picktossserver.global.enums.star.TransactionType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,6 +43,7 @@ import java.util.Optional;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.ALREADY_USED_INVITED_CODE;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.INVITE_LINK_EXPIRED_OR_NOT_FOUND;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -60,11 +62,12 @@ public class AuthCreateService {
     @Transactional
     public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteCode) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
+        log.info(inviteCode);
+        System.out.println("inviteCode = " + inviteCode);
 
         if (socialPlatform == SocialPlatform.KAKAO) {
             KakaoMemberDto kakaoMemberDto = authUtil.transJsonToKakaoMemberDto(memberInfo);
             Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
-            System.out.println("inviteCode = " + inviteCode);
 
             if (optionalMember.isEmpty()) {
                 Member member = createKakaoMember(kakaoMemberDto);
