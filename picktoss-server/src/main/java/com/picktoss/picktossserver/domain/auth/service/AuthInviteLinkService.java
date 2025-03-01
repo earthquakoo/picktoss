@@ -113,6 +113,7 @@ public class AuthInviteLinkService {
         Boolean isUsed = new ObjectMapper().convertValue(isUsedObject, new TypeReference<Boolean>() {});
 
         if (isUsed) {
+            redisUtil.deleteData(RedisConstant.REDIS_INVITE_MEMBER_PREFIX, memberIdKey);
             redisUtil.deleteData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode);
             return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.READY);
         }
