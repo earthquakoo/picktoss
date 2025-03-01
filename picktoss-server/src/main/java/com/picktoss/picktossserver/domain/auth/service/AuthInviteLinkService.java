@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.auth.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
@@ -10,6 +11,10 @@ import com.picktoss.picktossserver.domain.auth.dto.response.GetInviteMemberRespo
 import com.picktoss.picktossserver.domain.auth.util.AuthUtil;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
+import com.picktoss.picktossserver.domain.notification.util.NotificationSendUtil;
+import com.picktoss.picktossserver.domain.star.entity.Star;
+import com.picktoss.picktossserver.domain.star.entity.StarHistory;
+import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import com.picktoss.picktossserver.global.enums.auth.CheckInviteCodeResponseType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +33,8 @@ public class AuthInviteLinkService {
 
     private final RedisUtil redisUtil;
     private final MemberRepository memberRepository;
+    private final StarHistoryRepository starHistoryRepository;
+    private final NotificationSendUtil notificationSendUtil;
     private final AuthUtil authUtil;
 
     public String createInviteLink(Long memberId) {
@@ -113,6 +120,7 @@ public class AuthInviteLinkService {
         return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.NONE);
     }
 
+    // 초대 링크 생성자 정보 가져오기
     public GetInviteMemberResponse findInviteMember(String inviteCode) {
         Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
 
@@ -129,5 +137,59 @@ public class AuthInviteLinkService {
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         return new GetInviteMemberResponse(member.getName());
+    }
+
+    public void rewardForInviteCode(Long memberId, String inviteCode) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        verifyInviteCode(inviteCode);
+        depositStarByInviteFriendReward(member.getStar());
+
+        Long invitedMemberId = findInvitedMemberId(inviteCode);
+        Member invitedMember = memberRepository.findById(invitedMemberId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.INVITED_MEMBER_NOT_FOUND));
+
+        depositStarByInviteFriendReward(invitedMember.getStar());
+        updateInviteCodeDataIsUsed(inviteCode);
+
+        notificationSendUtil.sendNotificationByStarReward(invitedMemberId);
+    }
+
+    @Transactional
+    private void depositStarByInviteFriendReward(Star star) {
+        StarHistory starHistory = star.depositStarByInviteFriendReward(star);
+        starHistoryRepository.save(starHistory);
+    }
+
+    private void updateInviteCodeDataIsUsed(String inviteCode) {
+        Optional<Map> optionalInviteCodeKeyData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+        if (optionalInviteCodeKeyData.isEmpty()) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
+        }
+
+        Map inviteCodeKeyData = optionalInviteCodeKeyData.get();
+        Object optionalIsUsed = inviteCodeKeyData.get("isUsed");
+        Boolean isUsed = new ObjectMapper().convertValue(optionalIsUsed, new TypeReference<Boolean>() {});
+
+        if (isUsed) {
+            throw new CustomException(ALREADY_USED_INVITED_CODE);
+        }
+
+        inviteCodeKeyData.put("isUsed", true);
+        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData);
+    }
+
+    private Long findInvitedMemberId(String inviteCode) {
+        Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+
+        if (inviteCodeData.isEmpty()) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
+        }
+
+        Map inviteCodeKeyData = inviteCodeData.get();
+        Object inviteMemberIdObject = inviteCodeKeyData.get("inviteMemberId");
+        Long inviteMemberId = new ObjectMapper().convertValue(inviteMemberIdObject, new TypeReference<Long>() {});
+        return inviteMemberId;
     }
 }
