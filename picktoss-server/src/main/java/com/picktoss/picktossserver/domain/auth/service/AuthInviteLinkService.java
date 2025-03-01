@@ -139,6 +139,7 @@ public class AuthInviteLinkService {
         return new GetInviteMemberResponse(member.getName());
     }
 
+    @Transactional
     public void rewardForInviteCode(Long memberId, String inviteCode) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
