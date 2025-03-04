@@ -20,6 +20,8 @@ import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
@@ -40,6 +42,7 @@ import java.util.concurrent.ScheduledFuture;
 @Transactional(readOnly = true)
 public class NotificationSchedulerUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(NotificationSchedulerUtil.class);
     private final RedisUtil redisUtil;
     private final TaskScheduler taskScheduler;
     private final NotificationRepository notificationRepository;
@@ -78,16 +81,24 @@ public class NotificationSchedulerUtil {
     private void handleNotification(Notification notification) {
 
         createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
-        // 알림 발송
+
         sendNotification(notification).run();
 
         List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
-            // 다음 알림 예약
+
             DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
             System.out.println("nextDay = " + nextDay);
             LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
             System.out.println("nextNotificationTime = " + nextNotificationTime);
+
+            if (nextNotificationTime.isBefore(LocalDateTime.now())) {
+                updateNotificationIsActiveByFailedNotification(notification.getId());
+                updateNotificationStatusCompleteBySendPushNotification(notification.getId());
+                log.info("Notification Bug 발생");
+                return ;
+            }
+
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
             updateNotificationStatusPendingBySendPushNotification(notification.getId());
             updateNotificationKeyBySendPushNotification(notification.getId());
@@ -103,6 +114,15 @@ public class NotificationSchedulerUtil {
                 .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
 
         notification.updateNotificationStatusComplete();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    private void updateNotificationIsActiveByFailedNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
+
+        notification.updateNotificationIsActiveFalse();
         notificationRepository.save(notification);
     }
 
