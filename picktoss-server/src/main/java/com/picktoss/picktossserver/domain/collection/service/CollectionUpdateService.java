@@ -3,22 +3,19 @@ package com.picktoss.picktossserver.domain.collection.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSetCollectionQuiz;
-import com.picktoss.picktossserver.domain.collection.repository.*;
-import com.picktoss.picktossserver.domain.collection.util.CollectionUtil;
-import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
-import com.picktoss.picktossserver.domain.quiz.dto.request.UpdateQuizResultRequest;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
-import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
@@ -29,14 +26,7 @@ public class CollectionUpdateService {
 
     private final CollectionRepository collectionRepository;
     private final CollectionQuizRepository collectionQuizRepository;
-    private final CollectionQuizSetRepository collectionQuizSetRepository;
-    private final CollectionBookmarkRepository collectionBookmarkRepository;
-    private final CollectionComplaintRepository collectionComplaintRepository;
-    private final CollectionComplaintFileRepository collectionComplaintFileRepository;
     private final QuizRepository quizRepository;
-    private final MemberRepository memberRepository;
-    private final CollectionUtil collectionUtil;
-    private final StarHistoryRepository starHistoryRepository;
 
     @Transactional
     public void updateCollectionInfo(

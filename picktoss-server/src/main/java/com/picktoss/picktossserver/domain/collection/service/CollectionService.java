@@ -331,33 +331,6 @@ public class CollectionService {
                 .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
     }
 
-//    public GetCollectionSAnalysisResponse findCollectionsAnalysis(Long memberId) {
-//        List<CollectionSolvedRecord> collectionSolvedRecords = collectionSolvedRecordRepository.findAllByMemberId(memberId);
-//
-//        Map<Collection, CollectionCategory> quizMap = new HashMap<>();
-//        // 중복된 컬렉션 제거 후 map으로 변경
-//        for (CollectionSolvedRecord collectionSolvedRecord : collectionSolvedRecords) {
-//            Collection collection = collectionSolvedRecord.getCollection();
-//            quizMap.putIfAbsent(collection, collection.getCollectionCategory());
-//        }
-//
-//        Map<CollectionCategory, Integer> collectionFieldMap = new HashMap<>();
-//        for (Collection collection : quizMap.keySet()) {
-//            collectionFieldMap.put(collection.getCollectionCategory(), collectionFieldMap.getOrDefault(collection.getCollectionCategory(), 0) + 1);
-//        }
-//        return GetCollectionSAnalysisResponse.builder()
-//                .collectionsAnalysis(collectionFieldMap)
-//                .build();
-//    }
-
-//    private int findSolvedCountCollectionByCollectionId(Collection collection) {
-//        return (int) collection.getCollectionSolvedRecords().stream()
-//                .map(CollectionSolvedRecord::getMember)
-//                .map(Member::getId)
-//                .distinct()
-//                .count();
-//    }
-
     private List<Collection> filterCollections(CollectionSortOption collectionSortOption, List<CollectionCategory> collectionCategories, QuizType quizType, Integer quizCount) {
         List<Collection> collections;
 

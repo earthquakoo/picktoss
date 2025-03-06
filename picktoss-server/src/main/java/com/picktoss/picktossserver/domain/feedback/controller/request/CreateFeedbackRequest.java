@@ -10,7 +10,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class CreateFeedbackRequest {
-    private List<MultipartFile> files;
     private String title;
     private String content;
     private FeedbackType type;

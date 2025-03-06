@@ -27,8 +27,6 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FO
 public class CollectionComplaintService {
 
     private final CollectionRepository collectionRepository;
-    private final CollectionQuizRepository collectionQuizRepository;
-    private final CollectionBookmarkRepository collectionBookmarkRepository;
     private final CollectionComplaintRepository collectionComplaintRepository;
     private final CollectionComplaintFileRepository collectionComplaintFileRepository;
     private final MemberRepository memberRepository;

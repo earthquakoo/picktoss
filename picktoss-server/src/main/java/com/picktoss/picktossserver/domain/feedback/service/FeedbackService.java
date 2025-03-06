@@ -33,22 +33,32 @@ public class FeedbackService {
     private final DiscordMessageService discordMessageService;
 
     @Transactional
-    public void createFeedback(List<MultipartFile> files, String title, String content, FeedbackType type, String email, Long memberId) {
+    public Long createFeedback(List<MultipartFile> files, String title, String content, FeedbackType type, String email, Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
+
+        Feedback feedback = Feedback.createFeedback(title, content, type, email, member);
+        feedbackRepository.save(feedback);
+
+        if (files != null && !files.isEmpty()) {
+            createFeedbackFiles(files, feedback);
+        }
+
+        return feedback.getId();
+    }
+
+    @Transactional
+    private void createFeedbackFiles(List<MultipartFile> files, Feedback feedback) {
+        List<String> s3Keys = new ArrayList<>();
 
         String customS3Key = UUID.randomUUID().toString();
         String s3FolderPath = "picktoss-feedback-images/";
 
-        List<String> s3Keys = new ArrayList<>();
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
             String fullS3Key = s3FolderPath + customS3Key + "_" + fileName;
             s3Keys.add(fullS3Key);
         }
-
-
-        Feedback feedback = Feedback.createFeedback(title, content, type, email, member);
 
         List<FeedbackFile> feedbackFiles = new ArrayList<>();
         for (String s3Key : s3Keys) {
@@ -57,10 +67,6 @@ public class FeedbackService {
         }
 
         s3UploadImagesPublisher.s3UploadImagesPublisher(new S3UploadImagesEvent(files, s3Keys));
-        feedbackRepository.save(feedback);
         feedbackFileRepository.saveAll(feedbackFiles);
-
-//        DiscordMessage message = discordMessageService.createMessage();
-//        discordMessageService.sendDiscordWebhookMessage(message);
     }
 }
