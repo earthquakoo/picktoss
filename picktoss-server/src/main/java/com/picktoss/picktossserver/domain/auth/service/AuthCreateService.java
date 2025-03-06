@@ -1,13 +1,9 @@
 package com.picktoss.picktossserver.domain.auth.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
-import com.picktoss.picktossserver.core.redis.RedisConstant;
-import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.auth.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
@@ -27,6 +23,7 @@ import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
 import com.picktoss.picktossserver.global.enums.star.Source;
 import com.picktoss.picktossserver.global.enums.star.TransactionType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,12 +32,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.INVITE_LINK_EXPIRED_OR_NOT_FOUND;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,11 +46,10 @@ public class AuthCreateService {
     private final DirectoryRepository directoryRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisUtil redisUtil;
     private final AuthUtil authUtil;
 
     @Transactional
-    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteLink) {
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
 
         if (socialPlatform == SocialPlatform.KAKAO) {
@@ -70,10 +63,6 @@ public class AuthCreateService {
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
-                if (inviteLink != null) {
-                    verifyInviteCode(inviteLink, member.getId());
-                    depositStarByInviteFriendReward(star);
-                }
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
                 return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
             } else {
@@ -91,11 +80,6 @@ public class AuthCreateService {
                 Star star = createMemberStar(member);
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
-
-                if (inviteLink != null) {
-                    verifyInviteCode(inviteLink, member.getId());
-                    depositStarByInviteFriendReward(star);
-                }
 
                 JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
                 return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
@@ -175,22 +159,5 @@ public class AuthCreateService {
 
         ResponseEntity<String> response = restTemplate.exchange(getGoogleUserInfoUrl, HttpMethod.GET, request, String.class);
         return response.getBody();
-    }
-
-    private void verifyInviteCode(String inviteCode, Long memberId) {
-        Optional<Map> inviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
-
-        if (inviteCodeData.isEmpty()) {
-            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
-        }
-
-        Map inviteCodeKeyData = inviteCodeData.get();
-        Object inviteMemberIdListObject = inviteCodeKeyData.get("invitedMemberIdList");
-
-        List<Long> inviteMemberIdList = new ObjectMapper().convertValue(inviteMemberIdListObject, new TypeReference<List<Long>>() {});
-        inviteMemberIdList.add(memberId);
-
-        inviteCodeKeyData.put("invitedMemberIdList", inviteMemberIdList);
-        redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
     }
 }

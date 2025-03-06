@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.document.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.s3.S3Provider;
+import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionCategoryMapper;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
@@ -93,7 +94,7 @@ public class DocumentSearchService {
 
     public List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> findAllDocumentsInDirectory(Long memberId, Long directoryId, DocumentSortOption documentSortOption) {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(memberId, sevenDaysAgo);
 
         List<Document> documents;
 
@@ -219,7 +220,7 @@ public class DocumentSearchService {
 
     public GetDocumentsNeedingReviewResponse findDocumentsNeedingReview(Long memberId) {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndCreatedAtAfter(memberId, sevenDaysAgo);
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(memberId, sevenDaysAgo);
 
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
         HashMap<Document, Integer> documentsNeedingReviewCountMap = new LinkedHashMap<>();
@@ -334,12 +335,14 @@ public class DocumentSearchService {
         }
 
         for (Collection collection : collections) {
+            String collectionCategoryName = CollectionCategoryMapper.mapCollectionCategoryName(collection.getCollectionCategory());
+
             IntegratedSearchResponse.IntegratedSearchCollectionDto collectionDto = IntegratedSearchResponse.IntegratedSearchCollectionDto.builder()
                     .id(collection.getId())
                     .name(collection.getName())
                     .emoji(collection.getEmoji())
                     .bookmarkCount(collection.getCollectionBookmarks().size())
-                    .collectionCategory(collection.getCollectionCategory())
+                    .collectionCategory(collectionCategoryName)
                     .memberName(collection.getMember().getName())
                     .quizCount(collection.getCollectionQuizzes().size())
                     .build();

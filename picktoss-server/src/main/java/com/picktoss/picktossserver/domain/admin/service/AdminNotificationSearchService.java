@@ -30,6 +30,8 @@ public class AdminNotificationSearchService {
     public GetNotificationsForAdminResponse findAllNotification(int page) {
         Pageable pageable = PageRequest.of(page, 15);
         Page<Notification> notifications = notificationRepository.findAll(pageable);
+        long totalNotifications = notifications.getTotalElements();
+        int totalPages = notifications.getTotalPages();
 
         List<GetNotificationsForAdminResponse.GetNotificationsForAdminDto> notificationDtos = new ArrayList<>();
 
@@ -43,12 +45,13 @@ public class AdminNotificationSearchService {
                     .repeatDays(notification.getRepeatDays())
                     .notificationTarget(notification.getNotificationTarget())
                     .notificationTime(notification.getNotificationTime())
+                    .isActive(notification.getIsActive())
                     .build();
 
             notificationDtos.add(notificationDto);
         }
 
-        return new GetNotificationsForAdminResponse(notificationDtos);
+        return new GetNotificationsForAdminResponse(notificationDtos, totalNotifications, totalPages);
     }
 
     public GetNotificationsForAdminResponse searchNotifications(
@@ -59,6 +62,8 @@ public class AdminNotificationSearchService {
             Boolean isActive) {
 
         Page<Notification> notifications = filterNotificationSearch(page, keyword, notificationSearchOption, notificationType, isActive);
+        long totalNotifications = notifications.getTotalElements();
+        int totalPages = notifications.getTotalPages();
 
         List<GetNotificationsForAdminResponse.GetNotificationsForAdminDto> notificationDtos = new ArrayList<>();
 
@@ -72,12 +77,13 @@ public class AdminNotificationSearchService {
                     .repeatDays(notification.getRepeatDays())
                     .notificationTarget(notification.getNotificationTarget())
                     .notificationTime(notification.getNotificationTime())
+                    .isActive(notification.getIsActive())
                     .build();
 
             notificationDtos.add(notificationDto);
         }
 
-        return new GetNotificationsForAdminResponse(notificationDtos);
+        return new GetNotificationsForAdminResponse(notificationDtos, totalNotifications, totalPages);
     }
 
     public GetSingleNotificationForAdminResponse findSingleNotification(Long notificationId) {
@@ -93,6 +99,7 @@ public class AdminNotificationSearchService {
                 .repeatDays(notification.getRepeatDays())
                 .notificationTarget(notification.getNotificationTarget())
                 .notificationTime(notification.getNotificationTime())
+                .isActive(notification.getIsActive())
                 .build();
     }
 

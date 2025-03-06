@@ -3,11 +3,11 @@ package com.picktoss.picktossserver.domain.collection.service;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionCategoryMapper;
 import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionCategoriesResponse;
+import com.picktoss.picktossserver.domain.collection.dto.response.GetCollectionContainingQuiz;
 import com.picktoss.picktossserver.domain.collection.dto.response.GetQuizzesInCollectionByCollectionCategory;
 import com.picktoss.picktossserver.domain.collection.dto.response.GetSingleCollectionResponse;
+import com.picktoss.picktossserver.domain.collection.entity.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizRepository;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.collection.util.CollectionUtil;
@@ -194,7 +194,6 @@ public class CollectionSearchService {
                 GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto collectionDto = GetCollectionCategoriesResponse.GetCollectionCategoriesCollectionDto.builder()
                         .id(collection.getId())
                         .name(collection.getName())
-                        .isDeleted(collection.getIsDeleted())
                         .build();
 
                 collectionDtos.add(collectionDto);
@@ -216,16 +215,33 @@ public class CollectionSearchService {
         return collectionCategoriesDtos;
     }
 
-    public void checkQuizInCollection(Long collectionId, Long quizId) {
-        Collection collection = collectionRepository.findCollectionWithCollectionQuizByCollectionId(collectionId)
-                .orElseThrow(() -> new CustomException(COLLECTION_NOT_FOUND));
+    public List<GetCollectionContainingQuiz.GetCollectionContainingQuizDto> findCollectionContainingQuiz(Long quizId, Long memberId) {
+        List<Collection> collections = collectionRepository.findAllByMemberId(memberId);
 
-        Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
-        for (CollectionQuiz collectionQuiz : collectionQuizzes) {
-            if (collectionQuiz.getQuiz().getId().equals(quizId)) {
-                throw new CustomException(DUPLICATE_QUIZ_IN_COLLECTION);
+        List<GetCollectionContainingQuiz.GetCollectionContainingQuizDto> collectionDtos = new ArrayList<>();
+        for (Collection collection : collections) {
+            boolean isQuizIncluded = false;
+            Set<CollectionQuiz> collectionQuizzes = collection.getCollectionQuizzes();
+            for (CollectionQuiz collectionQuiz : collectionQuizzes) {
+                if (collectionQuiz.getQuiz().getId().equals(quizId)) {
+                    isQuizIncluded = true;
+                    break;
+                }
             }
+
+            String collectionCategoryName = CollectionCategoryMapper.mapCollectionCategoryName(collection.getCollectionCategory());
+            GetCollectionContainingQuiz.GetCollectionContainingQuizDto collectionDto = GetCollectionContainingQuiz.GetCollectionContainingQuizDto.builder()
+                    .id(collection.getId())
+                    .name(collection.getName())
+                    .emoji(collection.getEmoji())
+                    .collectionCategory(collectionCategoryName)
+                    .isQuizIncluded(isQuizIncluded)
+                    .build();
+
+            collectionDtos.add(collectionDto);
         }
+
+        return collectionDtos;
     }
 
 
@@ -240,8 +256,7 @@ public class CollectionSearchService {
 
         if (collectionSortOption == CollectionSortOption.POPULARITY) {
             collections.sort((c1, c2) ->
-                    Integer.compare(c2.getCollectionBookmarks().size(), c1.getCollectionBookmarks().size())
-            );
+                    Integer.compare(c2.getCollectionQuizSets().size(), c1.getCollectionQuizSets().size()));
         }
 
         if (quizCount == null && quizType == null) {

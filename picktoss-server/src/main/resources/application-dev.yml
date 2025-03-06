@@ -13,6 +13,8 @@ spring:
     job:
       enabled: false
       name: emailSenderJob
+    jdbc:
+      initialize-schema: always
   redis:
     host: ${PICKTOSS_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}
@@ -92,6 +94,7 @@ cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
   cors_allowed_origin_dev: ${PICKTOSS_CORS_ALLOWED_ORIGIN_DEV}
   cors_allowed_origin_prod: ${PICKTOSS_CORS_ALLOWED_ORIGIN_PROD}
+  cors_allowed_origin_backoffice: ${PICKTOSS_CORS_ALLOWED_ORIGIN_BACKOFFICE}
 
 oauth:
   google:
@@ -124,3 +127,6 @@ payment:
   code: ${PICKTOSS_PAYMENT_CODE}
   api_key: ${PICKTOSS_PAYMENT_API_KEY}
   secret_key: ${PICKTOSS_PAYMENT_SECRET_KEY}
+
+discord:
+  feedback_webhook_url: ${PICKTOSS_DISCORD_FEEDBACK_WEBHOOK_URL}

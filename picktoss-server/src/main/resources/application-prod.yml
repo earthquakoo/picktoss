@@ -13,21 +13,27 @@ spring:
     job:
       enabled: false
       name: emailSenderJob
+    jdbc:
+      initialize-schema: always
   redis:
     host: ${PICKTOSS_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
-
   datasource:
     url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:templates/
+    suffix: .html
+    cache: false
 
   jpa:
     hibernate.default_batch_fetch_size: 1000
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
       order_inserts: true
       order_updates: true
       jdbc:
@@ -88,6 +94,7 @@ cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
   cors_allowed_origin_dev: ${PICKTOSS_CORS_ALLOWED_ORIGIN_DEV}
   cors_allowed_origin_prod: ${PICKTOSS_CORS_ALLOWED_ORIGIN_PROD}
+  cors_allowed_origin_backoffice: ${PICKTOSS_CORS_ALLOWED_ORIGIN_BACKOFFICE}
 
 oauth:
   google:
@@ -117,4 +124,6 @@ cloud:
         url: ${PICKTOSS_AWS_SQS_QUEUE_URL}
 
 payment:
-  secret-key: ${PICKTOSS_TOSS_SECRET_KEY}
+  code: ${PICKTOSS_PAYMENT_CODE}
+  api_key: ${PICKTOSS_PAYMENT_API_KEY}
+  secret_key: ${PICKTOSS_PAYMENT_SECRET_KEY}

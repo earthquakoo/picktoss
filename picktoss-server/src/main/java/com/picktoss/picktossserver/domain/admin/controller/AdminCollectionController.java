@@ -2,8 +2,6 @@ package com.picktoss.picktossserver.domain.admin.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
-import com.picktoss.picktossserver.domain.admin.dto.request.CreateCollectionForAdminRequest;
 import com.picktoss.picktossserver.domain.admin.dto.response.GetCollectionsForAdminResponse;
 import com.picktoss.picktossserver.domain.admin.service.AdminCollectionSearchService;
 import com.picktoss.picktossserver.domain.admin.service.AdminCollectionUpdateService;
@@ -11,13 +9,10 @@ import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import com.picktoss.picktossserver.global.enums.member.MemberRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.COLLECTION_NOT_FOUND;
 
 @Tag(name = "Admin - Collections")
 @RestController
@@ -67,17 +62,17 @@ public class AdminCollectionController {
      * PATCH
      */
 
-    @Operation(summary = "컬렉션 공개여부 수정")
-    @PatchMapping("/collections/{collection_id}/info/update")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
-    public void modifyCollectionInfo(
-            @Valid @RequestBody CreateCollectionForAdminRequest request,
-            @PathVariable(name = "collection_id") Long collectionId
-    ) {
-        JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long adminId = adminInfo.getMemberId();
-
-        adminCollectionUpdateService.updateCollectionVisibility(collectionId, request.getIsPublic());
-    }
+//    @Operation(summary = "컬렉션 공개여부 수정")
+//    @PatchMapping("/collections/{collection_id}/info/update")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    @ApiErrorCodeExample(COLLECTION_NOT_FOUND)
+//    public void modifyCollectionInfo(
+//            @Valid @RequestBody CreateCollectionForAdminRequest request,
+//            @PathVariable(name = "collection_id") Long collectionId
+//    ) {
+//        JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
+//        Long adminId = adminInfo.getMemberId();
+//
+//        adminCollectionUpdateService.updateCollectionVisibility(collectionId, request.getIsPublic());
+//    }
 }

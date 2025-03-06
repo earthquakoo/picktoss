@@ -29,7 +29,8 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH q.document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE qs.member.id = :memberId " +
-            "AND qs.solved = true")
+            "AND qs.solved = true " +
+            "AND (qs.quizSetType != COLLECTION_QUIZ_SET OR qs.quizSetType != FIRST_QUIZ_SET)")
     List<QuizSetQuiz> findAllByMemberIdAndSolvedTrue(
             @Param("memberId") Long memberId
     );
@@ -41,7 +42,8 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH d.directory dir " +
             "WHERE qs.member.id = :memberId " +
             "AND dir.id = :directoryId " +
-            "AND qs.solved = true")
+            "AND qs.solved = true " +
+            "AND (qs.quizSetType != COLLECTION_QUIZ_SET OR qs.quizSetType != FIRST_QUIZ_SET)")
     List<QuizSetQuiz> findAllByMemberIdAndDirectoryIdAndSolvedTrue(
             @Param("memberId") Long memberId,
             @Param("directoryId") Long directoryId
@@ -54,6 +56,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "WHERE qs.member.id = :memberId " +
             "AND d.id = :documentId " +
             "AND qs.solved = true " +
+            "AND (qsq.isAnswer = false OR qsq.elapsedTimeMs >= 20000) " +
             "AND qsq.createdAt >= :sevenDaysAgo")
     List<QuizSetQuiz> findByMemberIdAndDocumentIdAndSolvedTrueAndCreatedAtAfter(
             @Param("memberId") Long memberId,
@@ -66,8 +69,11 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH qsq.quiz q " +
             "JOIN FETCH q.document d " +
             "WHERE qs.member.id = :memberId " +
+            "AND qs.solved = true " +
+            "AND qs.quizSetType != TODAY_QUIZ_SET " +
+            "AND (qsq.isAnswer = false OR qsq.elapsedTimeMs >= 20000) " +
             "AND qsq.createdAt >= :sevenDaysAgo")
-    List<QuizSetQuiz> findAllByMemberIdAndCreatedAtAfter(
+    List<QuizSetQuiz> findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(
             @Param("memberId") Long memberId,
             @Param("sevenDaysAgo") LocalDateTime sevenDaysAgo
     );

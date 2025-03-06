@@ -7,7 +7,6 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
-import com.picktoss.picktossserver.domain.admin.util.AdminNotificationUtil;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
@@ -17,9 +16,14 @@ import com.picktoss.picktossserver.domain.notification.repository.NotificationRe
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
+import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,51 +34,77 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class NotificationSchedulerUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(NotificationSchedulerUtil.class);
     private final RedisUtil redisUtil;
     private final TaskScheduler taskScheduler;
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
-    private final AdminNotificationUtil adminNotificationUtil;
+    private final NotificationUtil notificationUtil;
     private final QuizSetRepository quizSetRepository;
     private final QuizUtil quizUtil;
     private final CollectionRepository collectionRepository;
 
-    public void scheduleNotification(Notification notification, LocalDateTime notificationTime) {
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+    private Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
-        if (repeatDays == null || repeatDays.isEmpty()) {
-            // 단일 알림 스케줄
-            scheduleTask(notification, notificationTime);
-        } else {
-            // 반복 조건 기반 알림 스케줄
-            scheduleTask(notification, notificationTime);
-            updateNotificationStatusPendingBySendPushNotification(notification.getId());
-            updateNotificationKeyBySendPushNotification(notification.getId());
+    @EventListener(ApplicationReadyEvent.class)
+    public void initNotificationSchedule() {
+        List<Notification> notifications = notificationRepository.findAllByNotificationStatusAndIsActiveTrue(NotificationStatus.PENDING);
+
+        for (Notification notification : notifications) {
+            if (notification.getNotificationTime().isAfter(LocalDateTime.now())) {
+                scheduleTask(notification, notification.getNotificationTime());
+            }
         }
-        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
     }
 
-    private void scheduleTask(Notification notification, LocalDateTime notificationTime) {
-        taskScheduler.schedule(() -> handleNotification(notification), adminNotificationUtil.toInstant(notificationTime));
+    public void scheduleTask(Notification notification, LocalDateTime notificationTime) {
+        ScheduledFuture<?> schedule = taskScheduler.schedule(() -> handleNotification(notification), notificationUtil.toInstant(notificationTime));
+        scheduledTasks.put(notification.getId(), schedule);
+        System.out.println("scheduledTasks = " + scheduledTasks);
+    }
+
+    public void cancelScheduleTask(Long notificationId) {
+        ScheduledFuture<?> schedule = scheduledTasks.get(notificationId);
+        scheduledTasks.remove(notificationId);
+        schedule.cancel(true);
+        System.out.println("scheduledTasks = " + scheduledTasks);
     }
 
     private void handleNotification(Notification notification) {
-        // 알림 발송
+
+        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
+
         sendNotification(notification).run();
 
-        List<DayOfWeek> repeatDays = adminNotificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
+        List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
-            // 다음 알림 예약
-            DayOfWeek nextDay = adminNotificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
-            LocalDateTime nextNotificationTime = adminNotificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
+
+            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
+            System.out.println("nextDay = " + nextDay);
+            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
+            System.out.println("nextNotificationTime = " + nextNotificationTime);
+
+            if (nextNotificationTime.isBefore(LocalDateTime.now())) {
+                updateNotificationIsActiveByFailedNotification(notification.getId());
+                updateNotificationStatusCompleteBySendPushNotification(notification.getId());
+                log.info("Notification Bug 발생");
+                return ;
+            }
+
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
-            scheduleNotification(notification, nextNotificationTime);
+            updateNotificationStatusPendingBySendPushNotification(notification.getId());
+            updateNotificationKeyBySendPushNotification(notification.getId());
+            scheduleTask(notification, nextNotificationTime);
+        } else {
+            updateNotificationIsActiveBySendPushNotification(notification.getId());
         }
     }
 
@@ -84,6 +114,15 @@ public class NotificationSchedulerUtil {
                 .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
 
         notification.updateNotificationStatusComplete();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    private void updateNotificationIsActiveByFailedNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
+
+        notification.updateNotificationIsActiveFalse();
         notificationRepository.save(notification);
     }
 
@@ -101,7 +140,7 @@ public class NotificationSchedulerUtil {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
 
-        String notificationKey = adminNotificationUtil.createNotificationKey();
+        String notificationKey = notificationUtil.createNotificationKey();
 
         notification.updateNotificationKey(notificationKey);
         notificationRepository.save(notification);
@@ -116,13 +155,21 @@ public class NotificationSchedulerUtil {
         notificationRepository.save(notification);
     }
 
+    @Transactional
+    private void updateNotificationIsActiveBySendPushNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.NOTIFICATION_NOT_FOUND));
+
+        notification.updateNotificationIsActiveFalse();
+        notificationRepository.save(notification);
+    }
+
     private Runnable sendNotification(Notification notification) {
         return () -> {
             List<Member> members = memberRepository.findAllByIsQuizNotificationEnabledTrue();
             for (Member member : members) {
-                if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
-
                 addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
+                if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
 
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
                 if (optionalToken.isEmpty()) {
@@ -132,6 +179,8 @@ public class NotificationSchedulerUtil {
 
                 Message message = Message.builder()
                         .setToken(fcmToken)
+                        .putData("title", notification.getTitle())
+                        .putData("content", notification.getContent())
                         .setNotification(
                                 com.google.firebase.messaging.Notification.builder()
                                         .setTitle(notification.getTitle())
@@ -141,8 +190,6 @@ public class NotificationSchedulerUtil {
                         .setAndroidConfig(AndroidConfig.builder()
                                 .setNotification(
                                         AndroidNotification.builder()
-                                                .setTitle(notification.getTitle())
-                                                .setBody(notification.getContent())
                                                 .setClickAction("push_click")
                                                 .build())
                                 .build()
@@ -150,8 +197,6 @@ public class NotificationSchedulerUtil {
                         .setApnsConfig(ApnsConfig.builder()
                                 .setAps(Aps.builder()
                                         .setAlert(ApsAlert.builder()
-                                                .setTitle(notification.getTitle())
-                                                .setBody(notification.getContent())
                                                 .build())
                                         .setSound("default")
                                         .setCategory("push_click")
@@ -239,7 +284,7 @@ public class NotificationSchedulerUtil {
     }
 
     private boolean notificationTargetByTodayQuiz(NotificationTarget notificationTarget, Member member) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSet(member.getId());
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(member.getId());
 
         if (notificationTarget == NotificationTarget.QUIZ_INCOMPLETE_STATUS) {
             return quizUtil.checkTodayQuizSetSolvedStatus(quizSets);
@@ -250,10 +295,7 @@ public class NotificationSchedulerUtil {
 
     private boolean checkNotificationTargetByCollectionNotGenerate(Member member) {
         List<Collection> collections = collectionRepository.findAllByMemberId(member.getId());
-        if (collections.isEmpty()) {
-            return true;
-        }
-        return false;
+        return collections.isEmpty();
     }
 
     private boolean checkNotificationTargetByInterestCollection(NotificationTarget notificationTarget, Member member) {

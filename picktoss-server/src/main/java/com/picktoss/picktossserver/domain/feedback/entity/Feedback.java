@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.feedback.entity;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.feedback.FeedbackType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Feedback {
+public class Feedback extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -23,11 +24,11 @@ public class Feedback {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     private FeedbackType type;
 
     @Column(name = "email", nullable = false)

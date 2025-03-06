@@ -17,6 +17,9 @@ import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.RandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
+import com.picktoss.picktossserver.domain.star.entity.Star;
+import com.picktoss.picktossserver.domain.star.entity.StarHistory;
+import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,7 @@ public class QuizResultUpdateService {
     private final QuizSetRepository quizSetRepository;
     private final RandomQuizRecordRepository randomQuizRecordRepository;
     private final CollectionQuizSetRepository collectionQuizSetRepository;
+    private final StarHistoryRepository starHistoryRepository;
 
     @Transactional
     public UpdateQuizResultResponse updateQuizResult(List<UpdateQuizResultRequest.UpdateQuizResultQuizDto> quizDtos, String quizSetId, QuizSetType quizSetType, Long memberId) {
@@ -177,15 +181,18 @@ public class QuizResultUpdateService {
 
         double correctAnswerRate = (double) correctAnswerCount / (double) totalQuizCount * 100.0;
 
-
-        if (quizSetType != QuizSetType.FIRST_QUIZ_SET) {
-            List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        if (quizSetType == QuizSetType.TODAY_QUIZ_SET) {
+            Member member = quizSet.getMember();
+            List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(memberId);
             int currentConsecutiveTodayQuizDate = quizUtil.checkCurrentConsecutiveSolvedQuizSet(quizSets);
             if (currentConsecutiveTodayQuizDate % 5 == 0) {
+                solvedTodayQuizSetStarReward(member, QuizConstant.FIVE_DAYS_CONSECUTIVE_REWARD);
                 return new UpdateQuizResultResponse(totalQuizCount, totalElapsedTime, correctAnswerRate, QuizConstant.FIVE_DAYS_CONSECUTIVE_REWARD, currentConsecutiveTodayQuizDate);
             }
+            solvedTodayQuizSetStarReward(member, QuizConstant.ONE_DAYS_REWARD);
             return new UpdateQuizResultResponse(totalQuizCount, totalElapsedTime, correctAnswerRate, QuizConstant.ONE_DAYS_REWARD, currentConsecutiveTodayQuizDate);
         }
+
         return new UpdateQuizResultResponse(totalQuizCount, totalElapsedTime, correctAnswerRate, null, null);
     }
 
@@ -203,5 +210,12 @@ public class QuizResultUpdateService {
         } else {
             return optionalRandomQuizRecord.get();
         }
+    }
+
+    @Transactional
+    private void solvedTodayQuizSetStarReward(Member member, int reward) {
+        Star star = member.getStar();
+        StarHistory starHistory = star.depositStarByQuizSetSolvedReward(star, reward);
+        starHistoryRepository.save(starHistory);
     }
 }

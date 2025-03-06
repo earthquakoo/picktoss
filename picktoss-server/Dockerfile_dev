@@ -3,4 +3,5 @@ EXPOSE 8181
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
 COPY /src/main/resources/application-dev.yml /application-dev.yml
+ENV TZ Asia/Seoul
 ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=dev", "-Dspring.config.location=classpath:/application-dev.yml", "/app.jar"]

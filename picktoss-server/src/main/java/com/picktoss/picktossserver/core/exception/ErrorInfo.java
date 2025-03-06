@@ -16,6 +16,9 @@ public enum ErrorInfo {
     INVITE_LINK_EXPIRED_OR_NOT_FOUND(400, "INVITE_LINK_EXPIRED_OR_NOT_FOUND", "초대 링크가 만료되었거나 잘못된 초대 링크입니다."),
     FCM_TOKEN_NOT_FOUND(400, "FCM_TOKEN_NOT_FOUND", "FCM 토큰을 찾을 수 없습니다."),
     INVALID_PASSWORD(400, "INVALID_PASSWORD", "비밀번호가 틀렸습니다."),
+    INVITED_MEMBER_NOT_FOUND(400, "INVITED_MEMBER_NOT_FOUND", "초대한 사용자를 찾을 수 없습니다."),
+    ALREADY_USED_INVITED_CODE(400, "ALREADY_USED_INVITE_CODE", "이미 사용된 초대 코드입니다."),
+
 
     /**
      * AWS Exception
@@ -40,6 +43,8 @@ public enum ErrorInfo {
      **/
     DOCUMENT_NOT_FOUND(400, "DOCUMENT_NOT_FOUND", "해당 id의 문서를 찾을 수 없습니다."),
     DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR", "등록할 수 있는 문서의 최대 개수를 초과했습니다."),
+
+    FEEDBACK_NOT_FOUND(400, "FEEDBACK_NOT_FOUND", "해당 id의 피드백을 찾을 수 없습니다."),
 
     /**
      * Outbox

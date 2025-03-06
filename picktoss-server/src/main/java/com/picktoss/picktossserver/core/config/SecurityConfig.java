@@ -42,6 +42,9 @@ public class SecurityConfig {
     @Value("${cors.cors_allowed_origin_prod}")
     private String corsAllowedOriginProd;
 
+    @Value("${cors.cors_allowed_origin_backoffice}")
+    private String corsAllowedOriginBackoffice;
+
     @Value("${picktoss.server_url}")
     private String picktossServerUrl;
 
@@ -74,9 +77,8 @@ public class SecurityConfig {
                                 "/api/v2/test/quiz-create",
                                 "/api/v2/admin/login",
                                 "/api/v2/admin/sign-up",
-                                "/api/v2/invite-code/verify",
-                                "/api/v2/payment",
-                                "/api/v2/front"
+                                "/api/v2/auth/invite/{invite_code}/creator",
+                                "/api/v2/auth/invite/verify"
                         )
                         .permitAll()
                         .anyRequest().authenticated()
@@ -96,7 +98,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd));
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

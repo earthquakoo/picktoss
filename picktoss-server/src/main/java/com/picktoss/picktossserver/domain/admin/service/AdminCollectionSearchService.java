@@ -36,7 +36,6 @@ public class AdminCollectionSearchService {
                     .quizCount(collection.getCollectionQuizzes().size())
                     .memberRole(collection.getMember().getRole())
                     .memberName(collection.getMember().getName())
-                    .isDeleted(collection.getIsDeleted())
                     .build();
 
             collectionDtos.add(collectionDto);
@@ -69,7 +68,6 @@ public class AdminCollectionSearchService {
                     .description(collection.getDescription())
                     .memberRole(collection.getMember().getRole())
                     .memberName(collection.getMember().getName())
-                    .isDeleted(collection.getIsDeleted())
                     .build();
 
             collectionDtos.add(collectionDto);
