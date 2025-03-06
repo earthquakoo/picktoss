@@ -26,6 +26,5 @@ public class GetCollectionsForAdminResponse {
         private String memberName;
         private String description;
         private int complaintCount;
-        private Boolean isDeleted;
     }
 }

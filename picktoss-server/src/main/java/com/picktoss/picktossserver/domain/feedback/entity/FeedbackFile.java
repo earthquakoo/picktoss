@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.feedback.entity;
 
+import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class FeedbackFile {
+public class FeedbackFile extends AuditBase {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

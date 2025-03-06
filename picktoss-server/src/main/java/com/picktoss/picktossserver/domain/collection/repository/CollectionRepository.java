@@ -15,7 +15,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "LEFT JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE c.isDeleted = false " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllOrderByUpdatedAtDesc();
 
@@ -24,7 +23,6 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
             "WHERE c.collectionCategory IN :collectionCategories " +
-            "AND c.isDeleted = false " +
             "ORDER BY c.updatedAt DESC")
     List<Collection> findAllByCollectionDomainsAndUpdatedAt(
             @Param("collectionCategories") List<CollectionCategory> collectionCategories
@@ -48,8 +46,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE cb.member.id = :memberId " +
-            "AND c.isDeleted = false")
+            "WHERE cb.member.id = :memberId")
     List<Collection> findAllByMemberIdAndBookmarked(
             @Param("memberId") Long memberId
     );
@@ -66,8 +63,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
-            "WHERE (cb.member.id = :memberId OR c.member.id = :memberId) " +
-            "AND (c.isDeleted = true OR c.isDeleted = false)")
+            "WHERE (cb.member.id = :memberId OR c.member.id = :memberId)")
     List<Collection> findAllByMemberIdOrBookmarked(
             @Param("memberId") Long memberId
     );
@@ -95,8 +91,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE c.name LIKE %:keyword% " +
-            "AND c.isDeleted = false")
+            "WHERE c.name LIKE %:keyword%")
     List<Collection> findByCollectionContaining(
             @Param("keyword") String keyword
     );
@@ -109,16 +104,14 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "JOIN FETCH c.member m " +
-            "WHERE (c.isDeleted = true OR c.isDeleted = false)")
+            "JOIN FETCH c.member m")
     List<Collection> findAllWithAdminPrivileges();
 
     @Query("SELECT c FROM Collection c " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE c.name LIKE %:keyword% " +
-            "AND (c.isDeleted = true OR c.isDeleted = false)")
+            "WHERE c.name LIKE %:keyword%")
     List<Collection> findByCollectionByKeyword(
             @Param("keyword") String keyword
     );
@@ -127,8 +120,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "JOIN FETCH c.collectionQuizzes cq " +
             "JOIN FETCH cq.quiz q " +
-            "WHERE c.member.name LIKE %:memberName% " +
-            "AND (c.isDeleted = true OR c.isDeleted = false)")
+            "WHERE c.member.name LIKE %:memberName%")
     List<Collection> findByCollectionByMemberName(
             @Param("memberName") String memberName
     );

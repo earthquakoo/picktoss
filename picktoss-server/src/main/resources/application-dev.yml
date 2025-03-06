@@ -13,6 +13,8 @@ spring:
     job:
       enabled: false
       name: emailSenderJob
+    jdbc:
+      initialize-schema: always
   redis:
     host: ${PICKTOSS_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}

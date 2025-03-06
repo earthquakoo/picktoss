@@ -118,7 +118,7 @@ public class QuizService {
         Integer todayQuizCount = member.getTodayQuizCount();
 
         List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
-        List<Directory> directories = member.getDirectories();
+        Set<Directory> directories = member.getDirectories();
         for (Directory directory : directories) {
             if (directory.getDocuments() == null) {
                 continue;

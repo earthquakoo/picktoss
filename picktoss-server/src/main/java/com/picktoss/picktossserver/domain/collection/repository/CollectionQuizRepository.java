@@ -15,8 +15,7 @@ public interface CollectionQuizRepository extends JpaRepository<CollectionQuiz, 
             "JOIN FETCH cq.quiz q " +
             "LEFT JOIN FETCH c.collectionBookmarks cb " +
             "WHERE (cb.member.id = :memberId OR c.member.id = :memberId) " +
-            "AND c.collectionCategory = :collectionCategory " +
-            "AND c.isDeleted = false")
+            "AND c.collectionCategory = :collectionCategory")
     List<CollectionQuiz> findQuizzesInCollectionByMemberIdOrBookmarkedAndCollectionField(
             @Param("memberId") Long memberId,
             @Param("collectionCategory") CollectionCategory collectionCategory

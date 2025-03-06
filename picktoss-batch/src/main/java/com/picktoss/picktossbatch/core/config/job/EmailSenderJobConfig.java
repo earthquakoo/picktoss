@@ -131,36 +131,35 @@ public class EmailSenderJobConfig {
                 Integer todayQuizCount = member.getTodayQuizCount();
 
                 List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
-                List<Directory> directories = member.getDirectories();
+                Set<Directory> directories = member.getDirectories();
                 for (Directory directory : directories) {
-                    if (directory.getDocuments() == null) {
+                    if (directory.getDocuments() == null || directory.getDocuments().isEmpty()) {
                         continue;
                     }
                     Set<Document> documents = directory.getDocuments();
                     for (Document document : documents) {
-                        if (document.getQuizzes() == null) {
+                        if (document.getQuizzes() == null || document.getQuizzes().isEmpty()) {
                             continue;
                         }
                         Set<Quiz> quizzes = document.getQuizzes();
-                        if (quizzes.isEmpty()) {
-                            continue;
-                        }
-                        // quiz.deliveredCount 순으로 정렬 or List로 정렬
-                        List<Quiz> quizList = quizzes.stream().sorted((e1, e2) -> e1.getDeliveredCount()).limit(todayQuizCount).toList();
+
+                        List<Quiz> quizList = quizzes.stream()
+                                .sorted(Comparator.comparingInt(Quiz::getDeliveredCount))
+                                .toList();
+
                         quizzesBySortedDeliveredCount.addAll(quizList);
-                        quizListToUpdate.addAll(quizList);
                     }
                 }
                 String quizSetId = UUID.randomUUID().toString().replace("-", "");
                 QuizSet quizSet = QuizSet.createQuizSet(quizSetId, "오늘의 퀴즈 세트", QuizSetType.TODAY_QUIZ_SET, member);
                 quizSets.add(quizSet);
 
-                quizzesBySortedDeliveredCount.stream().sorted((e1, e2) -> e1.getDeliveredCount());
                 int quizCount = 0;
 
                 for (Quiz quiz : quizzesBySortedDeliveredCount) {
                     QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
                     quizSetQuizzes.add(quizSetQuiz);
+                    quizListToUpdate.add(quiz);
                     quizCount += 1;
                     if (quizCount == todayQuizCount) {
                         break;

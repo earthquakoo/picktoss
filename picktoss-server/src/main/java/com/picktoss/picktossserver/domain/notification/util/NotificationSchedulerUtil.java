@@ -168,9 +168,8 @@ public class NotificationSchedulerUtil {
         return () -> {
             List<Member> members = memberRepository.findAllByIsQuizNotificationEnabledTrue();
             for (Member member : members) {
-                if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
-
                 addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
+                if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
 
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
                 if (optionalToken.isEmpty()) {
@@ -180,6 +179,8 @@ public class NotificationSchedulerUtil {
 
                 Message message = Message.builder()
                         .setToken(fcmToken)
+                        .putData("title", notification.getTitle())
+                        .putData("content", notification.getContent())
                         .setNotification(
                                 com.google.firebase.messaging.Notification.builder()
                                         .setTitle(notification.getTitle())
@@ -189,8 +190,6 @@ public class NotificationSchedulerUtil {
                         .setAndroidConfig(AndroidConfig.builder()
                                 .setNotification(
                                         AndroidNotification.builder()
-                                                .setTitle(notification.getTitle())
-                                                .setBody(notification.getContent())
                                                 .setClickAction("push_click")
                                                 .build())
                                 .build()
@@ -198,8 +197,6 @@ public class NotificationSchedulerUtil {
                         .setApnsConfig(ApnsConfig.builder()
                                 .setAps(Aps.builder()
                                         .setAlert(ApsAlert.builder()
-                                                .setTitle(notification.getTitle())
-                                                .setBody(notification.getContent())
                                                 .build())
                                         .setSound("default")
                                         .setCategory("push_click")
@@ -298,10 +295,7 @@ public class NotificationSchedulerUtil {
 
     private boolean checkNotificationTargetByCollectionNotGenerate(Member member) {
         List<Collection> collections = collectionRepository.findAllByMemberId(member.getId());
-        if (collections.isEmpty()) {
-            return true;
-        }
-        return false;
+        return collections.isEmpty();
     }
 
     private boolean checkNotificationTargetByInterestCollection(NotificationTarget notificationTarget, Member member) {

@@ -70,6 +70,7 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH q.document d " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true " +
+            "AND qs.quizSetType != TODAY_QUIZ_SET " +
             "AND (qsq.isAnswer = false OR qsq.elapsedTimeMs >= 20000) " +
             "AND qsq.createdAt >= :sevenDaysAgo")
     List<QuizSetQuiz> findAllByMemberIdAndSolvedTrueAndCreatedAtAfter(

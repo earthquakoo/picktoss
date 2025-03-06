@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -73,6 +74,15 @@ public class S3Provider {
             throw new CustomException(AMAZON_SERVICE_EXCEPTION, e.getErrorMessage());
         } catch (IOException e) {
             throw new CustomException(FILE_UPLOAD_ERROR, e.getMessage());
+        }
+    }
+
+    public String findImage(String s3Key) {
+        try {
+            URL url = amazonS3.getUrl(bucket, s3Key);
+            return "" + url;
+        } catch (AmazonServiceException e) {
+            throw new CustomException(AMAZON_SERVICE_EXCEPTION, e.getErrorMessage());
         }
     }
 
