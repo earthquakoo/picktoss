@@ -4,7 +4,7 @@ server:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   servlet:
     multipart:
       maxFileSize: 10MB
@@ -111,8 +111,8 @@ cloud:
     s3:
       bucket: ${PICKTOSS_S3_BUCKET_NAME}
     credentials:
-      access_key: ${PICKTOSS_AWS_ACCESS_KEY}
-      secret_key: ${PICKTOSS_AWS_SECRET_KEY}
+      access-key: ${PICKTOSS_AWS_ACCESS_KEY}
+      secret-key: ${PICKTOSS_AWS_SECRET_KEY}
     region:
       static: us-east-1
       auto: false
