@@ -127,3 +127,6 @@ payment:
   code: ${PICKTOSS_PAYMENT_CODE}
   api_key: ${PICKTOSS_PAYMENT_API_KEY}
   secret_key: ${PICKTOSS_PAYMENT_SECRET_KEY}
+
+discord:
+  feedback_webhook_url: ${PICKTOSS_DISCORD_FEEDBACK_WEBHOOK_URL}
