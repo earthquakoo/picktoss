@@ -34,19 +34,25 @@ public class AdminNotificationUpdateService {
 
         List<String> repeatDays = notificationUtil.dayOfWeeksToString(dayOfWeeks);
 
-        notificationSchedulerUtil.cancelScheduleTask(notification.getId());
+        if (!isActive) {
+            notificationSchedulerUtil.cancelScheduleTask(notification.getId());
+            notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
+            return;
+        }
 
         // notificationTime이 현재보다 이전이라면
-        if (notificationTime.isBefore(LocalDateTime.now()) && isActive) {
+        if (notificationTime.isBefore(LocalDateTime.now())) {
             if (repeatDays == null || repeatDays.isEmpty()) {
                 throw new CustomException(ErrorInfo.INVALID_NOTIFICATION_TIME);
             } else {
+                notificationSchedulerUtil.cancelScheduleTask(notification.getId());
                 DayOfWeek nextDay = notificationUtil.findNextDay(dayOfWeeks, notification.getNotificationTime().getDayOfWeek());
                 LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notificationTime, nextDay);
                 notificationSchedulerUtil.scheduleTask(notification , nextNotificationTime);
                 notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, nextNotificationTime, repeatDays);
             }
         } else {
+            notificationSchedulerUtil.cancelScheduleTask(notification.getId());
             notificationSchedulerUtil.scheduleTask(notification , notificationTime);
             notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         }

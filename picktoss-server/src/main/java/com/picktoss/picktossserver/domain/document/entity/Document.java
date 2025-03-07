@@ -61,17 +61,6 @@ public class Document extends AuditBase {
                 .build();
     }
 
-    public static Document createDefaultDocument(String s3Key, Directory directory) {
-        return Document.builder()
-                .name("예시 문서")
-                .s3Key(s3Key)
-                .quizGenerationStatus(DEFAULT_DOCUMENT)
-                .documentType(DocumentType.FILE)
-                .isTodayQuizIncluded(false)
-                .directory(directory)
-                .build();
-    }
-
     // 연관관계 메서드
     public void setDirectory(Directory directory) {
         this.directory = directory;
