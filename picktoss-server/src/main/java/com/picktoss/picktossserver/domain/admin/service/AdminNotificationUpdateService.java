@@ -50,11 +50,13 @@ public class AdminNotificationUpdateService {
                 LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notificationTime, nextDay);
                 notificationSchedulerUtil.scheduleTask(notification , nextNotificationTime);
                 notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, nextNotificationTime, repeatDays);
+                notification.updateNotificationStatusPending();
             }
         } else {
             notificationSchedulerUtil.cancelScheduleTask(notification.getId());
             notificationSchedulerUtil.scheduleTask(notification , notificationTime);
             notification.updateNotificationInfo(title, content, memo, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
+            notification.updateNotificationStatusPending();
         }
     }
 }

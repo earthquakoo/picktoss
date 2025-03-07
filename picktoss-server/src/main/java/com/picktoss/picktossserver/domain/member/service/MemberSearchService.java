@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.picktoss.picktossserver.domain.document.constant.DocumentConstant.FREE_PLAN_MAX_POSSESS_DOCUMENT_COUNT;
-import static com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus.DEFAULT_DOCUMENT;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +31,6 @@ public class MemberSearchService {
 
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
         int possessDocumentCount = documents.size();
-        for (Document document : documents) {
-            if (document.getQuizGenerationStatus() == DEFAULT_DOCUMENT) {
-                possessDocumentCount -= 1;
-            }
-        }
 
         Star star = member.getStar();
 
