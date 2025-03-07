@@ -16,7 +16,7 @@ spring:
     jdbc:
       initialize-schema: always
   redis:
-    host: ${PICKTOSS_REDIS_HOST}
+    host: ${PICKTOSS_DEV_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
   datasource:
