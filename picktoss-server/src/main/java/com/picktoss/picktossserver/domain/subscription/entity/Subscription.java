@@ -1,16 +1,11 @@
 package com.picktoss.picktossserver.domain.subscription.entity;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.global.enums.SubscriptionPlanType;
+import com.picktoss.picktossserver.global.enums.subscription.SubscriptionPlanType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
-
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.FREE_PLAN_AI_PICK_LIMIT_EXCEED_ERROR;
 
 @Entity
 @Getter
@@ -24,25 +19,36 @@ public class Subscription {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "available_ai_pick_count", nullable = false)
-    private int availableAiPickCount;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "plan_type", nullable = false)
+    @Column(name = "subscription_plan_type", nullable = false)
     private SubscriptionPlanType subscriptionPlanType;
 
-    @CreatedDate
-    @Column(name = "purchased_date", nullable = false)
-    private LocalDateTime purchasedDate;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "expire_date", nullable = false)
-    private LocalDateTime expireDate;
+    @Column(name = "expire_at")
+    private LocalDateTime expireAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    public void minusAvailableAiPickCount() {
-        this.availableAiPickCount -= 1;
+    public static Subscription createSubscription(LocalDateTime expireAt, Member member) {
+        return Subscription.builder()
+                .subscriptionPlanType(SubscriptionPlanType.FREE)
+                .createdAt(LocalDateTime.now())
+                .expireAt(expireAt)
+                .member(member)
+                .build();
+    }
+
+    public void processSubscriptionPlanTypeDowngradeOnExpiration() {
+        this.subscriptionPlanType = SubscriptionPlanType.FREE;
+        this.expireAt = null;
+    }
+
+    public void processSubscriptionPlanTypeUpgradeOnPayment(LocalDateTime expireAt) {
+        this.subscriptionPlanType = SubscriptionPlanType.PRO;
+        this.expireAt = expireAt;
     }
 }

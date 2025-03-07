@@ -1,27 +1,35 @@
 server:
-  port: 8080
+  port: 8181
 
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: dev
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 20MB
   batch:
-    #    jdbc:
-    #      initialize-schema: always
+    jdbc:
+      initialize-schema: always
     job:
       enabled: false
       name: emailSenderJob
-
   datasource:
     url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:templates/
+    suffix: .html
+    cache: false
 
   jpa:
-    hibernate.default_batch_fetch_size: 2500
+    hibernate.default_batch_fetch_size: 1000
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
       order_inserts: true
       order_updates: true
       jdbc:
@@ -40,17 +48,19 @@ logging.level:
 
 springdoc:
   packages-to-scan:
+    - com.picktoss.picktossserver.domain.payment.controller
+    - com.picktoss.picktossserver.domain.admin.controller
     - com.picktoss.picktossserver.domain.auth.controller
-    - com.picktoss.picktossserver.domain.category.controller
+    - com.picktoss.picktossserver.domain.fcm.controller
+    - com.picktoss.picktossserver.domain.directory.controller
     - com.picktoss.picktossserver.domain.document.controller
     - com.picktoss.picktossserver.domain.member.controller
-    - com.picktoss.picktossserver.domain.question.controller
     - com.picktoss.picktossserver.domain.quiz.controller
-    - com.picktoss.picktossserver.domain.keypoint.controller
     - com.picktoss.picktossserver.domain.feedback.controller
-    - com.picktoss.picktossserver.domain.payment.controller
-    - com.picktoss.picktossserver.domain.event.controller
     - com.picktoss.picktossserver.domain.notion.controller
+    - com.picktoss.picktossserver.domain.collection.controller
+    - com.picktoss.picktossserver.domain.star.controller
+    - com.picktoss.picktossserver.domain.notification.controller
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
   swagger-ui:
@@ -78,6 +88,7 @@ email_verification:
 
 cors:
   cors_allowed_origin: ${PICKTOSS_CORS_ALLOWED_ORIGIN}
+  cors_allowed_origin_dev: ${PICKTOSS_CORS_ALLOWED_ORIGIN_DEV}
   cors_allowed_origin_prod: ${PICKTOSS_CORS_ALLOWED_ORIGIN_PROD}
 
 oauth:
@@ -88,7 +99,7 @@ oauth:
   notion:
     client_id: ${PICKTOSS_NOTION_CLIENT_ID}
     client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
-    access_token: ${PICKTOSS_NOTION_ACCESS_TOKEN}
+    redirect_uri: ${PICKTOSS_NOTION_OAUTH_REDIRECT_URI}
 
 cloud:
   aws:
@@ -106,3 +117,8 @@ cloud:
       queue:
         name: ${PICKTOSS_AWS_SQS_QUEUE_NAME}
         url: ${PICKTOSS_AWS_SQS_QUEUE_URL}
+
+payment:
+  code: ${PICKTOSS_PAYMENT_CODE}
+  api_key: ${PICKTOSS_PAYMENT_API_KEY}
+  secret_key: ${PICKTOSS_PAYMENT_SECRET_KEY}

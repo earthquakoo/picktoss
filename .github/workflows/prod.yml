@@ -59,6 +59,18 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: make firebase dir
+        run: |
+          cd ./picktoss-server/src/main/resources
+          mkdir firebase
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "firebase-secret-key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          dir: './picktoss-server/src/main/resources/firebase'
+
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
 

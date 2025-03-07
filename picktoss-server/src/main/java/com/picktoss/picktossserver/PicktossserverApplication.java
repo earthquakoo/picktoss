@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -15,11 +14,7 @@ import java.util.TimeZone;
 public class PicktossserverApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PicktossserverApplication.class, args);
-	}
-
-	@PostConstruct
-	public void setTimeZone(){
 		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
+		SpringApplication.run(PicktossserverApplication.class, args);
 	}
 }

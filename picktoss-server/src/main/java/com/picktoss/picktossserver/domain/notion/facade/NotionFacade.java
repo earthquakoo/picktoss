@@ -24,7 +24,7 @@ public class NotionFacade {
         return notionService.findNotionPages(accessToken);
     }
 
-    public String findNotionPage(String accessToken) {
-        return notionService.findNotionPage(accessToken);
+    public String findNotionPage(String accessToken, String pageId) {
+        return notionService.findNotionPage(accessToken, pageId);
     }
 }

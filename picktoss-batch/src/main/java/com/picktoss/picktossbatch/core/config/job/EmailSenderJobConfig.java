@@ -3,13 +3,15 @@ package com.picktoss.picktossbatch.core.config.job;
 import com.picktoss.picktossbatch.core.config.listener.JobListener;
 import com.picktoss.picktossbatch.core.config.listener.StepListener;
 import com.picktoss.picktossbatch.core.config.partitioner.CustomPartitioner;
-import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.core.redis.RedisUtil;
+import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.service.QuizService;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ public class EmailSenderJobConfig {
     private final JobListener jobListener;
     private final StepListener stepListener;
     private final QuizService quizService;
+    private final RedisUtil redisUtil;
 
     private final String JOB_NAME = "emailSenderJob";
     private final String STEP_NAME = "masterStep";
@@ -93,8 +96,8 @@ public class EmailSenderJobConfig {
         JpaPagingItemReader<Member> jpaPagingItemReader = new JpaPagingItemReader<>();
         jpaPagingItemReader.setQueryString(
                 "SELECT m FROM Member m " +
-                        "JOIN FETCH m.categories c " +
-                        "JOIN FETCH c.documents d " +
+                        "JOIN FETCH m.directories dir " +
+                        "JOIN FETCH dir.documents d " +
                         "JOIN FETCH d.quizzes " +
                         "WHERE m.id >= :start and m.id <= :end"
         );
@@ -120,44 +123,45 @@ public class EmailSenderJobConfig {
             List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
             List<Member> members = new ArrayList<>();
             for (Member member : chunk.getItems()) {
-                if (member == null || member.getCategories() == null) {
+                if (member == null || member.getDirectories() == null) {
                     continue;
                 }
                 members.add(member);
 
+                Integer todayQuizCount = member.getTodayQuizCount();
+
                 List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
-                List<Category> categories = member.getCategories();
-                for (Category category : categories) {
-                    if (category.getDocuments() == null) {
+                Set<Directory> directories = member.getDirectories();
+                for (Directory directory : directories) {
+                    if (directory.getDocuments() == null || directory.getDocuments().isEmpty()) {
                         continue;
                     }
-                    Set<Document> documents = category.getDocuments();
+                    Set<Document> documents = directory.getDocuments();
                     for (Document document : documents) {
-                        if (document.getQuizzes() == null) {
+                        if (document.getQuizzes() == null || document.getQuizzes().isEmpty()) {
                             continue;
                         }
                         Set<Quiz> quizzes = document.getQuizzes();
-                        if (quizzes.isEmpty()) {
-                            continue;
-                        }
-                        // quiz.deliveredCount 순으로 정렬 or List로 정렬
-                        List<Quiz> quizList = quizzes.stream().sorted((e1, e2) -> e1.getDeliveredCount()).limit(10).toList();
+
+                        List<Quiz> quizList = quizzes.stream()
+                                .sorted(Comparator.comparingInt(Quiz::getDeliveredCount))
+                                .toList();
+
                         quizzesBySortedDeliveredCount.addAll(quizList);
-                        quizListToUpdate.addAll(quizList);
                     }
                 }
                 String quizSetId = UUID.randomUUID().toString().replace("-", "");
-                QuizSet quizSet = QuizSet.createQuizSet(quizSetId, true, member);
+                QuizSet quizSet = QuizSet.createQuizSet(quizSetId, "오늘의 퀴즈 세트", QuizSetType.TODAY_QUIZ_SET, member);
                 quizSets.add(quizSet);
 
-                quizzesBySortedDeliveredCount.stream().sorted((e1, e2) -> e1.getDeliveredCount());
                 int quizCount = 0;
 
                 for (Quiz quiz : quizzesBySortedDeliveredCount) {
                     QuizSetQuiz quizSetQuiz = QuizSetQuiz.createQuizSetQuiz(quiz, quizSet);
                     quizSetQuizzes.add(quizSetQuiz);
+                    quizListToUpdate.add(quiz);
                     quizCount += 1;
-                    if (quizCount == 10) {
+                    if (quizCount == todayQuizCount) {
                         break;
                     }
                 }

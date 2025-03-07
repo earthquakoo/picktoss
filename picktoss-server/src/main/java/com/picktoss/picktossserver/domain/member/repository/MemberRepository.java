@@ -11,14 +11,12 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByClientId(String id);
 
-    Optional<Member> findByEmail(String email);
-
-    @Query("SELECT m FROM Member m " +
-            "WHERE m.isQuizNotificationEnabled = true")
-    List<Member> findAllByIsQuizNotificationEnabled();
-
     //  "WHERE m.isQuizNotificationEnabled = true"
     @Query("SELECT MIN(m.id), MAX(m.id) FROM Member m " +
             "WHERE m.isQuizNotificationEnabled = true")
     Tuple findMinIdAndMaxIdAndIsQuizNotificationEnabled();
+
+    @Query("SELECT m FROM Member m " +
+            "where m.isQuizNotificationEnabled = true")
+    List<Member> findAllByIsQuizNotificationEnabledTrue();
 }

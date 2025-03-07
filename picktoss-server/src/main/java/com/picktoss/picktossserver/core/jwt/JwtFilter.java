@@ -2,7 +2,7 @@ package com.picktoss.picktossserver.core.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorResponse;
+import com.picktoss.picktossserver.core.exception.ErrorResponseDto;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -53,15 +52,15 @@ public class JwtFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (CustomException e) {
             // Handle custom exception
-            ErrorResponse errorResponse = new ErrorResponse(
+            ErrorResponseDto errorResponseDto = new ErrorResponseDto(
                     e.getErrorInfo().getStatusCode(),
                     e.getErrorInfo().getErrorCode(),
                     e.getMessage()
             );
-            response.setStatus(errorResponse.getStatusCode());
+            response.setStatus(errorResponseDto.getStatusCode());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(response.getWriter(), errorResponse);
+            objectMapper.writeValue(response.getWriter(), errorResponseDto);
         }
     }
 }
