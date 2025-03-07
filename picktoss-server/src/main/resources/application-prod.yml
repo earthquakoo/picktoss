@@ -4,7 +4,7 @@ server:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   servlet:
     multipart:
       maxFileSize: 10MB
@@ -16,7 +16,7 @@ spring:
     jdbc:
       initialize-schema: always
   redis:
-    host: ${PICKTOSS_REDIS_HOST}
+    host: ${PICKTOSS_PROD_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
   datasource:
@@ -33,7 +33,7 @@ spring:
   jpa:
     hibernate.default_batch_fetch_size: 1000
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       order_inserts: true
       order_updates: true
       jdbc:
@@ -111,8 +111,8 @@ cloud:
     s3:
       bucket: ${PICKTOSS_S3_BUCKET_NAME}
     credentials:
-      access_key: ${PICKTOSS_AWS_ACCESS_KEY}
-      secret_key: ${PICKTOSS_AWS_SECRET_KEY}
+      access-key: ${PICKTOSS_AWS_ACCESS_KEY}
+      secret-key: ${PICKTOSS_AWS_SECRET_KEY}
     region:
       static: us-east-1
       auto: false
@@ -127,3 +127,6 @@ payment:
   code: ${PICKTOSS_PAYMENT_CODE}
   api_key: ${PICKTOSS_PAYMENT_API_KEY}
   secret_key: ${PICKTOSS_PAYMENT_SECRET_KEY}
+
+discord:
+  feedback_webhook_url: ${PICKTOSS_DISCORD_FEEDBACK_WEBHOOK_URL}
