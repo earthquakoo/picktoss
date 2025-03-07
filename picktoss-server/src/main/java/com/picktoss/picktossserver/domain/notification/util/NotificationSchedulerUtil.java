@@ -73,6 +73,9 @@ public class NotificationSchedulerUtil {
 
     public void cancelScheduleTask(Long notificationId) {
         ScheduledFuture<?> schedule = scheduledTasks.get(notificationId);
+        if (schedule == null) {
+            return ;
+        }
         scheduledTasks.remove(notificationId);
         schedule.cancel(true);
         System.out.println("scheduledTasks = " + scheduledTasks);
