@@ -92,21 +92,19 @@ public class QuizUtil {
             return false;
         }
 
-        // quizSets를 최신 순으로 정렬
         Collections.sort(quizSets, (q1, q2) -> q2.getCreatedAt().compareTo(q1.getCreatedAt()));
 
-        // 가장 최근에 풀지 않은 quizSet부터 체크
         for (QuizSet quizSet : quizSets) {
             LocalDate quizSetDate = quizSet.getCreatedAt().toLocalDate();
 
-            if (quizSetDate.isAfter(fourDaysAgo)) { // 4일 이내의 QuizSet에 대해서만 체크
-                if (!quizSet.isSolved()) { // 풀지 않았다면 연속 미풀이 날짜 증가
+            if (quizSetDate.isAfter(fourDaysAgo)) {
+                if (!quizSet.isSolved()) {
                     consecutiveUnsolvedDays++;
                     if (consecutiveUnsolvedDays >= 4) {
-                        return true; // 연속적으로 4일 이상 풀지 않았다면 false 반환
+                        return true;
                     }
                 } else {
-                    consecutiveUnsolvedDays = 0; // 풀었다면 연속 미풀이 날짜 초기화
+                    consecutiveUnsolvedDays = 0;
                 }
             }
         }
