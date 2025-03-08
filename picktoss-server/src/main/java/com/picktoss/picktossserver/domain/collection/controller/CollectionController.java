@@ -44,6 +44,7 @@ public class CollectionController {
     private final CollectionSearchService collectionSearchService;
     private final CollectionUpdateService collectionUpdateService;
     private final CollectionRandomQuizService collectionRandomQuizService;
+    private final CollectionComplaintMessageSendService collectionComplaintMessageSendService;
 
     /**
      * GET
@@ -226,7 +227,8 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionComplaintService.createCollectionComplaint(collectionId, request.getContent(), memberId, request.getFiles());
+        Long collectionComplaintId = collectionComplaintService.createCollectionComplaint(collectionId, request.getContent(), memberId, request.getFiles());
+        collectionComplaintMessageSendService.sendCollectionComplaintDiscordMessage(collectionComplaintId);
     }
 
     /*

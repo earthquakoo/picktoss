@@ -18,12 +18,12 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DiscordMessageService {
+public class DiscordFeedbackMessageSendService {
 
     @Value("${discord.feedback_webhook_url}")
     private String discordFeedbackWebhookUrl;
 
-    public void sendDiscordWebhookMessage(DiscordMessage message) {
+    public void sendDiscordWebhookFeedbackMessage(DiscordMessage message) {
         try {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add("Content-Type", "application/json; utf-8");
