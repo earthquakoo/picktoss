@@ -38,7 +38,7 @@ public class AuthInviteLinkService {
     private final AuthUtil authUtil;
 
     public String createInviteLink(Long memberId) {
-        String initLink = "https://pick-toss-next.vercel.app/invite/";
+        String initLink = "https://picktoss.com/invite/";
 
         String memberIdKey = memberId.toString();
 

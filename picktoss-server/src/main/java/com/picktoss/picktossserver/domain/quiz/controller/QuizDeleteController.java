@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.quiz.dto.request.DeleteInvalidQuizRequest;
 import com.picktoss.picktossserver.domain.quiz.service.QuizDeleteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,8 @@ public class QuizDeleteController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        quizDeleteService.deleteQuiz(quizId, memberId);
+        Document document = quizDeleteService.deleteQuiz(quizId, memberId);
+        quizDeleteService.deleteEmptyDocument(document);
     }
 
     @Operation(summary = "오류가 발생한 퀴즈 삭제")
