@@ -130,3 +130,4 @@ payment:
 
 discord:
   feedback_webhook_url: ${PICKTOSS_DISCORD_FEEDBACK_WEBHOOK_URL}
+  collection_complaint_webhook_url: ${PICKTOSS_DISCORD_COLLECTION_COMPLAINT_WEBHOOK_URL}

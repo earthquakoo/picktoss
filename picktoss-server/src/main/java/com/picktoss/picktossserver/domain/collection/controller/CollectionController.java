@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.domain.collection.dto.mapper.CollectionRespon
 import com.picktoss.picktossserver.domain.collection.dto.request.*;
 import com.picktoss.picktossserver.domain.collection.dto.response.*;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
+import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
 import com.picktoss.picktossserver.domain.collection.service.*;
 import com.picktoss.picktossserver.domain.quiz.dto.request.UpdateRandomQuizResultRequest;
 import com.picktoss.picktossserver.domain.quiz.dto.response.CreateQuizzesResponse;
@@ -44,6 +45,7 @@ public class CollectionController {
     private final CollectionSearchService collectionSearchService;
     private final CollectionUpdateService collectionUpdateService;
     private final CollectionRandomQuizService collectionRandomQuizService;
+    private final CollectionComplaintMessageSendService collectionComplaintMessageSendService;
 
     /**
      * GET
@@ -226,7 +228,8 @@ public class CollectionController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        collectionComplaintService.createCollectionComplaint(collectionId, request.getContent(), memberId, request.getFiles());
+        CollectionComplaint collectionComplaint = collectionComplaintService.createCollectionComplaint(collectionId, request.getContent(), memberId, request.getFiles());
+        collectionComplaintMessageSendService.sendCollectionComplaintDiscordMessage(collectionComplaint);
     }
 
     /*

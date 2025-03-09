@@ -7,7 +7,9 @@ import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.collection.entity.Collection;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaintFile;
-import com.picktoss.picktossserver.domain.collection.repository.*;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionComplaintFileRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionComplaintRepository;
+import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +35,24 @@ public class CollectionComplaintService {
     private final S3UploadImagesPublisher s3UploadImagesPublisher;
 
     @Transactional
-    public void createCollectionComplaint(Long collectionId, String content, Long memberId, List<MultipartFile> files) {
+    public CollectionComplaint createCollectionComplaint(Long collectionId, String content, Long memberId, List<MultipartFile> files) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        Collection collection = collectionRepository.findCollectionById(collectionId)
+                .orElseThrow(() -> new CustomException(ErrorInfo.COLLECTION_NOT_FOUND));
+        CollectionComplaint collectionComplaint = CollectionComplaint.createCollectionComplaint(content, collection, member);
+        collectionComplaintRepository.save(collectionComplaint);
+
+        if (files != null && !files.isEmpty()) {
+            createCollectionComplaintFiles(files, collectionComplaint);
+        }
+
+        return collectionComplaint;
+    }
+
+    @Transactional
+    private void createCollectionComplaintFiles(List<MultipartFile> files, CollectionComplaint collectionComplaint) {
 
         String customS3Key = UUID.randomUUID().toString();
         String s3FolderPath = "picktoss-collection-complaint-images/";
@@ -47,12 +64,6 @@ public class CollectionComplaintService {
             s3Keys.add(fullS3Key);
         }
 
-        s3UploadImagesPublisher.s3UploadImagesPublisher(new S3UploadImagesEvent(files, s3Keys));
-
-        Collection collection = collectionRepository.findCollectionById(collectionId)
-                .orElseThrow(() -> new CustomException(ErrorInfo.COLLECTION_NOT_FOUND));
-        CollectionComplaint collectionComplaint = CollectionComplaint.createCollectionComplaint(content, collection, member);
-
         List<CollectionComplaintFile> collectionComplaintFiles = new ArrayList<>();
 
         for (String s3Key : s3Keys) {
@@ -60,7 +71,7 @@ public class CollectionComplaintService {
             collectionComplaintFiles.add(collectionComplaintFile);
         }
 
-        collectionComplaintRepository.save(collectionComplaint);
+        s3UploadImagesPublisher.s3UploadImagesPublisher(new S3UploadImagesEvent(files, s3Keys));
         collectionComplaintFileRepository.saveAll(collectionComplaintFiles);
     }
 }
