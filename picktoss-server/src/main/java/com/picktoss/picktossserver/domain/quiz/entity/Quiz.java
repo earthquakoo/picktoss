@@ -47,6 +47,9 @@ public class Quiz extends AuditBase {
     @Column(name = "is_review_needed", nullable = false)
     private boolean isReviewNeeded;
 
+    @Column(name = "is_latest", nullable = false)
+    private Boolean isLatest;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
