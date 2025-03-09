@@ -27,6 +27,18 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "JOIN FETCH q.document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE d.id = :documentId " +
+            "AND q.isLatest = true " +
+            "AND dir.member.id = :memberId")
+    List<Quiz> findAllByDocumentIdAndIsLatestAndMemberId(
+            @Param("documentId") Long documentId,
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.directory dir " +
+            "WHERE d.id = :documentId " +
             "AND q.quizType = :quizType " +
             "AND dir.member.id = :memberId")
     List<Quiz> findAllByDocumentIdAndQuizTypeAndMemberId(

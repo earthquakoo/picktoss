@@ -80,7 +80,7 @@ public class QuizCreateService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        List<Quiz> quizzes = quizRepository.findAllByDocumentIdAndMemberId(documentId, memberId);
+        List<Quiz> quizzes = quizRepository.findAllByDocumentIdAndIsLatestAndMemberId(documentId, memberId);
         String quizSetName = quizzes.getFirst().getDocument().getName();
 
         List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
