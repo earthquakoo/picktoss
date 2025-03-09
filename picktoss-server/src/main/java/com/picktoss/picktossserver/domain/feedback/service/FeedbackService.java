@@ -31,7 +31,7 @@ public class FeedbackService {
     private final S3UploadImagesPublisher s3UploadImagesPublisher;
 
     @Transactional
-    public Long createFeedback(List<MultipartFile> files, String title, String content, FeedbackType type, String email, Long memberId) {
+    public Feedback createFeedback(List<MultipartFile> files, String title, String content, FeedbackType type, String email, Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
@@ -42,7 +42,7 @@ public class FeedbackService {
             createFeedbackFiles(files, feedback);
         }
 
-        return feedback.getId();
+        return feedback;
     }
 
     @Transactional
