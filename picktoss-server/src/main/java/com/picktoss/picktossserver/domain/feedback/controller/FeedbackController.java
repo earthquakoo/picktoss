@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.feedback.controller.request.CreateFeedbackRequest;
+import com.picktoss.picktossserver.domain.feedback.entity.Feedback;
 import com.picktoss.picktossserver.domain.feedback.service.FeedbackMessageSendService;
 import com.picktoss.picktossserver.domain.feedback.service.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,7 @@ public class FeedbackController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        Long feedbackId = feedbackService.createFeedback(request.getFiles(), request.getTitle(), request.getContent(), request.getType(), request.getEmail(), memberId);
-        feedbackMessageSendService.sendFeedbackDiscordMessage(feedbackId);
+        Feedback feedback = feedbackService.createFeedback(request.getFiles(), request.getTitle(), request.getContent(), request.getType(), request.getEmail(), memberId);
+        feedbackMessageSendService.sendFeedbackDiscordMessage(feedback);
     }
 }

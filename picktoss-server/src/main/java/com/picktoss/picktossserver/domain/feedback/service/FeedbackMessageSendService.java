@@ -23,17 +23,16 @@ public class FeedbackMessageSendService {
     private final DiscordFeedbackMessageSendService discordFeedbackMessageSendService;
     private final FeedbackFileRepository feedbackFileRepository;
 
-    public void sendFeedbackDiscordMessage(Long feedbackId) {
-        List<FeedbackFile> feedbackFiles = feedbackFileRepository.findAllByFeedbackId(feedbackId);
-        Feedback feedback = feedbackFiles.getFirst().getFeedback();
-        Member member = feedback.getMember();
+    public void sendFeedbackDiscordMessage(Feedback feedback) {
+        List<FeedbackFile> feedbackFiles = feedbackFileRepository.findAllByFeedbackId(feedback.getId());
 
         List<String> feedbackImageUrls = new ArrayList<>();
-
         for (FeedbackFile feedbackFile : feedbackFiles) {
             String feedbackImageUrl = s3Provider.findImage(feedbackFile.getS3Key());
             feedbackImageUrls.add(feedbackImageUrl);
         }
+
+        Member member = feedback.getMember();
 
         DiscordMessage discordMessage = discordFeedbackMessageSendService.createFeedbackMessage(feedbackImageUrls, feedback.getContent(), member.getId(), member.getName());
         discordFeedbackMessageSendService.sendDiscordWebhookFeedbackMessage(discordMessage);

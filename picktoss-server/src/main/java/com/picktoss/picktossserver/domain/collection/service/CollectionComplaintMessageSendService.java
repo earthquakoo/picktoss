@@ -23,9 +23,8 @@ public class CollectionComplaintMessageSendService {
     private final CollectionComplaintFileRepository collectionComplaintFileRepository;
     private final DiscordCollectionComplaintMessageSendService discordCollectionComplaintMessageSendService;
 
-    public void sendCollectionComplaintDiscordMessage(Long collectionComplaintId) {
-        List<CollectionComplaintFile> collectionComplaintFiles = collectionComplaintFileRepository.findAllByCollectionComplaintId(collectionComplaintId);
-        CollectionComplaint collectionComplaint = collectionComplaintFiles.getFirst().getCollectionComplaint();
+    public void sendCollectionComplaintDiscordMessage(CollectionComplaint collectionComplaint) {
+        List<CollectionComplaintFile> collectionComplaintFiles = collectionComplaintFileRepository.findAllByCollectionComplaintId(collectionComplaint.getId());
         Member member = collectionComplaint.getMember();
 
         List<String> collectionComplaintImageUrls = new ArrayList<>();

@@ -52,7 +52,7 @@ public class DiscordCollectionComplaintMessageSendService {
                         + "### 👤 사용자 정보\n"
                         + "사용자 아이디 : " + memberId.toString() + "\n"
                         + "사용자 닉네임 : " + memberName + "\n"
-                        + "### 📚 문의 내용\n"
+                        + "### 🚨 신고 내용\n"
                         + collectionComplaintContent)
                 .build();
         embeds.add(embedDto);

@@ -35,7 +35,7 @@ public class CollectionComplaintService {
     private final S3UploadImagesPublisher s3UploadImagesPublisher;
 
     @Transactional
-    public Long createCollectionComplaint(Long collectionId, String content, Long memberId, List<MultipartFile> files) {
+    public CollectionComplaint createCollectionComplaint(Long collectionId, String content, Long memberId, List<MultipartFile> files) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
@@ -48,7 +48,7 @@ public class CollectionComplaintService {
             createCollectionComplaintFiles(files, collectionComplaint);
         }
 
-        return collectionComplaint.getId();
+        return collectionComplaint;
     }
 
     @Transactional
