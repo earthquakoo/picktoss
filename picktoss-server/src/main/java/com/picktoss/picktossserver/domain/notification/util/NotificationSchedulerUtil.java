@@ -73,6 +73,9 @@ public class NotificationSchedulerUtil {
 
     public void cancelScheduleTask(Long notificationId) {
         ScheduledFuture<?> schedule = scheduledTasks.get(notificationId);
+        if (schedule == null) {
+            return ;
+        }
         scheduledTasks.remove(notificationId);
         schedule.cancel(true);
         System.out.println("scheduledTasks = " + scheduledTasks);
@@ -169,6 +172,8 @@ public class NotificationSchedulerUtil {
             List<Member> members = memberRepository.findAllByIsQuizNotificationEnabledTrue();
             for (Member member : members) {
                 addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
+                boolean b = filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member);
+                System.out.println("filter = " + b);
                 if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
 
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
@@ -284,7 +289,7 @@ public class NotificationSchedulerUtil {
     }
 
     private boolean notificationTargetByTodayQuiz(NotificationTarget notificationTarget, Member member) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(member.getId());
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndTodayQuizSetOrderByCreatedAtDesc(member.getId());
 
         if (notificationTarget == NotificationTarget.QUIZ_INCOMPLETE_STATUS) {
             return quizUtil.checkTodayQuizSetSolvedStatus(quizSets);

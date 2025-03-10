@@ -16,7 +16,7 @@ spring:
     jdbc:
       initialize-schema: always
   redis:
-    host: ${PICKTOSS_REDIS_HOST}
+    host: ${PICKTOSS_DEV_REDIS_HOST}
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
   datasource:
@@ -111,8 +111,8 @@ cloud:
     s3:
       bucket: ${PICKTOSS_S3_BUCKET_NAME}
     credentials:
-      access_key: ${PICKTOSS_AWS_ACCESS_KEY}
-      secret_key: ${PICKTOSS_AWS_SECRET_KEY}
+      access-key: ${PICKTOSS_AWS_ACCESS_KEY}
+      secret-key: ${PICKTOSS_AWS_SECRET_KEY}
     region:
       static: us-east-1
       auto: false
@@ -130,3 +130,4 @@ payment:
 
 discord:
   feedback_webhook_url: ${PICKTOSS_DISCORD_FEEDBACK_WEBHOOK_URL}
+  collection_complaint_webhook_url: ${PICKTOSS_DISCORD_COLLECTION_COMPLAINT_WEBHOOK_URL}

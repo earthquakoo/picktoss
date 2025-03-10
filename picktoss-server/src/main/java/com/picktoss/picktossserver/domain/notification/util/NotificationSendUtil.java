@@ -30,8 +30,8 @@ public class NotificationSendUtil {
     private final CollectionRepository collectionRepository;
 
     public void sendNotificationByStarReward(Long memberId) {
-        String title = "친구 초대 보상입니다.";
-        String content = "별 50개가 지급되었습니다!";
+        String title = "🌟 친구 초대 보상 도착";
+        String content = "받은 별을 확인해 보세요!";
         Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, memberId.toString(), String.class);
         if (optionalToken.isEmpty()) {
             return ;
