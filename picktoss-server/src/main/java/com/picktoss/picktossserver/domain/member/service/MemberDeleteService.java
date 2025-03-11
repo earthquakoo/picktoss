@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.member.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.entity.WithdrawalReason;
@@ -30,15 +29,15 @@ public class MemberDeleteService {
 
         WithdrawalReason withdrawalReason = WithdrawalReason.createWithdrawalReason(reason, detail);
 
-        deleteFirebaseData(memberId);
+//        deleteFirebaseData(memberId);
 
         withdrawalReasonRepository.save(withdrawalReason);
         memberRepository.delete(member);
     }
 
-    private void deleteFirebaseData(Long memberId) {
-        String memberIdString = memberId.toString();
-        redisUtil.deleteData(RedisConstant.REDIS_FCM_PREFIX, memberIdString);
-        redisUtil.deleteData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdString);
-    }
+//    private void deleteFirebaseData(Long memberId) {
+//        String memberIdString = memberId.toString();
+//        redisUtil.deleteData(RedisConstant.REDIS_FCM_PREFIX, memberIdString);
+//        redisUtil.deleteData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdString);
+//    }
 }
