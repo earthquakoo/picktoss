@@ -14,10 +14,13 @@ public class CollectionDtoMapper {
         List<CollectionResponseDto.CollectionDto> collectionsDtos = new ArrayList<>();
 
         for (Collection collection : collections) {
+            boolean isBookmarked = false;
             Set<CollectionBookmark> collectionBookmarks = collection.getCollectionBookmarks();
-            boolean isBookmarked = collections.stream()
-                    .flatMap(c -> c.getCollectionBookmarks().stream())
-                    .anyMatch(bookmark -> Objects.equals(bookmark.getMember().getId(), memberId));
+            for (CollectionBookmark collectionBookmark : collectionBookmarks) {
+                if (collectionBookmark.getMember().getId().equals(memberId)) {
+                    isBookmarked = true;
+                }
+            }
 
             int solvedMemberCount = 0;
 
