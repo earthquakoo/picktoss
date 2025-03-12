@@ -10,13 +10,14 @@ import java.util.*;
 
 public class CollectionDtoMapper {
 
-    public static CollectionResponseDto collectionsToCollectionResponseDto(List<Collection> collections) {
+    public static CollectionResponseDto collectionsToCollectionResponseDto(List<Collection> collections, Long memberId) {
         List<CollectionResponseDto.CollectionDto> collectionsDtos = new ArrayList<>();
 
         for (Collection collection : collections) {
             Set<CollectionBookmark> collectionBookmarks = collection.getCollectionBookmarks();
-            boolean isBookmarked = collectionBookmarks.stream()
-                    .anyMatch(bookmark -> bookmark.getCollection().equals(collection));
+            boolean isBookmarked = collections.stream()
+                    .flatMap(c -> c.getCollectionBookmarks().stream())
+                    .anyMatch(bookmark -> Objects.equals(bookmark.getMember().getId(), memberId));
 
             int solvedMemberCount = 0;
 

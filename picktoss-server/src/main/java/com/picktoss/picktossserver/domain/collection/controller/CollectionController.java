@@ -68,7 +68,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionSearchService.findAllCollections(collectionSortOption, collectionCategoryOption, quizType, quizCount);
-        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections, memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -80,7 +80,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionSearchService.findAllByMemberIdAndBookmarked(memberId);
-        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections, memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -105,7 +105,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionSearchService.findMemberGeneratedCollections(memberId);
-        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections, memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -134,7 +134,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionSearchService.searchCollections(keyword);
-        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections, memberId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -147,7 +147,7 @@ public class CollectionController {
         Long memberId = jwtUserInfo.getMemberId();
 
         List<Collection> collections = collectionSearchService.findInterestCategoryCollections(memberId);
-        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections);
+        CollectionResponseDto response = CollectionDtoMapper.collectionsToCollectionResponseDto(collections, memberId);
         return ResponseEntity.ok().body(response);
     }
 
