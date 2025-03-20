@@ -44,6 +44,17 @@ public class QuizSearchController {
     }
 
     @Operation(summary = "디렉토리에 생성된 모든 퀴즈 랜덤하게 가져오기(랜덤 퀴즈)")
+    @GetMapping("/directories/quizzes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<GetAllQuizzesByDirectoryIdResponse> getAllQuizzesByDirectories() {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        GetAllQuizzesByDirectoryIdResponse response = quizSearchService.findAllByMemberId(memberId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "directory_id로 생성된 모든 퀴즈 랜덤하게 가져오기(랜덤 퀴즈)")
     @GetMapping("/directories/{directory_id}/quizzes")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllQuizzesByDirectoryIdResponse> getAllQuizzesByMemberId(

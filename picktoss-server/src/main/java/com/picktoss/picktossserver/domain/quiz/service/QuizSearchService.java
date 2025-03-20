@@ -87,6 +87,42 @@ public class QuizSearchService {
         return new GetQuizSetResponse(quizDtos);
     }
 
+    public GetAllQuizzesByDirectoryIdResponse findAllByMemberId(Long memberId) {
+        List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
+        List<GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto> quizDtos = new ArrayList<>();
+        Collections.shuffle(quizzes);
+
+        for (Quiz quiz : quizzes) {
+            Document document = quiz.getDocument();
+
+            List<String> optionList = new ArrayList<>();
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                Set<Option> options = quiz.getOptions();
+                for (Option option : options) {
+                    optionList.add(option.getOption());
+                }
+            }
+
+            GetAllQuizzesByDirectoryIdResponse.DocumentDto documentDto = GetAllQuizzesByDirectoryIdResponse.DocumentDto.builder()
+                    .id(document.getId())
+                    .name(document.getName())
+                    .build();
+
+            GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto quizDto = GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto.builder()
+                    .id(quiz.getId())
+                    .question(quiz.getQuestion())
+                    .answer(quiz.getAnswer())
+                    .explanation(quiz.getExplanation())
+                    .options(optionList)
+                    .quizType(quiz.getQuizType())
+                    .document(documentDto)
+                    .build();
+
+            quizDtos.add(quizDto);
+        }
+        return new GetAllQuizzesByDirectoryIdResponse(quizDtos);
+    }
+
     public GetAllQuizzesByDirectoryIdResponse findAllByMemberIdAndDirectoryId(Long memberId, Long directoryId) {
         List<Quiz> quizzes = quizRepository.findAllByMemberIdAndDirectoryId(memberId, directoryId);
         List<GetAllQuizzesByDirectoryIdResponse.GetAllQuizzesByDirectoryQuizDto> quizDtos = new ArrayList<>();

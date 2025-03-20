@@ -27,11 +27,9 @@ public class QuizUtil {
         for (QuizSet quizSet : quizSets) {
             LocalDate quizDate = quizSet.getCreatedAt().toLocalDate();
 
-            if (previousDate == null) {
+            if (previousDate == null || previousDate.minusDays(1).equals(quizDate)) {
                 currentConsecutiveDays += 1;
-            } else if (previousDate.minusDays(1).equals(quizDate)) {
-                currentConsecutiveDays += 1;
-            } else {
+            } else if (!previousDate.equals(quizDate)) {
                 break;
             }
             previousDate = quizDate;
@@ -52,15 +50,13 @@ public class QuizUtil {
             LocalDate quizDate = quizSet.getCreatedAt().toLocalDate();
 
             if (previousDate == null || previousDate.minusDays(1).equals(quizDate)) {
-                // 연속된 날짜일 경우 currentConsecutiveDays 증가
-                currentConsecutiveDays++;
-            } else {
-                // 연속되지 않으면 최대값을 갱신하고 현재 연속일 초기화
+                currentConsecutiveDays += 1;
+            } else if (!previousDate.equals(quizDate)) {
                 maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
-                currentConsecutiveDays = 1;  // 새로 시작된 연속일
+                currentConsecutiveDays = 1;
             }
 
-            previousDate = quizDate;  // 다음 비교를 위해 이전 날짜 업데이트
+            previousDate = quizDate;
         }
         return Math.max(maxConsecutiveDays, currentConsecutiveDays);
     }
