@@ -28,6 +28,17 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true " +
             "ORDER BY qs.createdAt DESC")
+    List<QuizSet> findAllByMemberIdAndSolvedTrueOrderByCreatedAtDesc(
+            @Param("memberId") Long memberId
+    );
+
+    @Query("SELECT qs FROM QuizSet qs " +
+            "JOIN FETCH qs.quizSetQuizzes qsq " +
+            "JOIN FETCH qsq.quiz q " +
+            "WHERE qs.member.id = :memberId " +
+            "AND qs.solved = true " +
+            "AND qs.quizSetType = TODAY_QUIZ_SET " +
+            "ORDER BY qs.createdAt DESC")
     List<QuizSet> findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(
             @Param("memberId") Long memberId
     );
