@@ -178,7 +178,7 @@ public class QuizRecordService {
     }
 
     public GetCurrentTodayQuizInfo findCurrentConsecutiveSolvedQuizSet(Long memberId) {
-        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(memberId);
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueOrderByCreatedAtDesc(memberId);
         int currentConsecutiveTodayQuizDate = quizUtil.checkCurrentConsecutiveSolvedQuizSet(solvedQuizSets);
         int maxConsecutiveTodayQuizDate = quizUtil.checkMaxConsecutiveSolvedQuizSet(solvedQuizSets);
 
