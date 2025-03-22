@@ -50,7 +50,7 @@ public class QuizRecordService {
     }
 
     public GetConsecutiveSolvedQuizSetDatesResponse findConsecutiveSolvedQuizSetDates(Long memberId, LocalDate solvedDate) {
-        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueOrderByCreatedAtDesc(memberId);
         List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
 
         HashMap<LocalDate, Boolean> solvedQuizByDate = new LinkedHashMap<>();
@@ -95,7 +95,7 @@ public class QuizRecordService {
     }
 
     public GetQuizRecordsResponse findAllQuizAndCollectionRecords(Long memberId) {
-        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
+        List<QuizSet> solvedQuizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueOrderByCreatedAtDesc(memberId);
         List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrue(memberId);
 
         List<SolvedQuizRecordDto> solvedQuizRecords = new ArrayList<>();
