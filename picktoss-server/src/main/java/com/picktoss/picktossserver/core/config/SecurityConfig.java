@@ -50,6 +50,7 @@ public class SecurityConfig {
 
     private static final String corsAllowedOriginTest = "http://localhost:5173";
     private static final String corsAllowedOriginReact = "https://picktoss.vercel.app";
+    private static final String corsAllowedOriginNgrok = "https://6e65-220-85-58-253.ngrok-free.app";
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -101,7 +102,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact));
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact, corsAllowedOriginNgrok));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
