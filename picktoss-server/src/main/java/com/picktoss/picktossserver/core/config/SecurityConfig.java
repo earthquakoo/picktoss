@@ -50,7 +50,7 @@ public class SecurityConfig {
 
     private static final String corsAllowedOriginTest = "http://localhost:5173";
     private static final String corsAllowedOriginReact = "https://picktoss.vercel.app";
-    private static final String corsAllowedOriginNgrok = "https://6e65-220-85-58-253.ngrok-free.app";
+    private static final String corsAllowedOriginNgrok = "https://d7ac-220-85-58-253.ngrok-free.app";
 
     @Bean
     public PasswordEncoder passwordEncoder() {
