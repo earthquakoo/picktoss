@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.DIRECTORY_NOT_FOUND;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.UNAUTHORIZED_OPERATION_EXCEPTION;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +21,12 @@ public class DirectoryDeleteService {
 
     @Transactional
     public void deleteDirectory(Long memberId, Long directoryId) {
+        List<Directory> directories = directoryRepository.findAllByMemberId(memberId);
+
+        if (directories.size() == 1) {
+            throw new CustomException(DIRECTORY_DELETE_NOT_ALLOWED);
+        }
+
         Directory directory = directoryRepository.findByDirectoryIdAndMemberId(directoryId, memberId)
                 .orElseThrow(() -> new CustomException(DIRECTORY_NOT_FOUND));
 

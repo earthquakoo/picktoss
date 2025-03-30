@@ -6,7 +6,6 @@ import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollection;
-import com.picktoss.picktossserver.domain.publicquizcollection.repository.PublicQuizCollectionBookmarkRepository;
 import com.picktoss.picktossserver.domain.publicquizcollection.repository.PublicQuizCollectionRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
@@ -32,7 +31,6 @@ public class PublicQuizCollectionQuizSetCreateService {
     private final QuizSetRepository quizSetRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final PublicQuizCollectionRepository publicQuizCollectionRepository;
-    private final PublicQuizCollectionBookmarkRepository publicQuizCollectionBookmarkRepository;
 
     @Transactional
     public void createPublicQuizCollectionQuizSet(Long memberId, Long publicQuizCollectionId) {
@@ -40,7 +38,7 @@ public class PublicQuizCollectionQuizSetCreateService {
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
         PublicQuizCollection publicQuizCollection = publicQuizCollectionRepository.findById(publicQuizCollectionId)
-                .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_SET_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_COLLECTION_NOT_FOUND));
 
         Document document = publicQuizCollection.getDocument();
 

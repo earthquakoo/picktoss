@@ -21,23 +21,24 @@ public class PublicQuizCollectionBookmarkController {
     private final PublicQuizCollectionBookmarkDeleteService publicQuizCollectionBookmarkDeleteService;
 
     @Operation(summary = "공개된 퀴즈 북마크하기")
-    @PostMapping("/public-quiz-collections/{publicQuizCollectionId}/bookmark")
+    @PostMapping("/public-quiz-collections/{public_quiz_collection_id}/bookmark")
     @ResponseStatus(HttpStatus.CREATED)
     public void createPublicQuizCollectionBookmark(
-            @PathVariable("publicQuizCollectionId") Long publicQuizCollectionId
+            @RequestParam(value = "directory-id") Long directoryId,
+            @PathVariable("public_quiz_collection_id") Long publicQuizCollectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        publicQuizCollectionBookmarkCreateService.createPublicQuizCollectionBookmark(memberId, publicQuizCollectionId);
+        publicQuizCollectionBookmarkCreateService.createPublicQuizCollectionBookmark(memberId, publicQuizCollectionId, directoryId);
 
     }
 
     @Operation(summary = "공개된 퀴즈 북마크 취소하기")
-    @DeleteMapping("/public-quiz-collections/{publicQuizCollectionId}/delete")
+    @DeleteMapping("/public-quiz-collections/{public_quiz_collection_id}/delete")
     @ResponseStatus(HttpStatus.OK)
     public void deletePublicQuizCollectionBookmark(
-            @PathVariable("publicQuizCollectionId") Long publicQuizCollectionId
+            @PathVariable("public_quiz_collection_id") Long publicQuizCollectionId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();

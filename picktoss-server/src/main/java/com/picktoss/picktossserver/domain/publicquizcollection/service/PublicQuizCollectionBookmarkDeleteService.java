@@ -27,10 +27,10 @@ public class PublicQuizCollectionBookmarkDeleteService {
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
         PublicQuizCollection publicQuizCollection = publicQuizCollectionRepository.findById(publicQuizCollectionId)
-                .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_SET_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_COLLECTION_NOT_FOUND));
 
         PublicQuizCollectionBookmark publicQuizCollectionBookmark = publicQuizCollectionBookmarkRepository.findByMemberAndPublicQuizCollection(member, publicQuizCollection)
-                .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_SET_BOOKMARK_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_COLLECTION_BOOKMARK_NOT_FOUND));
 
         publicQuizCollectionBookmarkRepository.delete(publicQuizCollectionBookmark);
     }

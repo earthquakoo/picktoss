@@ -37,6 +37,7 @@ public enum ErrorInfo {
      * Directory
      **/
     DIRECTORY_NOT_FOUND(400, "DIRECTORY_NOT_FOUND", "해당 id의 디렉토리를 찾을 수 없습니다."),
+    DIRECTORY_DELETE_NOT_ALLOWED(400, "DIRECTORY_DELETE_NOT_ALLOWED", "폴더가 1개만 남아있을 경우 삭제할 수 없습니다."),
 
     /**
      * Document
@@ -47,8 +48,8 @@ public enum ErrorInfo {
     /**
      * PublicQuizSet
      */
-    PUBLIC_QUIZ_SET_NOT_FOUND(400, "PUBLIC_QUIZ_SET_NOT_FOUND", "해당 id의 공개된 퀴즈를 찾을 수 없습니다."),
-    PUBLIC_QUIZ_SET_BOOKMARK_NOT_FOUND(400, "PUBLIC_QUIZ_SET_BOOKMARK_NOT_FOUND", "해당 id의 공개된 퀴즈 북마크를 찾을 수 없습니다."),
+    PUBLIC_QUIZ_COLLECTION_NOT_FOUND(400, "PUBLIC_QUIZ_COLLECTION_NOT_FOUND", "해당 id의 공개된 퀴즈를 찾을 수 없습니다."),
+    PUBLIC_QUIZ_COLLECTION_BOOKMARK_NOT_FOUND(400, "PUBLIC_QUIZ_COLLECTION_BOOKMARK_NOT_FOUND", "해당 id의 공개된 퀴즈 북마크를 찾을 수 없습니다."),
 
     /**
      * Outbox

@@ -103,7 +103,7 @@ public class DirectoryController {
 
     @Operation(summary = "디렉토리 삭제")
     @DeleteMapping("/directories/{directory_id}")
-    @ApiErrorCodeExamples({DIRECTORY_NOT_FOUND, UNAUTHORIZED_OPERATION_EXCEPTION})
+    @ApiErrorCodeExamples({DIRECTORY_NOT_FOUND, UNAUTHORIZED_OPERATION_EXCEPTION, DIRECTORY_DELETE_NOT_ALLOWED})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDirectory(@PathVariable(name = "directory_id") Long directoryId) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();

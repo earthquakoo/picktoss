@@ -29,6 +29,9 @@ public class Document extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "emoji", nullable = false)
+    private String emoji;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "quiz_generation_status", nullable = false)
     private QuizGenerationStatus quizGenerationStatus;

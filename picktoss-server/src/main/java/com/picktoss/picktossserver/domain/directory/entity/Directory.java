@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.directory.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
+import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollectionBookmark;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.directory.DirectoryTag;
 import jakarta.persistence.*;
@@ -38,6 +39,9 @@ public class Directory extends AuditBase {
 
     @OneToMany(mappedBy = "directory", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Document> documents = new HashSet<>();
+
+    @OneToMany(mappedBy = "directory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PublicQuizCollectionBookmark> publicQuizCollectionBookmarks = new HashSet<>();
 
     // Constructor methods
     public static Directory createDirectory(Member member, String name, String emoji) {

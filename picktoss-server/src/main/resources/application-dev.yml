@@ -65,6 +65,7 @@ springdoc:
     - com.picktoss.picktossserver.domain.collection.controller
     - com.picktoss.picktossserver.domain.star.controller
     - com.picktoss.picktossserver.domain.notification.controller
+    - com.picktoss.picktossserver.domain.publicquizcollection.controller
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
   swagger-ui:
