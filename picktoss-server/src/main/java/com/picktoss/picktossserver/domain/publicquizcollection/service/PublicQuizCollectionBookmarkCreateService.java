@@ -22,11 +22,11 @@ public class PublicQuizCollectionBookmarkCreateService {
     private final PublicQuizCollectionBookmarkRepository publicQuizCollectionBookmarkRepository;
 
     @Transactional
-    public void createPublicQuizCollectionBookmark(Long memberId, Long publicQuizSetId) {
+    public void createPublicQuizCollectionBookmark(Long memberId, Long publicQuizCollectionId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
-        PublicQuizCollection publicQuizCollection = publicQuizCollectionRepository.findById(publicQuizSetId)
+        PublicQuizCollection publicQuizCollection = publicQuizCollectionRepository.findById(publicQuizCollectionId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.PUBLIC_QUIZ_SET_NOT_FOUND));
 
         PublicQuizCollectionBookmark publicQuizCollectionBookmark = PublicQuizCollectionBookmark.createPublicQuizCollectionBookmark(member, publicQuizCollection);

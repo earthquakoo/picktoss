@@ -103,7 +103,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact, corsAllowedOriginNgrok));
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact, corsAllowedOriginNgrok, corsAllowedOriginNgrokTest));
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

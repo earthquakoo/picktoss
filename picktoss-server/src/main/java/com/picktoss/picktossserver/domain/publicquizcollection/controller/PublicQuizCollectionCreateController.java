@@ -26,7 +26,7 @@ public class PublicQuizCollectionCreateController {
     public void createPublicQuizCollection(
             @PathVariable("document_id") Long documentId,
             @Valid @RequestBody CreatePublicQuizCollectionRequest request
-            ) {
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
