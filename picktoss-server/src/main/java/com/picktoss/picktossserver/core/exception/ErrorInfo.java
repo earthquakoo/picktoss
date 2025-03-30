@@ -44,7 +44,11 @@ public enum ErrorInfo {
     DOCUMENT_NOT_FOUND(400, "DOCUMENT_NOT_FOUND", "해당 id의 문서를 찾을 수 없습니다."),
     DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR", "등록할 수 있는 문서의 최대 개수를 초과했습니다."),
 
-    FEEDBACK_NOT_FOUND(400, "FEEDBACK_NOT_FOUND", "해당 id의 피드백을 찾을 수 없습니다."),
+    /**
+     * PublicQuizSet
+     */
+    PUBLIC_QUIZ_SET_NOT_FOUND(400, "PUBLIC_QUIZ_SET_NOT_FOUND", "해당 id의 공개된 퀴즈를 찾을 수 없습니다."),
+    PUBLIC_QUIZ_SET_BOOKMARK_NOT_FOUND(400, "PUBLIC_QUIZ_SET_BOOKMARK_NOT_FOUND", "해당 id의 공개된 퀴즈 북마크를 찾을 수 없습니다."),
 
     /**
      * Outbox

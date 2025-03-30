@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollection;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
@@ -48,6 +49,9 @@ public class Document extends AuditBase {
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Quiz> quizzes = new HashSet<>();
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PublicQuizCollection> publicQuizCollections = new HashSet<>();
 
     // Constructor methods
     public static Document createDocument(String name, String s3Key, QuizGenerationStatus quizGenerationStatus, DocumentType documentType, Directory directory) {

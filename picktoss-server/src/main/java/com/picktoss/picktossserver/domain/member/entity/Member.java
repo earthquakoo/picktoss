@@ -6,6 +6,7 @@ import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
 import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
+import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollectionBookmark;
 import com.picktoss.picktossserver.domain.feedback.entity.Feedback;
 import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.payment.entity.Payment;
@@ -96,6 +97,9 @@ public class Member extends AuditBase {
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Feedback> feedbacks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<PublicQuizCollectionBookmark> publicQuizCollectionBookmarks = new ArrayList<>();
 
     public static Member createGoogleMember(String name, String clientId, String email) {
         return Member.builder()
