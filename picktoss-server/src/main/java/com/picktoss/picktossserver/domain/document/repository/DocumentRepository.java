@@ -21,7 +21,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "JOIN FETCH d.quizzes q " +
+            "LEFT JOIN FETCH d.quizzes q " +
             "LEFT JOIN FETCH q.options " +
             "WHERE d.id = :documentId " +
             "AND dir.member.id = :memberId")
@@ -50,7 +50,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "JOIN FETCH d.quizzes " +
+            "LEFT JOIN FETCH d.quizzes " +
             "WHERE dir.id = :directoryId " +
             "AND dir.member.id = :memberId " +
             "ORDER BY d.updatedAt DESC")
@@ -61,7 +61,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "JOIN FETCH d.quizzes " +
+            "LEFT JOIN FETCH d.quizzes " +
             "WHERE dir.id = :directoryId " +
             "AND dir.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
@@ -72,7 +72,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "JOIN FETCH d.quizzes " +
+            "LEFT JOIN FETCH d.quizzes " +
             "WHERE dir.member.id = :memberId " +
             "ORDER BY d.updatedAt DESC")
     List<Document> findAllByMemberIdOrderByUpdatedAtDesc(
@@ -81,7 +81,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "JOIN FETCH d.quizzes " +
+            "LEFT JOIN FETCH d.quizzes " +
             "WHERE dir.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberIdOrderByCreatedAtDesc(
