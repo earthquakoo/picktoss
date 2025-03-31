@@ -21,7 +21,7 @@ public class PublicQuizCollectionDtoMapper {
                     .id(publicQuizCollection.getId())
                     .title(document.getName())
                     .explanation(publicQuizCollection.getExplanation())
-                    .emoji(document.getEmoji())
+//                    .emoji(document.getEmoji())
                     .publicQuizCollectionCategory(publicQuizCollection.getPublicQuizCollectionCategory())
                     .quizCount(document.getQuizzes().size())
                     .tryCount(publicQuizCollection.getTryCount())
