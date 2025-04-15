@@ -1,11 +1,11 @@
 package com.picktoss.picktossserver.domain.document.entity;
 
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
-import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollection;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import com.picktoss.picktossserver.global.enums.document.DocumentType;
+import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,18 +29,21 @@ public class Document extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
-//    @Column(name = "emoji", nullable = false)
-//    private String emoji;
+    @Column(name = "emoji", nullable = false)
+    private String emoji;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "quiz_generation_status", nullable = false)
     private QuizGenerationStatus quizGenerationStatus;
 
-    @Column(name = "is_today_quiz_included", nullable = false)
-    private boolean isTodayQuizIncluded;
-
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
+
+    @Column(name = "try_count", nullable = false)
+    private Integer tryCount;
+
+    @Column(name = "is_public", nullable = false)
+    private Boolean isPublic;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "document_type", nullable = false)
@@ -50,41 +53,57 @@ public class Document extends AuditBase {
     @JoinColumn(name = "directory_id", nullable = false)
     private Directory directory;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category category;
+
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Quiz> quizzes = new HashSet<>();
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PublicQuizCollection> publicQuizCollections = new HashSet<>();
+    private Set<DocumentBookmark> documentBookmarks = new HashSet<>();
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DocumentComplaint> documentComplaints = new HashSet<>();
 
     // Constructor methods
-    public static Document createDocument(String name, String s3Key, QuizGenerationStatus quizGenerationStatus, DocumentType documentType, Directory directory) {
+    public static Document createDocument(
+            String name,
+            String s3Key,
+            String emoji,
+            Boolean isPublic,
+            Category category,
+            QuizGenerationStatus quizGenerationStatus,
+            DocumentType documentType,
+            Directory directory
+    ) {
         return Document.builder()
                 .name(name)
                 .s3Key(s3Key)
+                .emoji(emoji)
+                .isPublic(isPublic)
+                .category(category)
+                .tryCount(0)
                 .quizGenerationStatus(quizGenerationStatus)
-                .isTodayQuizIncluded(true)
                 .documentType(documentType)
                 .directory(directory)
                 .build();
     }
 
-    // 연관관계 메서드
-    public void setDirectory(Directory directory) {
-        this.directory = directory;
-        directory.getDocuments().add(this);
-    }
-
     // Business Logics
-    public void moveDocumentToDirectory(Directory directory) {
-        this.directory = directory;
-    }
-
     public void updateDocumentS3KeyByUpdatedContent(String s3Key) {
         this.s3Key = s3Key;
     }
 
     public void updateDocumentName(String name) {
         this.name = name;
+    }
+
+    public void updateDocumentCategory(Category category) {
+        this.category = category;
+    }
+
+    public void updateDocumentEmoji(String emoji) {
+        this.emoji = emoji;
     }
 
     public void updateDocumentStatusProcessingByGenerateAiPick() {
@@ -95,9 +114,12 @@ public class Document extends AuditBase {
         this.quizGenerationStatus = QuizGenerationStatus.PROCESSING;
     }
 
+    public void updateDocumentIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
 
-    public void updateDocumentIsTodayQuizIncluded(Boolean isTodayQuizIncluded) {
-        this.isTodayQuizIncluded = isTodayQuizIncluded;
+    public void updateDocumentTryCountBySolvedQuizSet() {
+        this.tryCount += 1;
     }
 
     public QuizGenerationStatus updateDocumentStatusClientResponse(QuizGenerationStatus quizGenerationStatus) {

@@ -1,18 +1,12 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
-import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSetCollectionQuiz;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionRandomQuizRecord;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionQuizSetRepository;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionRandomQuizRecordRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizMonthlyAnalysisResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizWeeklyAnalysisResponse;
+import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecord;
+import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecordDetail;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
-import com.picktoss.picktossserver.domain.quiz.entity.RandomQuizRecord;
+import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordDetailRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
-import com.picktoss.picktossserver.domain.quiz.repository.RandomQuizRecordRepository;
-import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,34 +24,15 @@ import java.util.*;
 public class QuizAnalysisService {
 
     private final QuizSetQuizRepository quizSetQuizRepository;
-    private final RandomQuizRecordRepository randomQuizRecordRepository;
-    private final CollectionQuizSetRepository collectionQuizSetRepository;
-    private final CollectionRandomQuizRecordRepository collectionRandomQuizRecordRepository;
+    private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
 
-    public GetQuizWeeklyAnalysisResponse findQuizWeeklyAnalysis(Long memberId, Long directoryId, LocalDate startDate, LocalDate endDate) {
-        List<QuizSetQuiz> quizSetQuizzes;
+    public GetQuizWeeklyAnalysisResponse findQuizWeeklyAnalysis(Long memberId, LocalDate startDate, LocalDate endDate) {
+        LocalDateTime startOfDay = startDate.atStartOfDay();
+        LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
-        if (directoryId == null) {
-            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrue(memberId);
-        } else {
-            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndDirectoryIdAndSolvedTrue(memberId, directoryId);
-        }
-        return quizWeeklyAnalysis(quizSetQuizzes, startDate, endDate, memberId);
-    }
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
+        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startDate, endDate);
 
-    public GetQuizMonthlyAnalysisResponse findQuizMonthlyAnalysis(Long memberId, Long directoryId, LocalDate startMonthDate) {
-        List<QuizSetQuiz> quizSetQuizzes;
-
-        if (directoryId == null) {
-            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrue(memberId);
-        } else {
-            quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndDirectoryIdAndSolvedTrue(memberId, directoryId);
-        }
-        return quizMonthlyAnalysis(quizSetQuizzes, startMonthDate, memberId);
-    }
-
-    private GetQuizWeeklyAnalysisResponse quizWeeklyAnalysis(
-            List<QuizSetQuiz> quizSetQuizzes, LocalDate startDate, LocalDate endDate, Long memberId) {
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
 
@@ -71,51 +46,22 @@ public class QuizAnalysisService {
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
 
-            if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
-                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
-                if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && quizSetQuiz.getIsAnswer()) {
-                    correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
-                }
+            totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
+            if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && quizSetQuiz.getIsAnswer()) {
+                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
             }
         }
 
-        LocalDateTime startOfDay = startDate.atStartOfDay();
-        LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
+        for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
+            DailyQuizRecord dailyQuizRecord = dailyQuizRecordDetail.getDailyQuizRecord();
+            LocalDate date = dailyQuizRecord.getSolvedDate();
 
-        List<RandomQuizRecord> randomQuizRecords = randomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
-        for (RandomQuizRecord randomQuizRecord : randomQuizRecords) {
-            LocalDate date = randomQuizRecord.getUpdatedAt().toLocalDate();
-
-            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
-                int solvedQuizCount = randomQuizRecord.getSolvedQuizCount();
-                int correctQuizCount = randomQuizRecord.getCorrectQuizCount();
-                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
-                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
+            totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
+            if (!Objects.isNull(dailyQuizRecordDetail.getIsAnswer()) && dailyQuizRecordDetail.getIsAnswer()) {
+                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
             }
         }
 
-        List<CollectionRandomQuizRecord> collectionRandomQUizRecords = collectionRandomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
-        for (CollectionRandomQuizRecord collectionRandomQUizRecord : collectionRandomQUizRecords) {
-            LocalDate date = collectionRandomQUizRecord.getUpdatedAt().toLocalDate();
-
-            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
-                int solvedQuizCount = collectionRandomQUizRecord.getSolvedQuizCount();
-                int correctQuizCount = collectionRandomQUizRecord.getCorrectQuizCount();
-                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
-                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
-            }
-        }
-
-        Map<CollectionCategory, Integer> collectionFieldMap = new HashMap<>();
-        List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
-
-        for (CollectionQuizSet collectionQuizSet : collectionQuizSets) {
-            List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = collectionQuizSet.getCollectionQuizSetCollectionQuizzes();
-            int totalQuizCount = collectionQuizSetCollectionQuizzes.size();
-
-            Collection collection = collectionQuizSet.getCollectionQuizSetCollectionQuizzes().getFirst().getCollectionQuiz().getCollection();
-            collectionFieldMap.putIfAbsent(collection.getCollectionCategory(), totalQuizCount);
-        }
 
         List<GetQuizWeeklyAnalysisResponse.QuizAnswerRateAnalysisDto> quizzesDtos = new ArrayList<>();
         int weeklyTotalQuizCount = 0;
@@ -143,25 +89,27 @@ public class QuizAnalysisService {
 
         double averageCorrectRate = (double) weeklyCorrectAnswerCount / (double) weeklyTotalQuizCount * 100.0;
 
-        return new GetQuizWeeklyAnalysisResponse(quizzesDtos, averageDailyQuizCount, averageCorrectRate, weeklyTotalQuizCount, collectionFieldMap);
+        return new GetQuizWeeklyAnalysisResponse(quizzesDtos, averageDailyQuizCount, averageCorrectRate, weeklyTotalQuizCount);
     }
 
-    private GetQuizMonthlyAnalysisResponse quizMonthlyAnalysis(List<QuizSetQuiz> quizSetQuizzes, LocalDate startDate, Long memberId) {
+    public GetQuizMonthlyAnalysisResponse findQuizMonthlyAnalysis(Long memberId, LocalDate startMonthDate) {
+        YearMonth yearMonth = YearMonth.of(startMonthDate.getYear(), startMonthDate.getMonth());
+        LocalDate startOfDate = yearMonth.atDay(1);
+        LocalDate endOfDate = yearMonth.atEndOfMonth();
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate lastMonthStart = startMonthDate.minusMonths(1).withDayOfMonth(1);
+        LocalDate lastMonthEnd = startMonthDate.minusMonths(1).withDayOfMonth(currentDate.getDayOfMonth());
+
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, lastMonthStart.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
+        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, lastMonthStart, endOfDate);
+
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> lastMonthTotalQuizCountDateMap = new LinkedHashMap<>();
 
         int monthlyTotalQuizCount = 0;
         int monthlyTotalCorrectAnswerCount = 0;
-
-        YearMonth yearMonth = YearMonth.of(startDate.getYear(), startDate.getMonth());
-        LocalDate startOfDate = yearMonth.atDay(1);
-        LocalDate endOfDate = yearMonth.atEndOfMonth();
-
-        // 전월 날짜 계산
-        LocalDate currentDate = LocalDate.now();
-        LocalDate lastMonthStart = startDate.minusMonths(1).withDayOfMonth(1);
-        LocalDate lastMonthEnd = startDate.minusMonths(1).withDayOfMonth(currentDate.getDayOfMonth());
 
         for (int i = 0; i <= endOfDate.getDayOfMonth() - startOfDate.getDayOfMonth(); i++) {
             LocalDate date = startOfDate.plusDays(i);
@@ -183,45 +131,23 @@ public class QuizAnalysisService {
                     correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
                 }
             }
-
         }
 
-        LocalDateTime startOfDay = startDate.atStartOfDay();
-        LocalDateTime endOfDay = endOfDate.atTime(LocalTime.MAX);
+        for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
+            DailyQuizRecord dailyQuizRecord = dailyQuizRecordDetail.getDailyQuizRecord();
+            LocalDate date = dailyQuizRecord.getSolvedDate();
 
-        List<RandomQuizRecord> randomQuizRecords = randomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
-        for (RandomQuizRecord randomQuizRecord : randomQuizRecords) {
-            LocalDate date = randomQuizRecord.getUpdatedAt().toLocalDate();
+            if (!date.isBefore(lastMonthStart) && !date.isAfter(lastMonthEnd)) {
+                lastMonthTotalQuizCountDateMap.put(date, lastMonthTotalQuizCountDateMap.getOrDefault(date, 0) + 1);
+            }
 
             if (!date.isBefore(startOfDate) && !date.isAfter(endOfDate)) {
-                int solvedQuizCount = randomQuizRecord.getSolvedQuizCount();
-                int correctQuizCount = randomQuizRecord.getCorrectQuizCount();
-                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
-                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
+                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
+
+                if (!Objects.isNull(dailyQuizRecordDetail.getIsAnswer()) && dailyQuizRecordDetail.getIsAnswer()) {
+                    correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
+                }
             }
-        }
-
-        List<CollectionRandomQuizRecord> collectionRandomQUizRecords = collectionRandomQuizRecordRepository.findAllByMemberIdAndCreatedAtBetween(memberId, startOfDay, endOfDay);
-        for (CollectionRandomQuizRecord collectionRandomQUizRecord : collectionRandomQUizRecords) {
-            LocalDate date = collectionRandomQUizRecord.getUpdatedAt().toLocalDate();
-
-            if (!date.isBefore(startDate) && !date.isAfter(startDate.plusDays(7))) {
-                int solvedQuizCount = collectionRandomQUizRecord.getSolvedQuizCount();
-                int correctQuizCount = collectionRandomQUizRecord.getCorrectQuizCount();
-                totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + solvedQuizCount);
-                correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + correctQuizCount);
-            }
-        }
-
-        Map<CollectionCategory, Integer> collectionFieldMap = new HashMap<>();
-        List<CollectionQuizSet> collectionQuizSets = collectionQuizSetRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
-
-        for (CollectionQuizSet collectionQuizSet : collectionQuizSets) {
-            List<CollectionQuizSetCollectionQuiz> collectionQuizSetCollectionQuizzes = collectionQuizSet.getCollectionQuizSetCollectionQuizzes();
-            int totalQuizCount = collectionQuizSetCollectionQuizzes.size();
-
-            Collection collection = collectionQuizSet.getCollectionQuizSetCollectionQuizzes().getFirst().getCollectionQuiz().getCollection();
-            collectionFieldMap.putIfAbsent(collection.getCollectionCategory(), totalQuizCount);
         }
 
         // 전월 날짜 범위의 퀴즈 개수 합산
@@ -262,6 +188,6 @@ public class QuizAnalysisService {
 
         double averageCorrectRate = (double) monthlyTotalCorrectAnswerCount / (double) monthlyTotalQuizCount * 100.0;
 
-        return new GetQuizMonthlyAnalysisResponse(quizzesDtos, monthlyTotalQuizCount, monthlyTotalCorrectAnswerCount, averageCorrectRate, quizCountDifferenceFromLastMonth, collectionFieldMap);
+        return new GetQuizMonthlyAnalysisResponse(quizzesDtos, monthlyTotalQuizCount, monthlyTotalCorrectAnswerCount, averageCorrectRate, quizCountDifferenceFromLastMonth);
     }
 }

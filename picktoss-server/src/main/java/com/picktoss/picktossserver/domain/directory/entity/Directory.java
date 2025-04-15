@@ -2,9 +2,7 @@ package com.picktoss.picktossserver.domain.directory.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
-import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollectionBookmark;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.directory.DirectoryTag;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,10 +24,6 @@ public class Directory extends AuditBase {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tag", nullable = false)
-    private DirectoryTag tag;
-
     @Column(name = "emoji")
     private String emoji;
 
@@ -40,14 +34,10 @@ public class Directory extends AuditBase {
     @OneToMany(mappedBy = "directory", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Document> documents = new HashSet<>();
 
-    @OneToMany(mappedBy = "directory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PublicQuizCollectionBookmark> publicQuizCollectionBookmarks = new HashSet<>();
-
     // Constructor methods
     public static Directory createDirectory(Member member, String name, String emoji) {
         Directory directory = Directory.builder()
                 .name(name)
-                .tag(DirectoryTag.NORMAL)
                 .member(member)
                 .emoji(emoji)
                 .build();
@@ -58,7 +48,6 @@ public class Directory extends AuditBase {
     public static Directory createDefaultDirectory(Member member) {
         return Directory.builder()
                 .name("기본 폴더")
-                .tag(DirectoryTag.DEFAULT)
                 .emoji(null)
                 .member(member)
                 .build();

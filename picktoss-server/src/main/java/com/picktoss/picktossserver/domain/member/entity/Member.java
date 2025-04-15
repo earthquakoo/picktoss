@@ -1,23 +1,18 @@
 package com.picktoss.picktossserver.domain.member.entity;
 
 
-import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionBookmark;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionComplaint;
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuizSet;
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
-import com.picktoss.picktossserver.domain.publicquizcollection.entity.PublicQuizCollectionBookmark;
+import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
+import com.picktoss.picktossserver.domain.document.entity.DocumentComplaint;
 import com.picktoss.picktossserver.domain.feedback.entity.Feedback;
-import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.payment.entity.Payment;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
-import com.picktoss.picktossserver.domain.quiz.entity.RandomQuizRecord;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.subscription.entity.Subscription;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.member.MemberRole;
 import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
-import com.picktoss.picktossserver.global.utils.StringListConvert;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -54,16 +49,12 @@ public class Member extends AuditBase {
     @Column(name = "is_quiz_notification_enabled", nullable = false)
     private boolean isQuizNotificationEnabled;
 
-    @Column(name = "today_quiz_count", nullable = false)
-    private Integer todayQuizCount;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private MemberRole role;
 
-    @Convert(converter = StringListConvert.class)
-    @Column(name = "interest_collection_categories")
-    private List<String> interestCollectionCategories;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category category;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Star star;
@@ -74,23 +65,8 @@ public class Member extends AuditBase {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizSet> quizSets = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Collection> collections = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CollectionQuizSet> collectionQuizSets = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<CollectionBookmark> collectionBookmarks = new ArrayList<>();
-
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<RandomQuizRecord> randomQuizRecords = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<CollectionComplaint> collectionComplaints = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Subscription> subscriptions = new ArrayList<>();
@@ -99,7 +75,11 @@ public class Member extends AuditBase {
     private List<Feedback> feedbacks = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<PublicQuizCollectionBookmark> publicQuizCollectionBookmarks = new ArrayList<>();
+    private List<DocumentBookmark> documentBookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<DocumentComplaint> documentComplaints = new ArrayList<>();
+
 
     public static Member createGoogleMember(String name, String clientId, String email) {
         return Member.builder()
@@ -108,7 +88,6 @@ public class Member extends AuditBase {
                 .socialPlatform(SocialPlatform.GOOGLE)
                 .email(email)
                 .isQuizNotificationEnabled(true)
-                .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
                 .role(MemberRole.ROLE_USER)
                 .build();
     }
@@ -119,7 +98,6 @@ public class Member extends AuditBase {
                 .clientId(clientId)
                 .socialPlatform(SocialPlatform.KAKAO)
                 .isQuizNotificationEnabled(false)
-                .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
                 .role(MemberRole.ROLE_USER)
                 .build();
     }
@@ -132,15 +110,11 @@ public class Member extends AuditBase {
         this.email = email;
     }
 
+    public void updateMemberCategory(Category category) {
+        this.category = category;
+    }
+
     public void updateQuizNotification(boolean isQuizNotificationEnabled) {
         this.isQuizNotificationEnabled = isQuizNotificationEnabled;
-    }
-
-    public void updateInterestCollectionCategories(List<String> interestCollectionCategories) {
-        this.interestCollectionCategories = interestCollectionCategories;
-    }
-
-    public void updateTodayQuizCount(Integer todayQuizCount) {
-        this.todayQuizCount = todayQuizCount;
     }
 }

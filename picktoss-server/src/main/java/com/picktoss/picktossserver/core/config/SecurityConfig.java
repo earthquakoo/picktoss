@@ -73,15 +73,13 @@ public class SecurityConfig {
                                 "/api/v2/health-check",
                                 "/api/v2/login",
                                 "/api/v2/backend/login",
-                                "/api/v2/example-quizzes",
-                                "/api/v2/notion/**",
                                 "/api/v2/test/**",
-                                "/api/v2/test/create-member",
-                                "/api/v2/test/quiz-create",
                                 "/api/v2/admin/login",
                                 "/api/v2/admin/sign-up",
                                 "/api/v2/auth/invite/{invite_code}/creator",
-                                "/api/v2/auth/invite/verify"
+                                "/api/v2/auth/invite/verify",
+                                "/api/v2/categories",
+                                "/api/v2/documents/public"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

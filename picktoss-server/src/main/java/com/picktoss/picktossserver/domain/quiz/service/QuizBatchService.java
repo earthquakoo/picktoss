@@ -28,20 +28,19 @@ public class QuizBatchService {
     @Transactional
     public void quizChunkBatchInsert(
             List<Quiz> quizzes, List<QuizSet> quizSets, List<QuizSetQuiz> quizSetQuizzes, List<Member> members) {
-        String insertQuizSetSql = "INSERT INTO quiz_set (id, name, solved, quiz_set_type, member_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertQuizSetSql = "INSERT INTO quiz_set (id, name, solved, member_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.batchUpdate(
                 insertQuizSetSql,
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         QuizSet quizSet = quizSets.get(i);
-                        ps.setString(1, quizSet.getId());
+                        ps.setLong(1, quizSet.getId());
                         ps.setString(2, quizSet.getName());
                         ps.setBoolean(3, quizSet.isSolved());
-                        ps.setObject(4, quizSet.getQuizSetType());
-                        ps.setLong(5, quizSet.getMember().getId());
+                        ps.setLong(4, quizSet.getMember().getId());
+                        ps.setObject(5, LocalDateTime.now());
                         ps.setObject(6, LocalDateTime.now());
-                        ps.setObject(7, LocalDateTime.now());
                     }
 
                     @Override

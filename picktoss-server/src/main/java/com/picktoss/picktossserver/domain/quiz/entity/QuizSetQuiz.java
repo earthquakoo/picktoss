@@ -25,9 +25,6 @@ public class QuizSetQuiz extends AuditBase {
     @Column(name = "chose_answer")
     private String choseAnswer;
 
-//    @Column(name = "is_needed_review")
-//    private Boolean isNeededReview;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;

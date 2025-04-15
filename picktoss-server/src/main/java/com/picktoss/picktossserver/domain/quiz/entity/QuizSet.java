@@ -2,7 +2,6 @@ package com.picktoss.picktossserver.domain.quiz.entity;
 
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
-import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,18 +16,15 @@ import java.util.List;
 @Builder
 public class QuizSet extends AuditBase {
 
-    @Id @Column(name = "id", length = 300)
-    private String id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "solved", nullable = false)
     private boolean solved;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "quiz_set_type", nullable = false)
-    private QuizSetType quizSetType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -38,12 +34,10 @@ public class QuizSet extends AuditBase {
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
     // Constructor methods
-    public static QuizSet createQuizSet(String id, String name, QuizSetType quizSetType, Member member) {
+    public static QuizSet createQuizSet(String name, Member member) {
         return QuizSet.builder()
-                .id(id)
                 .name(name)
                 .solved(false)
-                .quizSetType(quizSetType)
                 .member(member)
                 .build();
     }

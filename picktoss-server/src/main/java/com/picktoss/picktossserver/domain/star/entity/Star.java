@@ -75,6 +75,15 @@ public class Star extends AuditBase {
         return starHistory;
     }
 
+    public StarHistory depositStarBySolvedDailyQuizReward(Star star, int reward) {
+        Integer curStarCount = star.getStar();
+        Integer changeStarCount = curStarCount + reward;
+
+        StarHistory starHistory = StarHistory.createStarHistory("데일리 퀴즈 보상", reward, changeStarCount, TransactionType.DEPOSIT, Source.REWARD, star);
+
+        this.star += reward;
+        return starHistory;
+    }
 
     public StarHistory depositStarByInviteFriendReward(Star star) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
@@ -84,17 +93,6 @@ public class Star extends AuditBase {
         StarHistory starHistory = StarHistory.createStarHistory("친구 초대 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
 
         this.star += StarConstant.INVITE_FRIEND_REWARD;
-        return starHistory;
-    }
-
-    public StarHistory depositStarByInvalidQuiz(Star star, String errorContent) {
-        StarHistory lastStarHistory = star.getStarHistories().getLast();
-        Integer changeAmount = StarConstant.INVALID_QUIZ_REWARD;
-        Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
-
-        StarHistory starHistory = StarHistory.createStarHistory(errorContent, changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
-
-        this.star += StarConstant.INVALID_QUIZ_REWARD;
         return starHistory;
     }
 

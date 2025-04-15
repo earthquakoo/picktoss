@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.member.dto.dto;
 
-import com.picktoss.picktossserver.domain.member.constant.MemberConstant;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.enums.member.MemberRole;
 import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
@@ -22,7 +21,6 @@ public class MemberInfoDto {
                 .name(name)
                 .email(email)
                 .role(MemberRole.ROLE_USER)
-                .todayQuizCount(MemberConstant.DEFAULT_TODAY_QUIZ_COUNT)
                 .isQuizNotificationEnabled(true)
                 .build();
     }
