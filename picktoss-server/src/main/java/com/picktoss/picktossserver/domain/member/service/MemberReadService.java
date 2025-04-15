@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.member.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentBookmarkRepository;
 import com.picktoss.picktossserver.domain.member.dto.response.GetMemberInfoResponse;
@@ -46,11 +47,18 @@ public class MemberReadService {
         String email = Optional.ofNullable(member.getEmail()).orElse("");
         int monthlySolvedQuizCount = calculateMonthlySolvedQuizCount(memberId);
 
+        Category category = member.getCategory();
+        GetMemberInfoResponse.CategoryDto categoryDto = GetMemberInfoResponse.CategoryDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .emoji(category.getEmoji())
+                .build();
+
         return GetMemberInfoResponse.builder()
                 .id(member.getId())
                 .name(member.getName())
                 .email(email)
-                .category(member.getCategory())
+                .category(categoryDto)
                 .socialPlatform(member.getSocialPlatform())
                 .star(star.getStar())
                 .isQuizNotificationEnabled(member.isQuizNotificationEnabled())

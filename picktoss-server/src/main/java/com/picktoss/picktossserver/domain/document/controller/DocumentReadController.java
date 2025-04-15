@@ -2,7 +2,6 @@ package com.picktoss.picktossserver.domain.document.controller;
 
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
-import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.document.dto.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.dto.response.GetBookmarkedDocumentsResponse;
@@ -18,8 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.AMAZON_SERVICE_EXCEPTION;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Tag(name = "Document")
 @RestController
@@ -45,7 +43,7 @@ public class DocumentReadController {
 
     @Operation(summary = "모든 문서 가져오기")
     @GetMapping("/documents")
-    @ApiErrorCodeExample(AMAZON_SERVICE_EXCEPTION)
+    @ApiErrorCodeExamples({AMAZON_SERVICE_EXCEPTION, DOCUMENT_SORT_OPTION_NOT_SELECT})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
             @RequestParam(defaultValue = "CREATE_AT", value = "sort-option") DocumentSortOption documentSortOption) {
