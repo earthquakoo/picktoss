@@ -42,7 +42,7 @@ public class QuizSet extends AuditBase {
                 .build();
     }
 
-    public void updateSolved() {
+    public void updateSolvedBySolvedQuizSet() {
         this.solved = true;
     }
 }

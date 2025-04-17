@@ -60,27 +60,31 @@ public class QuizUpdateService {
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
             Quiz quiz = quizSetQuiz.getQuiz();
-            if (quizDtoMap.containsKey(quiz.getId())) {
-                UpdateQuizResultRequest.UpdateQuizResultQuizDto quizDto = quizDtoMap.get(quiz.getId());
+            UpdateQuizResultRequest.UpdateQuizResultQuizDto quizDto = quizDtoMap.get(quiz.getId());
 
-                if (isOwner) {
-                    if (!quizDto.isAnswer()) {
-                        quiz.updateIsReviewNeededTrueByWrongAnswer();
-                    } else {
-                        quiz.addCorrectAnswerCount();
-                        correctAnswerCount += 1;
-                    }
+            if (quizDto == null) continue;
+
+            boolean isCorrect = quizDto.isAnswer();
+            int elapsedTime = quizDto.getElapsedTime();
+
+            if (isOwner) {
+                if (isCorrect) {
+                    quiz.addCorrectAnswerCount();
+                } else {
+                    quiz.updateIsReviewNeededTrueByWrongAnswer();
                 }
-
-                quizSetQuiz.updateIsAnswer(quizDto.isAnswer());
-                quizSetQuiz.updateChoseAnswer(quizDto.getChoseAnswer());
-                quizSetQuiz.updateElapsedTime(quizDto.getElapsedTime());
-
-                totalQuizCount += 1;
-                totalElapsedTime += quizDto.getElapsedTime();
+            } else if (isCorrect) {
+                correctAnswerCount += 1;
             }
+
+            quizSetQuiz.updateIsAnswer(isCorrect);
+            quizSetQuiz.updateChoseAnswer(quizDto.getChoseAnswer());
+            quizSetQuiz.updateElapsedTime(elapsedTime);
+
+            totalQuizCount += 1;
+            totalElapsedTime += elapsedTime;
         }
-        quizSet.updateSolved();
+        quizSet.updateSolvedBySolvedQuizSet();
 
         double correctAnswerRate = (double) correctAnswerCount / (double) totalQuizCount * 100.0;
 
