@@ -6,4 +6,5 @@ import lombok.Getter;
 public class CreateCategoryRequest {
     private String name;
     private String emoji;
+    private Integer orders;
 }

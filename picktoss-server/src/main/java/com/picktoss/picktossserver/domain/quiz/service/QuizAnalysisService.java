@@ -1,12 +1,15 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
+import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizMonthlyAnalysisResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetQuizWeeklyAnalysisResponse;
 import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecord;
 import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecordDetail;
+import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordDetailRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +38,10 @@ public class QuizAnalysisService {
 
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
+        HashMap<String, Integer> totalQuizCountByCategory = new LinkedHashMap<>();
+
+        int multipleChoiceQuizCount = 0;
+        int mixUpQuizCount = 0;
 
         long daysBetween = startDate.until(endDate, ChronoUnit.DAYS);
         for (int i = 0; i <= daysBetween; i++) {
@@ -50,6 +57,16 @@ public class QuizAnalysisService {
             if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && quizSetQuiz.getIsAnswer()) {
                 correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
             }
+
+            Category category = quizSetQuiz.getQuiz().getDocument().getCategory();
+            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+
+            Quiz quiz = quizSetQuiz.getQuiz();
+            if (quiz.getQuizType() == QuizType.MIX_UP) {
+                mixUpQuizCount += 1;
+            } else {
+                multipleChoiceQuizCount += 1;
+            }
         }
 
         for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
@@ -60,8 +77,17 @@ public class QuizAnalysisService {
             if (!Objects.isNull(dailyQuizRecordDetail.getIsAnswer()) && dailyQuizRecordDetail.getIsAnswer()) {
                 correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
             }
-        }
 
+            Category category = dailyQuizRecordDetail.getQuiz().getDocument().getCategory();
+            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+
+            Quiz quiz = dailyQuizRecordDetail.getQuiz();
+            if (quiz.getQuizType() == QuizType.MIX_UP) {
+                mixUpQuizCount += 1;
+            } else {
+                multipleChoiceQuizCount += 1;
+            }
+        }
 
         List<GetQuizWeeklyAnalysisResponse.QuizAnswerRateAnalysisDto> quizzesDtos = new ArrayList<>();
         int weeklyTotalQuizCount = 0;
@@ -77,6 +103,7 @@ public class QuizAnalysisService {
 
                 GetQuizWeeklyAnalysisResponse.QuizAnswerRateAnalysisDto quizzesDto = GetQuizWeeklyAnalysisResponse.QuizAnswerRateAnalysisDto.builder()
                         .date(date)
+                        .dayOfWeek(date.getDayOfWeek())
                         .totalQuizCount(totalQuizCount)
                         .correctAnswerCount(correctAnswerCount)
                         .build();
@@ -85,11 +112,25 @@ public class QuizAnalysisService {
             }
         }
 
-        int averageDailyQuizCount = weeklyTotalQuizCount / 7;
+        List<GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisCategoryDto> categoryDtos = new ArrayList<>();
+        for (String categoryName : totalQuizCountByCategory.keySet()) {
+            GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisCategoryDto categoryDto = GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisCategoryDto.builder()
+                    .categoryName(categoryName)
+                    .totalQuizCount(totalQuizCountByCategory.get(categoryName))
+                    .build();
 
+            categoryDtos.add(categoryDto);
+        }
+
+        int averageDailyQuizCount = weeklyTotalQuizCount / 7;
         double averageCorrectRate = (double) weeklyCorrectAnswerCount / (double) weeklyTotalQuizCount * 100.0;
 
-        return new GetQuizWeeklyAnalysisResponse(quizzesDtos, averageDailyQuizCount, averageCorrectRate, weeklyTotalQuizCount);
+        GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisQuizTypeDto quizTypes = GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisQuizTypeDto.builder()
+                .mixUpQuizCount(mixUpQuizCount)
+                .multipleChoiceQuizCount(multipleChoiceQuizCount)
+                .build();
+
+        return new GetQuizWeeklyAnalysisResponse(quizzesDtos, categoryDtos, quizTypes, averageCorrectRate, averageDailyQuizCount, weeklyTotalQuizCount);
     }
 
     public GetQuizMonthlyAnalysisResponse findQuizMonthlyAnalysis(Long memberId, LocalDate startMonthDate) {
@@ -107,9 +148,13 @@ public class QuizAnalysisService {
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> lastMonthTotalQuizCountDateMap = new LinkedHashMap<>();
+        HashMap<String, Integer> totalQuizCountByCategory = new LinkedHashMap<>();
 
+        int maxSolvedQuizCount = 0;
         int monthlyTotalQuizCount = 0;
         int monthlyTotalCorrectAnswerCount = 0;
+        int multipleChoiceQuizCount = 0;
+        int mixUpQuizCount = 0;
 
         for (int i = 0; i <= endOfDate.getDayOfMonth() - startOfDate.getDayOfMonth(); i++) {
             LocalDate date = startOfDate.plusDays(i);
@@ -131,6 +176,16 @@ public class QuizAnalysisService {
                     correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
                 }
             }
+
+            Category category = quizSetQuiz.getQuiz().getDocument().getCategory();
+            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+
+            Quiz quiz = quizSetQuiz.getQuiz();
+            if (quiz.getQuizType() == QuizType.MIX_UP) {
+                mixUpQuizCount += 1;
+            } else {
+                multipleChoiceQuizCount += 1;
+            }
         }
 
         for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
@@ -148,29 +203,22 @@ public class QuizAnalysisService {
                     correctAnswerCountByDate.put(date, correctAnswerCountByDate.getOrDefault(date, 0) + 1);
                 }
             }
-        }
 
-        // 전월 날짜 범위의 퀴즈 개수 합산
-        int lastMonthQuizCount = 0;
-        for (int i = 0; i <= currentDate.getDayOfMonth() - lastMonthStart.getDayOfMonth(); i++) {
-            LocalDate date = lastMonthStart.plusDays(i);
-            lastMonthQuizCount += lastMonthTotalQuizCountDateMap.getOrDefault(date, 0);
-        }
+            Category category = dailyQuizRecordDetail.getQuiz().getDocument().getCategory();
+            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
 
-        // 이번 달 날짜 범위의 퀴즈 개수 합산
-        int currentMonthQuizCount = 0;
-        for (int i = 0; i <= currentDate.getDayOfMonth() - startOfDate.getDayOfMonth(); i++) {
-            LocalDate date = startOfDate.plusDays(i);
-            currentMonthQuizCount += totalQuizCountByDate.getOrDefault(date, 0);
+            Quiz quiz = dailyQuizRecordDetail.getQuiz();
+            if (quiz.getQuizType() == QuizType.MIX_UP) {
+                mixUpQuizCount += 1;
+            } else {
+                multipleChoiceQuizCount += 1;
+            }
         }
-
-        // 퀴즈 개수 차이 계산
-        int quizCountDifferenceFromLastMonth = currentMonthQuizCount - lastMonthQuizCount;
 
         List<GetQuizMonthlyAnalysisResponse.QuizAnswerRateAnalysisDto> quizzesDtos = new ArrayList<>();
 
-
         for (LocalDate date : totalQuizCountByDate.keySet()) {
+            maxSolvedQuizCount = Math.max(maxSolvedQuizCount, totalQuizCountByDate.get(date));
             int totalQuizCount = totalQuizCountByDate.getOrDefault(date, 0);
             int correctAnswerCount = correctAnswerCountByDate.getOrDefault(date, 0);
 
@@ -186,8 +234,25 @@ public class QuizAnalysisService {
             quizzesDtos.add(quizzesDto);
         }
 
+        List<GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisCategoryDto> categoryDtos = new ArrayList<>();
+        for (String categoryName : totalQuizCountByCategory.keySet()) {
+            GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisCategoryDto categoryDto = GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisCategoryDto.builder()
+                    .categoryName(categoryName)
+                    .totalQuizCount(totalQuizCountByCategory.get(categoryName))
+                    .build();
+
+            categoryDtos.add(categoryDto);
+        }
+
         double averageCorrectRate = (double) monthlyTotalCorrectAnswerCount / (double) monthlyTotalQuizCount * 100.0;
 
-        return new GetQuizMonthlyAnalysisResponse(quizzesDtos, monthlyTotalQuizCount, monthlyTotalCorrectAnswerCount, averageCorrectRate, quizCountDifferenceFromLastMonth);
+        GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisQuizTypeDto quizTypeDto = GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisQuizTypeDto.builder()
+                .mixUpQuizCount(mixUpQuizCount)
+                .multipleChoiceQuizCount(multipleChoiceQuizCount)
+                .build();
+
+        return new GetQuizMonthlyAnalysisResponse(quizzesDtos, categoryDtos, quizTypeDto, averageCorrectRate, maxSolvedQuizCount, monthlyTotalQuizCount);
     }
+
+
 }

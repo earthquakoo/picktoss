@@ -34,6 +34,6 @@ public class CategoryController {
     public void createCategory(
             @Valid @RequestBody CreateCategoryRequest request
     ) {
-        categoryService.createCategory(request.getName(), request.getEmoji());
+        categoryService.createCategory(request.getName(), request.getEmoji(), request.getOrders());
     }
 }

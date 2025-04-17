@@ -27,6 +27,7 @@ public class CategoryService {
                     .id(category.getId())
                     .name(category.getName())
                     .emoji(category.getEmoji())
+                    .orders(category.getOrders())
                     .build();
 
             categoriesDtos.add(categoriesDto);
@@ -36,8 +37,8 @@ public class CategoryService {
     }
 
     @Transactional
-    public void createCategory(String name, String emoji) {
-        Category category = Category.createCategory(name, emoji);
+    public void createCategory(String name, String emoji, Integer orders) {
+        Category category = Category.createCategory(name, emoji, orders);
         categoryRepository.save(category);
     }
 }

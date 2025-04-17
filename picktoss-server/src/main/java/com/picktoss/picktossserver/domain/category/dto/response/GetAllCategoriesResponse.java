@@ -18,5 +18,6 @@ public class GetAllCategoriesResponse {
         private Long id;
         private String name;
         private String emoji;
+        private Integer orders;
     }
 }

@@ -21,10 +21,14 @@ public class Category {
     @Column(name = "emoji", nullable = false)
     private String emoji;
 
-    public static Category createCategory(String name, String emoji) {
+    @Column(name = "orders", nullable = false)
+    private Integer orders;
+
+    public static Category createCategory(String name, String emoji, Integer orders) {
         return Category.builder()
                 .name(name)
                 .emoji(emoji)
+                .orders(orders)
                 .build();
     }
 }
