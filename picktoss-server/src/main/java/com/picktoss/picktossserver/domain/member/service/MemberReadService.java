@@ -42,7 +42,10 @@ public class MemberReadService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
-        String imageUrl = s3Provider.findImage(member.getS3Key());
+        String imageUrl = null;
+        if (member.getS3Key() != null && !member.getS3Key().isEmpty()) {
+            imageUrl = s3Provider.findImage(member.getS3Key());
+        }
 
         List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
         List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
