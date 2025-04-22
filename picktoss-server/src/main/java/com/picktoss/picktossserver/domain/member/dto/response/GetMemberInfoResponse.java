@@ -13,6 +13,7 @@ public class GetMemberInfoResponse {
     private Long id;
     private String name;
     private String email;
+    private String image;
     private CategoryDto category;
     private SocialPlatform socialPlatform;
     private boolean isQuizNotificationEnabled;

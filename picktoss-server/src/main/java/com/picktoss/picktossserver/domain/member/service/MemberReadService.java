@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.member.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentBookmarkRepository;
@@ -30,6 +31,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class MemberReadService {
 
+    private final S3Provider s3Provider;
     private final MemberRepository memberRepository;
     private final DocumentBookmarkRepository documentBookmarkRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
@@ -39,6 +41,8 @@ public class MemberReadService {
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
+
+        String imageUrl = s3Provider.findImage(member.getS3Key());
 
         List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
         List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
@@ -58,6 +62,7 @@ public class MemberReadService {
                 .id(member.getId())
                 .name(member.getName())
                 .email(email)
+                .image(imageUrl)
                 .category(categoryDto)
                 .socialPlatform(member.getSocialPlatform())
                 .star(star.getStar())

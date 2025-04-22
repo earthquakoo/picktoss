@@ -20,10 +20,17 @@ public class GetPublicDocumentsResponse {
         private Long id;
         private String name;
         private String emoji;
-        private String previewContent;
         private int tryCount;
         private int bookmarkCount;
         private int totalQuizCount;
         private Boolean isBookmarked;
+        private List<GetPublicDocumentQuizDto> quizzes;
+    }
+
+    @Getter
+    @Builder
+    public static class GetPublicDocumentQuizDto {
+        private Long id;
+        private String question;
     }
 }

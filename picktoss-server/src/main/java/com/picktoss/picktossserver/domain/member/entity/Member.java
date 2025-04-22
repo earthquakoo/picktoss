@@ -46,6 +46,9 @@ public class Member extends AuditBase {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "s3_key")
+    private String s3Key;
+
     @Column(name = "is_quiz_notification_enabled", nullable = false)
     private boolean isQuizNotificationEnabled;
 
@@ -116,5 +119,9 @@ public class Member extends AuditBase {
 
     public void updateQuizNotification(boolean isQuizNotificationEnabled) {
         this.isQuizNotificationEnabled = isQuizNotificationEnabled;
+    }
+
+    public void updateMemberImage(String s3Key) {
+        this.s3Key = s3Key;
     }
 }

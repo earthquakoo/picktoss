@@ -41,8 +41,16 @@ public class PublicDocumentSearchService {
         List<GetPublicDocumentsResponse.GetPublicDocumentsDto> documentsDtos = new ArrayList<>();
         for (Document document : documents) {
             Set<Quiz> quizzes = document.getQuizzes();
-            List<Quiz> quizList = new ArrayList<>(quizzes);
-            String question = quizList.getFirst().getQuestion();
+
+            List<GetPublicDocumentsResponse.GetPublicDocumentQuizDto> quizDtos = new ArrayList<>();
+            for (Quiz quiz : quizzes) {
+                GetPublicDocumentsResponse.GetPublicDocumentQuizDto quizDto = GetPublicDocumentsResponse.GetPublicDocumentQuizDto.builder()
+                        .id(quiz.getId())
+                        .question(quiz.getQuestion())
+                        .build();
+
+                quizDtos.add(quizDto);
+            }
 
             int bookmarkCount = 0;
             boolean isBookmarked = false;
@@ -58,16 +66,15 @@ public class PublicDocumentSearchService {
                 }
             }
 
-
             GetPublicDocumentsResponse.GetPublicDocumentsDto documentsDto = GetPublicDocumentsResponse.GetPublicDocumentsDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .emoji(document.getEmoji())
-                    .previewContent(question)
                     .tryCount(document.getTryCount())
                     .isBookmarked(isBookmarked)
                     .bookmarkCount(bookmarkCount)
                     .totalQuizCount(document.getQuizzes().size())
+                    .quizzes(quizDtos)
                     .build();
 
             documentsDtos.add(documentsDto);

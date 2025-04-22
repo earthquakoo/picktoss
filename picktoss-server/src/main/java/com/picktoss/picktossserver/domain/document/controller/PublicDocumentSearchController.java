@@ -23,7 +23,7 @@ public class PublicDocumentSearchController {
     private final JwtTokenProvider jwtTokenProvider;
     private final PublicDocumentSearchService publicDocumentSearchService;
 
-    @Operation(summary = "공개된 문서 탐색")
+    @Operation(summary = "공개된 문서 탐색(탐험)")
     @GetMapping("/documents/public")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetPublicDocumentsResponse> getPublicDocuments(

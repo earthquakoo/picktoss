@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.member.dto.request.UpdateMemberCategoryRequest;
+import com.picktoss.picktossserver.domain.member.dto.request.UpdateMemberImageRequest;
 import com.picktoss.picktossserver.domain.member.dto.request.UpdateMemberNameRequest;
 import com.picktoss.picktossserver.domain.member.dto.request.UpdateQuizNotificationRequest;
 import com.picktoss.picktossserver.domain.member.service.MemberUpdateService;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
@@ -57,5 +59,17 @@ public class MemberUpdateController {
         Long memberId = jwtUserInfo.getMemberId();
 
         memberUpdateService.updateMemberCategory(memberId, request.getCategoryId());
+    }
+
+    @Operation(summary = "사용자 이미지 변경")
+    @PatchMapping(value = "/members/update-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateMemberImage(
+            @Valid @ModelAttribute UpdateMemberImageRequest request
+            ) {
+        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+        Long memberId = jwtUserInfo.getMemberId();
+
+        memberUpdateService.updateMemberImage(memberId, request.getFile());
     }
 }

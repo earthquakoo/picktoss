@@ -59,6 +59,7 @@ public class DocumentComplaintCreateService {
         String s3FolderPath = "picktoss-collection-complaint-images/";
 
         List<String> s3Keys = new ArrayList<>();
+
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
             String fullS3Key = s3FolderPath + customS3Key + "_" + fileName;
