@@ -44,17 +44,17 @@ public class DailyQuizRecordController {
     }
 
     @Operation(summary = "데일리 퀴즈 풀기")
-    @PostMapping("/quizzes/{quiz_id}/solve")
+    @PostMapping("/quizzes/solve")
     @ApiErrorCodeExamples({MEMBER_NOT_FOUND, QUIZ_NOT_FOUND_ERROR})
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreateDailyQuizRecordResponse> createDailyQuizRecord(
-            @Valid @RequestBody CreateQuizSolveRecordRequest request,
-            @PathVariable("quiz_id") Long quizId
+            @Valid @RequestBody CreateQuizSolveRecordRequest request
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
+        System.out.println("memberId = " + memberId);
 
-        CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, quizId, request.getChoseAnswer(), request.getIsAnswer());
+        CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, request.getQuizId(), request.getChoseAnswer(), request.getIsAnswer());
         return ResponseEntity.ok().body(response);
     }
 }

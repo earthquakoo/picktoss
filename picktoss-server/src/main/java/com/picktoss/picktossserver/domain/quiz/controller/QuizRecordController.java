@@ -64,7 +64,7 @@ public class QuizRecordController {
     }
 
     @Operation(summary = "월별 데일리 퀴즈 연속일 기록")
-    @GetMapping("/daily-quiz_records/{solved_date}/consecutive-days")
+    @GetMapping("/daily-quiz-records/{solved_date}/consecutive-days")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetConsecutiveSolvedDailyQuizDatesResponse> getConsecutiveSolvedQuizSetDates(
             @PathVariable("solved_date") LocalDate solvedDate
@@ -77,7 +77,7 @@ public class QuizRecordController {
     }
 
     @Operation(summary = "데일리 퀴즈 연속일 현황")
-    @GetMapping("/daily-quiz_records/consecutive-days")
+    @GetMapping("/daily-quiz-records/consecutive-days")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetConsecutiveSolvedDailyQuizResponse> getConsecutiveSolvedDailyQuiz() {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();

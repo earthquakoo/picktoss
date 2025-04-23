@@ -32,7 +32,7 @@ public class QuizCreateController {
     public ResponseEntity<CreateQuizSetResponse> createPublicDocumentQuizSet(
             @PathVariable("document_id") Long documentId,
             @Valid @RequestBody CreateQuizSetRequest request
-            ) {
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
