@@ -63,21 +63,6 @@ public class DailyQuizRecordService {
             }
         }
 
-        if (includeBookmarkQuiz) {
-            if (quizType == null) {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
-            } else {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizType(memberId, quizType);
-            }
-        }
-        for (DocumentBookmark documentBookmark : documentBookmarks) {
-            Document document = documentBookmark.getDocument();
-            Set<Quiz> quizSets = document.getQuizzes();
-            quizzes.addAll(quizSets);
-        }
-        Collections.shuffle(quizzes);
-
-
         List<GetAllQuizzesResponse.GetAllQuizzesDto> quizzesDtos = new ArrayList<>();
         for (Quiz quiz : quizzes) {
             List<String> optionList = new ArrayList<>();
@@ -87,18 +72,58 @@ public class DailyQuizRecordService {
                     optionList.add(option.getOption());
                 }
             }
+
             GetAllQuizzesResponse.GetAllQuizzesDto quizzesDto = GetAllQuizzesResponse.GetAllQuizzesDto.builder()
                     .id(quiz.getId())
                     .name(quiz.getDocument().getName())
                     .question(quiz.getQuestion())
                     .answer(quiz.getAnswer())
                     .explanation(quiz.getExplanation())
+                    .isBookmarked(false)
                     .options(optionList)
                     .quizType(quiz.getQuizType())
                     .build();
 
             quizzesDtos.add(quizzesDto);
         }
+
+        if (includeBookmarkQuiz) {
+            if (quizType == null) {
+                documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
+            } else {
+                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizType(memberId, quizType);
+            }
+        }
+
+        for (DocumentBookmark documentBookmark : documentBookmarks) {
+            Document document = documentBookmark.getDocument();
+            Set<Quiz> quizSets = document.getQuizzes();
+            for (Quiz quiz : quizSets) {
+                List<String> optionList = new ArrayList<>();
+                if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                    Set<Option> options = quiz.getOptions();
+                    for (Option option : options) {
+                        optionList.add(option.getOption());
+                    }
+                }
+
+                GetAllQuizzesResponse.GetAllQuizzesDto quizzesDto = GetAllQuizzesResponse.GetAllQuizzesDto.builder()
+                        .id(quiz.getId())
+                        .name(quiz.getDocument().getName())
+                        .question(quiz.getQuestion())
+                        .answer(quiz.getAnswer())
+                        .explanation(quiz.getExplanation())
+                        .isBookmarked(true)
+                        .options(optionList)
+                        .quizType(quiz.getQuizType())
+                        .build();
+
+                quizzesDtos.add(quizzesDto);
+            }
+        }
+
+        Collections.shuffle(quizzesDtos);
+
         return new GetAllQuizzesResponse(quizzesDtos);
     }
 

@@ -185,6 +185,9 @@ public class QuizRecordService {
 
     public int calculateConsecutiveDailyQuiz(Long memberId) {
         List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdAndIsDailyQuizCompleteTrueOrderBySolvedDateDesc(memberId);
+        if (dailyQuizRecords.isEmpty()) {
+            return 0;
+        }
 
         LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate();
         if (!firstQuizSetDate.equals(LocalDate.now()) && !firstQuizSetDate.equals(LocalDate.now().minusDays(1))) {

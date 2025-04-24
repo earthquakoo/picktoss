@@ -22,6 +22,7 @@ public class GetAllQuizzesResponse {
         private String question;
         private String answer;
         private String explanation;
+        private Boolean isBookmarked;
         private List<String> options;
         private QuizType quizType;
     }
