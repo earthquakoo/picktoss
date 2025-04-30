@@ -3,10 +3,7 @@ package com.picktoss.picktossserver.domain.notification.util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
@@ -29,7 +26,8 @@ public class NotificationUtil {
     }
 
     public LocalDateTime calculateNextNotificationTime(LocalDateTime notificationTime, DayOfWeek nextDay) {
-        return notificationTime.with(TemporalAdjusters.next(nextDay));
+        LocalDate nextDate = notificationTime.toLocalDate().with(TemporalAdjusters.next(nextDay));
+        return LocalDateTime.of(nextDate, notificationTime.toLocalTime());
     }
 
     public Instant toInstant(LocalDateTime startTime) {

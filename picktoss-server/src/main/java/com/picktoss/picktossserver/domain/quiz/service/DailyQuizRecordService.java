@@ -180,6 +180,14 @@ public class DailyQuizRecordService {
 
     private int calculateConsecutiveDailyQuiz(Long memberId) {
         List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdAndIsDailyQuizCompleteTrueOrderBySolvedDateDesc(memberId);
+        if (dailyQuizRecords.isEmpty()) {
+            return 0;
+        }
+
+        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate();
+        if (!firstQuizSetDate.equals(LocalDate.now()) && !firstQuizSetDate.equals(LocalDate.now().minusDays(1))) {
+            return 0;
+        }
 
         LocalDate previousDate = null;
         int currentConsecutiveDays = 0;
