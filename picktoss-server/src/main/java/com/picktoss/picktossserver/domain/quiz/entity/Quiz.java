@@ -1,8 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.entity;
 
-import com.picktoss.picktossserver.domain.collection.entity.CollectionQuiz;
 import com.picktoss.picktossserver.domain.document.entity.Document;
-import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.global.baseentity.AuditBase;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import jakarta.persistence.*;
@@ -61,7 +59,7 @@ public class Quiz extends AuditBase {
     private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
 
     @OneToMany(mappedBy = "quiz", orphanRemoval = true)
-    private List<CollectionQuiz> collectionQuizzes = new ArrayList<>();
+    private List<DailyQuizRecordDetail> dailyQuizRecordDetails = new ArrayList<>();
 
     // Business Logics
     public void addCorrectAnswerCount() {
@@ -72,7 +70,7 @@ public class Quiz extends AuditBase {
         this.deliveredCount += 1;
     }
 
-    public void updateIsReviewNeededTrueByIncorrectAnswer() {
+    public void updateIsReviewNeededTrueByWrongAnswer() {
         this.isReviewNeeded = true;
     }
 
@@ -80,7 +78,25 @@ public class Quiz extends AuditBase {
         this.isReviewNeeded = false;
     }
 
-    public Member findMemberById(Long memberId) {
-        return document.getDirectory().getMember();
+    public void updateIsReviewNeededFalseByWrongAnswerConfirm()  {
+        this.isReviewNeeded = false;
+    }
+
+    public void updateQuizInfoByInvalidQuiz(String question, String answer, String explanation, Set<Option> options) {
+        if (question != null && !question.isEmpty()) {
+            this.question = question;
+        }
+
+        if (answer != null && !answer.isEmpty()) {
+            this.answer = answer;
+        }
+
+        if (explanation != null && !explanation.isEmpty()) {
+            this.explanation = explanation;
+        }
+
+        if (options != null && !options.isEmpty()) {
+            this.options = options;
+        }
     }
 }

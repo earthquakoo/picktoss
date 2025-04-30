@@ -7,15 +7,12 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
-import com.picktoss.picktossserver.domain.collection.entity.Collection;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
-import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
 import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
@@ -49,8 +46,6 @@ public class NotificationSchedulerUtil {
     private final MemberRepository memberRepository;
     private final NotificationUtil notificationUtil;
     private final QuizSetRepository quizSetRepository;
-    private final QuizUtil quizUtil;
-    private final CollectionRepository collectionRepository;
 
     private Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
@@ -276,13 +271,8 @@ public class NotificationSchedulerUtil {
             return true;
         }
 
-        if (notificationType == NotificationType.TODAY_QUIZ) {
+        if (notificationType == NotificationType.DAILY_QUIZ) {
             return notificationTargetByTodayQuiz(notificationTarget, member);
-        } else if (notificationType == NotificationType.COLLECTION) {
-            if (notificationTarget == NotificationTarget.COLLECTION_NOT_GENERATE) {
-                return checkNotificationTargetByCollectionNotGenerate(member);
-            }
-            return checkNotificationTargetByInterestCollection(notificationTarget, member);
         }
 
         return true;
@@ -292,26 +282,11 @@ public class NotificationSchedulerUtil {
         List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndTodayQuizSetOrderByCreatedAtDesc(member.getId());
 
         if (notificationTarget == NotificationTarget.QUIZ_INCOMPLETE_STATUS) {
-            return quizUtil.checkTodayQuizSetSolvedStatus(quizSets);
+            return true;
+//            return quizUtil.checkTodayQuizSetSolvedStatus(quizSets);
         }
 
-        return quizUtil.checkConsecutiveUnsolvedQuizSetsOverFourDays(quizSets);
-    }
-
-    private boolean checkNotificationTargetByCollectionNotGenerate(Member member) {
-        List<Collection> collections = collectionRepository.findAllByMemberId(member.getId());
-        return collections.isEmpty();
-    }
-
-    private boolean checkNotificationTargetByInterestCollection(NotificationTarget notificationTarget, Member member) {
-        List<String> collectionFields = member.getInterestCollectionCategories();
-        for (String collectionFieldString : collectionFields) {
-            String notificationTargetString = notificationTarget.toString();
-
-            if (notificationTargetString.equals(collectionFieldString)) {
-                return true;
-            }
-        }
+//        return quizUtil.checkConsecutiveUnsolvedQuizSetsOverFourDays(quizSets);
         return false;
     }
 }

@@ -5,9 +5,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.auth.dto.request.LoginRequest;
-import com.picktoss.picktossserver.domain.auth.dto.request.SendVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.dto.request.VerifyInviteCode;
-import com.picktoss.picktossserver.domain.auth.dto.request.VerifyVerificationCodeRequest;
 import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
 import com.picktoss.picktossserver.domain.auth.dto.response.CreateInviteLinkResponse;
 import com.picktoss.picktossserver.domain.auth.dto.response.GetInviteMemberResponse;
@@ -101,24 +99,24 @@ public class AuthController {
         authInviteLinkService.rewardForInviteCode(memberId, request.getInviteCode());
     }
 
-    @Operation(summary = "이메일 인증 코드 생성 및 발송")
-    @PostMapping("/auth/verification")
-    @ResponseStatus(HttpStatus.OK)
-    public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
-
-        authEmailVerificationService.sendVerificationCode(request.getEmail());
-    }
-
-    @Operation(summary = "이메일 코드 인증")
-    @PostMapping("/auth/verification/check")
-    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, EMAIL_VERIFICATION_NOT_FOUND, EMAIL_ALREADY_VERIFIED, INVALID_VERIFICATION_CODE, VERIFICATION_CODE_EXPIRED})
-    @ResponseStatus(HttpStatus.OK)
-    public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        authEmailVerificationService.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
-    }
+//    @Operation(summary = "이메일 인증 코드 생성 및 발송")
+//    @PostMapping("/auth/verification")
+//    @ResponseStatus(HttpStatus.OK)
+//    public void sendVerificationCode(@Valid @RequestBody SendVerificationCodeRequest request) {
+//
+//        authEmailVerificationService.sendVerificationCode(request.getEmail());
+//    }
+//
+//    @Operation(summary = "이메일 코드 인증")
+//    @PostMapping("/auth/verification/check")
+//    @ApiErrorCodeExamples({MEMBER_NOT_FOUND, EMAIL_VERIFICATION_NOT_FOUND, EMAIL_ALREADY_VERIFIED, INVALID_VERIFICATION_CODE, VERIFICATION_CODE_EXPIRED})
+//    @ResponseStatus(HttpStatus.OK)
+//    public void verifyVerificationCode(@Valid @RequestBody VerifyVerificationCodeRequest request) {
+//        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+//        Long memberId = jwtUserInfo.getMemberId();
+//
+//        authEmailVerificationService.verifyVerificationCode(request.getEmail(), request.getVerificationCode(), memberId);
+//    }
 
     @Operation(summary = "초대 코드 유효성 검사")
     @PostMapping("/auth/invite/verify")

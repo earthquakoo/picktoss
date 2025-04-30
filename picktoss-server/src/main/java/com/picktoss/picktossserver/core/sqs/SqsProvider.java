@@ -22,7 +22,7 @@ public class SqsProvider {
     @Value("${cloud.aws.sqs.queue.url}")
     private String url;
 
-    public void sendMessage(Long memberId, String s3Key, Long documentId, QuizType quizType, Integer quizCount) {
+    public void sendMessage(Long memberId, String s3Key, Long documentId, QuizType quizType, Integer starCount) {
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
             ObjectNode jsonNode = mapper.createObjectNode();
@@ -30,7 +30,7 @@ public class SqsProvider {
             jsonNode.put("db_pk", documentId);
             jsonNode.put("member_id", memberId);
             jsonNode.put("quiz_type", quizType.toString());
-            jsonNode.put("quiz_count", quizCount);
+            jsonNode.put("star_count", starCount);
             String messageBody = mapper.writeValueAsString(jsonNode);
 
             String messageId = UUID.randomUUID().toString();

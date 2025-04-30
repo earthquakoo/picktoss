@@ -3,13 +3,7 @@ package com.picktoss.picktossserver.domain.notification.util;
 import com.google.firebase.messaging.*;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
-import com.picktoss.picktossserver.domain.collection.repository.CollectionRepository;
-import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
-import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
-import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
-import com.picktoss.picktossserver.domain.quiz.util.QuizUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +15,6 @@ import java.util.Optional;
 public class NotificationSendUtil {
 
     private final RedisUtil redisUtil;
-    private final TaskScheduler taskScheduler;
-    private final NotificationRepository notificationRepository;
-    private final MemberRepository memberRepository;
-    private final NotificationUtil notificationUtil;
-    private final QuizSetRepository quizSetRepository;
-    private final QuizUtil quizUtil;
-    private final CollectionRepository collectionRepository;
 
     public void sendNotificationByStarReward(Long memberId) {
         String title = "🌟 친구 초대 보상 도착";

@@ -23,8 +23,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -50,6 +48,8 @@ public class SecurityConfig {
 
     private static final String corsAllowedOriginTest = "http://localhost:5173";
     private static final String corsAllowedOriginReact = "https://picktoss.vercel.app";
+    private static final String corsAllowedOriginNgrok = "https://a0d0-222-238-36-157.ngrok-free.app";
+    private static final String corsAllowedOriginNgrokTest = "https://1bbc-222-238-36-157.ngrok-free.app";
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -73,15 +73,13 @@ public class SecurityConfig {
                                 "/api/v2/health-check",
                                 "/api/v2/login",
                                 "/api/v2/backend/login",
-                                "/api/v2/example-quizzes",
-                                "/api/v2/notion/**",
                                 "/api/v2/test/**",
-                                "/api/v2/test/create-member",
-                                "/api/v2/test/quiz-create",
                                 "/api/v2/admin/login",
                                 "/api/v2/admin/sign-up",
                                 "/api/v2/auth/invite/{invite_code}/creator",
-                                "/api/v2/auth/invite/verify"
+                                "/api/v2/auth/invite/verify",
+                                "/api/v2/categories",
+                                "/api/v2/documents/public"
                         )
                         .permitAll()
                         .anyRequest().authenticated()
@@ -101,7 +99,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact));
+//        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact, corsAllowedOriginNgrok, corsAllowedOriginNgrokTest));
+        config.addAllowedOriginPattern("*");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

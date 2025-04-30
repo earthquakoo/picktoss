@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.document.dto.response;
 
+import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.AllArgsConstructor;
@@ -15,22 +16,18 @@ import java.util.List;
 public class GetSingleDocumentResponse {
 
     private Long id;
-    private String documentName;
-    private QuizGenerationStatus quizGenerationStatus;
+    private String name;
+    private String emoji;
     private String content;
+    private String category;
+    private Boolean isPublic;
+    private int bookmarkCount;
     private int characterCount;
     private int totalQuizCount;
-    private LocalDateTime updatedAt;
-    private GetSingleDocumentDirectoryDto directory;
+    private LocalDateTime createdAt;
+    private DocumentType documentType;
+    private QuizGenerationStatus quizGenerationStatus;
     private List<GetSingleDocumentQuizDto> quizzes;
-
-    @Getter
-    @Builder
-    public static class GetSingleDocumentDirectoryDto {
-        private Long id;
-        private String name;
-        private String emoji;
-    }
 
     @Getter
     @Builder
@@ -41,5 +38,6 @@ public class GetSingleDocumentResponse {
         private String explanation;
         private List<String> options;
         private QuizType quizType;
+        private boolean isReviewNeeded;
     }
 }

@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.directory.dto.response;
 
-import com.picktoss.picktossserver.global.enums.directory.DirectoryTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +17,6 @@ public class GetAllDirectoriesResponse {
     public static class GetAllDirectoriesDirectoryDto {
         private Long id;
         private String name;
-        private DirectoryTag tag;
         private String emoji;
         private int documentCount;
     }

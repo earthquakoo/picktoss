@@ -1,13 +1,9 @@
 package com.picktoss.picktossserver.domain.document.dto.response;
 
-import com.picktoss.picktossserver.global.enums.directory.DirectoryTag;
-import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
-import com.picktoss.picktossserver.global.enums.document.DocumentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,21 +17,12 @@ public class GetAllDocumentsResponse {
     public static class GetAllDocumentsDocumentDto {
         private Long id;
         private String name;
+        private String emoji;
         private String previewContent;
-        private int characterCount;
-        private QuizGenerationStatus quizGenerationStatus;
+        private int tryCount;
+        private int bookmarkCount;
         private int totalQuizCount;
-        private DocumentType documentType;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private Boolean isPublic;
         private Integer reviewNeededQuizCount;
-        private GetAllDocumentsDirectoryDto directory;
-    }
-
-    @Getter
-    @Builder
-    public static class GetAllDocumentsDirectoryDto {
-        private String name;
-        private DirectoryTag tag;
     }
 }

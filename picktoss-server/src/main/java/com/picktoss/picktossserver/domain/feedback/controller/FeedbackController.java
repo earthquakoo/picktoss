@@ -26,7 +26,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
     private final FeedbackMessageSendService feedbackMessageSendService;
 
-    @Operation(summary = "Create Feedback")
+    @Operation(summary = "문의하기")
     @PostMapping(value = "/feedback", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiErrorCodeExamples({ErrorInfo.MEMBER_NOT_FOUND, ErrorInfo.AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.CREATED)
