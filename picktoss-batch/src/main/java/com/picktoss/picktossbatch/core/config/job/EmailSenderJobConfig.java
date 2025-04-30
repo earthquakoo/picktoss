@@ -10,8 +10,7 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
-import com.picktoss.picktossserver.domain.quiz.service.QuizService;
-import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
+import com.picktoss.picktossserver.domain.quiz.service.QuizBatchService;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +44,7 @@ public class EmailSenderJobConfig {
     private final CustomPartitioner customPartitioner;
     private final JobListener jobListener;
     private final StepListener stepListener;
-    private final QuizService quizService;
+    private final QuizBatchService quizChunkBatchInsert;
     private final RedisUtil redisUtil;
 
     private final String JOB_NAME = "emailSenderJob";
@@ -128,8 +127,6 @@ public class EmailSenderJobConfig {
                 }
                 members.add(member);
 
-                Integer todayQuizCount = member.getTodayQuizCount();
-
                 List<Quiz> quizzesBySortedDeliveredCount = new ArrayList<>();
                 Set<Directory> directories = member.getDirectories();
                 for (Directory directory : directories) {
@@ -150,8 +147,7 @@ public class EmailSenderJobConfig {
                         quizzesBySortedDeliveredCount.addAll(quizList);
                     }
                 }
-                String quizSetId = UUID.randomUUID().toString().replace("-", "");
-                QuizSet quizSet = QuizSet.createQuizSet(quizSetId, "오늘의 퀴즈 세트", QuizSetType.TODAY_QUIZ_SET, member);
+                QuizSet quizSet = QuizSet.createQuizSet("오늘의 퀴즈 세트", member);
                 quizSets.add(quizSet);
 
                 int quizCount = 0;
@@ -161,14 +157,14 @@ public class EmailSenderJobConfig {
                     quizSetQuizzes.add(quizSetQuiz);
                     quizListToUpdate.add(quiz);
                     quizCount += 1;
-                    if (quizCount == todayQuizCount) {
+                    if (quizCount == 10) {
                         break;
                     }
                 }
             }
 
             try {
-                quizService.quizChunkBatchInsert(quizListToUpdate, quizSets, quizSetQuizzes, members);
+                quizChunkBatchInsert.quizChunkBatchInsert(quizListToUpdate, quizSets, quizSetQuizzes, members);
             } catch (DataAccessException dataAccessException) {
                 throw dataAccessException;
             }

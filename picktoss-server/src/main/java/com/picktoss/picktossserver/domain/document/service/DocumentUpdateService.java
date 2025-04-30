@@ -4,23 +4,19 @@ import com.picktoss.picktossserver.core.eventlistener.event.s3.S3DeleteEvent;
 import com.picktoss.picktossserver.core.eventlistener.event.s3.S3UploadEvent;
 import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3DeletePublisher;
 import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadPublisher;
-import com.picktoss.picktossserver.core.eventlistener.publisher.sqs.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.domain.directory.entity.Directory;
-import com.picktoss.picktossserver.domain.directory.repository.DirectoryRepository;
+import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.category.repository.CategoryRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
-import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.DIRECTORY_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.CATEGORY_NOT_FOUND;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
 
 @Service
@@ -29,23 +25,10 @@ import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_
 public class DocumentUpdateService {
 
     private final DocumentRepository documentRepository;
-    private final DirectoryRepository directoryRepository;
-    private final StarHistoryRepository starHistoryRepository;
-    private final SQSEventMessagePublisher sqsEventMessagePublisher;
     private final S3UploadPublisher s3UploadPublisher;
     private final S3DeletePublisher s3DeletePublisher;
+    private final CategoryRepository categoryRepository;
 
-
-    @Transactional
-    public void moveDocumentToDirectory(List<Long> documentIds, Long memberId, Long directoryId) {
-        Directory directory = directoryRepository.findByDirectoryIdAndMemberId(directoryId, memberId)
-                .orElseThrow(() -> new CustomException(DIRECTORY_NOT_FOUND));
-
-        List<Document> documents = documentRepository.findByDocumentIdsInAndMemberId(documentIds, memberId);
-        for (Document document : documents) {
-            document.moveDocumentToDirectory(directory);
-        }
-    }
 
     @Transactional
     public void updateDocumentContent(MultipartFile file, Long documentId, Long memberId, String name) {
@@ -70,14 +53,29 @@ public class DocumentUpdateService {
     }
 
     @Transactional
-    public void selectDocumentToNotGenerateByTodayQuiz(Map<Long, Boolean> documentIdTodayQuizMap, Long memberId) {
-        List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        for (Document document : documents) {
-            if (documentIdTodayQuizMap.containsKey(document.getId())) {
-                document.updateDocumentIsTodayQuizIncluded(documentIdTodayQuizMap.get(document.getId()));
-            }
-        }
+    public void updateDocumentCategory(Long documentId, Long memberId, Long categoryId) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND));
+
+        document.updateDocumentCategory(category);
     }
 
+    @Transactional
+    public void updateDocumentEmoji(Long documentId, Long memberId, String emoji) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
+        document.updateDocumentEmoji(emoji);
+    }
+
+    @Transactional
+    public void updateDocumentIsPublic(Long documentId, Long memberId, Boolean isPublic) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+                .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+
+        document.updateDocumentIsPublic(isPublic);
+    }
 }

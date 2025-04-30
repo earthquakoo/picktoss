@@ -27,14 +27,13 @@ public class QuizAnalysisController {
     @GetMapping("/quizzes/analysis/weekly")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizWeeklyAnalysisResponse> getQuizWeeklyAnalysis(
-            @RequestParam(required = false, value = "directory-id") Long directoryId,
             @RequestParam(required = false, value = "startDate") LocalDate startDate,
             @RequestParam(required = false, value = "endDate") LocalDate endDate
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizWeeklyAnalysisResponse response = quizAnalysisService.findQuizWeeklyAnalysis(memberId, directoryId, startDate, endDate);
+        GetQuizWeeklyAnalysisResponse response = quizAnalysisService.findQuizWeeklyAnalysis(memberId, startDate, endDate);
         return ResponseEntity.ok().body(response);
     }
 
@@ -42,13 +41,12 @@ public class QuizAnalysisController {
     @GetMapping("/quizzes/analysis/monthly")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetQuizMonthlyAnalysisResponse> getQuizMonthlyAnalysis(
-            @RequestParam(required = false, value = "directory-id") Long directoryId,
             @RequestParam(required = false, value = "month") LocalDate month
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizMonthlyAnalysisResponse response = quizAnalysisService.findQuizMonthlyAnalysis(memberId, directoryId, month);
+        GetQuizMonthlyAnalysisResponse response = quizAnalysisService.findQuizMonthlyAnalysis(memberId, month);
         return ResponseEntity.ok().body(response);
     }
 }

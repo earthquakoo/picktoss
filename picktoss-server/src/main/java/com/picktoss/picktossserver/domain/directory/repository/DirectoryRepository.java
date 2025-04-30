@@ -16,6 +16,8 @@ public interface DirectoryRepository extends JpaRepository<Directory, Long> {
     List<Directory> findAllByMemberId(@Param("memberId") Long memberId);
 
     @Query("SELECT dir FROM Directory dir " +
+            "LEFT JOIN FETCH dir.documents d " +
+            "LEFT JOIN FETCH d.quizzes " +
             "WHERE dir.id = :directoryId " +
             "AND dir.member.id = :memberId")
     Optional<Directory> findByDirectoryIdAndMemberId(

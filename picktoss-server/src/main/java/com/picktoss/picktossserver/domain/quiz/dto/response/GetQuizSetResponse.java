@@ -22,21 +22,5 @@ public class GetQuizSetResponse {
         private String explanation;
         private List<String> options;
         private QuizType quizType;
-        private GetQuizSetDocumentDto document;
-        private GetQuizSetDirectoryDto directory;
-    }
-
-    @Getter
-    @Builder
-    public static class GetQuizSetDocumentDto {
-        private Long id;
-        private String name;
-    }
-
-    @Getter
-    @Builder
-    public static class GetQuizSetDirectoryDto {
-        private Long id;
-        private String name;
     }
 }

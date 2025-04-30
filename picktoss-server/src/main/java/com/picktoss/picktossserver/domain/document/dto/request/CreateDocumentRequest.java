@@ -10,10 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class CreateDocumentRequest {
 
-    private MultipartFile file;
-    private String directoryId;
-    private String documentName;
     private String star;
+    private String emoji;
+    private String documentName;
+    private Long categoryId;
+    private Boolean isPublic;
     private QuizType quizType;
+    private MultipartFile file;
     private DocumentType documentType;
 }

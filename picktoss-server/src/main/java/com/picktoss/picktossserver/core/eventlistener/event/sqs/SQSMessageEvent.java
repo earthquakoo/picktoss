@@ -12,5 +12,5 @@ public class SQSMessageEvent {
     private String s3Key;
     private Long documentId;
     private QuizType quizType;
-    private Integer quizCount;
+    private Integer starCount;
 }

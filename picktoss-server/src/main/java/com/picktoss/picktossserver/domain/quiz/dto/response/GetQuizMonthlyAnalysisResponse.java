@@ -1,14 +1,12 @@
 package com.picktoss.picktossserver.domain.quiz.dto.response;
 
 
-import com.picktoss.picktossserver.global.enums.collection.CollectionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Builder
@@ -16,11 +14,11 @@ import java.util.Map;
 public class GetQuizMonthlyAnalysisResponse {
 
     private List<QuizAnswerRateAnalysisDto> quizzes;
-    private int monthlyTotalQuizCount; // 한 달간 푼 퀴즈 개수
-    private int monthlyTotalCorrectQuizCount; // 한 달간 맞춘 정답 수
+    private List<QuizAnswerRateMonthlyAnalysisCategoryDto> categories;
+    private QuizAnswerRateMonthlyAnalysisQuizTypeDto quizTypes;
     private double averageCorrectAnswerRate; // 평균 정답률
-    private int quizCountDifferenceFromLastMonth; // 전월 대비 퀴즈 개수 차이
-    private Map<CollectionCategory, Integer> collectionsAnalysis;
+    private int maxSolvedQuizCount; // 가장 퀴즈를 많이 푼 날의 개수
+    private int monthlyTotalQuizCount; // 한 달간 푼 퀴즈 개수
 
     @Getter
     @Builder
@@ -28,5 +26,19 @@ public class GetQuizMonthlyAnalysisResponse {
         private LocalDate date;
         private int totalQuizCount;
         private int correctAnswerCount;
+    }
+
+    @Getter
+    @Builder
+    public static class QuizAnswerRateMonthlyAnalysisCategoryDto {
+        private String categoryName;
+        private int totalQuizCount;
+    }
+
+    @Getter
+    @Builder
+    public static class QuizAnswerRateMonthlyAnalysisQuizTypeDto {
+        private int multipleChoiceQuizCount;
+        private int mixUpQuizCount;
     }
 }

@@ -22,4 +22,9 @@ public class Option extends AuditBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;
+
+
+    public void updateOptionContent(String option) {
+        this.option = option;
+    }
 }

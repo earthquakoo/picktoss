@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.quiz.dto.request;
 
-import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,8 +9,6 @@ import java.util.List;
 @NoArgsConstructor
 public class UpdateQuizResultRequest {
 
-    private String quizSetId;
-    private QuizSetType quizSetType;
     private List<UpdateQuizResultQuizDto> quizzes;
 
     @Getter

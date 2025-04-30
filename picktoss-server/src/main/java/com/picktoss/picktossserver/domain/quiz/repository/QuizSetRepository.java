@@ -1,7 +1,6 @@
 package com.picktoss.picktossserver.domain.quiz.repository;
 
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
-import com.picktoss.picktossserver.global.enums.quiz.QuizSetType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,9 +14,9 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
     @Query("SELECT qs FROM QuizSet qs " +
             "JOIN FETCH qs.quizSetQuizzes qsq " +
             "JOIN FETCH qsq.quiz q " +
+            "JOIN FETCH q.document d " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true " +
-            "AND qs.quizSetType != FIRST_QUIZ_SET " +
             "ORDER BY qs.createdAt DESC")
     List<QuizSet> findAllByMemberIdAndSolvedTrueOrderByCreatedAtDesc(
             @Param("memberId") Long memberId
@@ -28,7 +27,6 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "JOIN FETCH qsq.quiz q " +
             "WHERE qs.member.id = :memberId " +
             "AND qs.solved = true " +
-            "AND qs.quizSetType = TODAY_QUIZ_SET " +
             "ORDER BY qs.createdAt DESC")
     List<QuizSet> findAllByMemberIdAndSolvedTrueAndTodayQuizSetOrderByCreatedAtDesc(
             @Param("memberId") Long memberId
@@ -38,7 +36,6 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "JOIN FETCH qs.quizSetQuizzes qsq " +
             "JOIN FETCH qsq.quiz q " +
             "WHERE qs.member.id = :memberId " +
-            "AND qs.quizSetType = TODAY_QUIZ_SET " +
             "ORDER BY qs.createdAt DESC")
     List<QuizSet> findAllByMemberIdAndTodayQuizSetOrderByCreatedAtDesc(
             @Param("memberId") Long memberId
@@ -66,15 +63,13 @@ public interface QuizSetRepository extends JpaRepository<QuizSet, String> {
             "AND qs.id = :quizSetId")
     Optional<QuizSet> findQuizSetByMemberIdAndQuizSetId(
             @Param("memberId") Long memberId,
-            @Param("quizSetId") String quizSetId
+            @Param("quizSetId") Long quizSetId
     );
 
     @Query("SELECT qs FROM QuizSet qs " +
             "WHERE qs.member.id = :memberId " +
-            "AND qs.quizSetType = :quizSetType " +
             "ORDER BY qs.createdAt DESC")
     List<QuizSet> findByMemberIdAndTodayQuizSetOrderByCreatedAtDesc(
-            @Param("memberId") Long memberId,
-            @Param("quizSetType") QuizSetType quizSetType
+            @Param("memberId") Long memberId
     );
 }

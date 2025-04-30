@@ -12,6 +12,4 @@ public class UpdateQuizResultResponse {
     private int totalQuizCount;
     private int totalElapsedTime;
     private double correctAnswerRate;
-    private Integer reward;
-    private Integer currentConsecutiveTodayQuizDate;
 }

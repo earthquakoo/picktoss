@@ -52,17 +52,15 @@ logging.level:
 
 springdoc:
   packages-to-scan:
-    - com.picktoss.picktossserver.domain.payment.controller
     - com.picktoss.picktossserver.domain.admin.controller
     - com.picktoss.picktossserver.domain.auth.controller
     - com.picktoss.picktossserver.domain.fcm.controller
-    - com.picktoss.picktossserver.domain.directory.controller
+    - com.picktoss.picktossserver.domain.category.controller
+#    - com.picktoss.picktossserver.domain.directory.controller
     - com.picktoss.picktossserver.domain.document.controller
     - com.picktoss.picktossserver.domain.member.controller
     - com.picktoss.picktossserver.domain.quiz.controller
     - com.picktoss.picktossserver.domain.feedback.controller
-    - com.picktoss.picktossserver.domain.notion.controller
-    - com.picktoss.picktossserver.domain.collection.controller
     - com.picktoss.picktossserver.domain.star.controller
     - com.picktoss.picktossserver.domain.notification.controller
   default-consumes-media-type: application/json;charset=UTF-8
