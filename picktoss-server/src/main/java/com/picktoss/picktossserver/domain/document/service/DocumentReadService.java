@@ -188,6 +188,26 @@ public class DocumentReadService {
 
     public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId) {
         List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberId(memberId);
-        return new GetIsNotPublicDocumentsResponse(documents.size());
+
+        List<GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments> documentDtos = new ArrayList<>();
+        for (Document document : documents) {
+            Set<Quiz> quizzes = document.getQuizzes();
+            List<Quiz> quizList = new ArrayList<>(quizzes);
+            Quiz quiz = quizList.getFirst();
+            String question = quiz.getQuestion();
+
+            GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments documentDto = GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments.builder()
+                    .id(document.getId())
+                    .name(document.getName())
+                    .emoji(document.getEmoji())
+                    .previewContent(question)
+                    .isPublic(false)
+                    .totalQuizCount(quizzes.size())
+                    .build();
+
+            documentDtos.add(documentDto);
+        }
+
+        return new GetIsNotPublicDocumentsResponse(documentDtos);
     }
 }

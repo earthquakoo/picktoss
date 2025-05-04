@@ -1,7 +1,9 @@
 package com.picktoss.picktossserver.domain.document.controller;
 
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
+import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.document.dto.request.SearchRequest;
 import com.picktoss.picktossserver.domain.document.dto.response.GetPublicDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.dto.response.SearchPublicDocumentsResponse;
@@ -26,14 +28,16 @@ public class PublicDocumentSearchController {
     @Operation(summary = "공개된 문서 탐색(탐험)")
     @GetMapping("/documents/public")
     @ResponseStatus(HttpStatus.OK)
+    @ApiErrorCodeExample(ErrorInfo.DOCUMENT_PAGE_SET_ERROR)
     public ResponseEntity<GetPublicDocumentsResponse> getPublicDocuments(
             @RequestParam(required = false, value = "category-id") Long categoryId,
-            @RequestParam(value = "page", defaultValue = "0") int page
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "page-size", defaultValue = "5") int pageSize
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
-        GetPublicDocumentsResponse response = publicDocumentSearchService.findPublicDocuments(categoryId, memberId, page);
+        GetPublicDocumentsResponse response = publicDocumentSearchService.findPublicDocuments(categoryId, memberId, page, pageSize);
         return ResponseEntity.ok().body(response);
     }
 

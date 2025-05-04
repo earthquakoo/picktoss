@@ -67,7 +67,7 @@ public class DocumentReadController {
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "사용자의 비공개된 문서 수")
+    @Operation(summary = "비공개된 모든 문서 가져오기")
     @GetMapping("/documents/not-public")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetIsNotPublicDocumentsResponse> getIsNotPublicDocuments() {
@@ -77,4 +77,5 @@ public class DocumentReadController {
         GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId);
         return ResponseEntity.ok().body(response);
     }
+
 }
