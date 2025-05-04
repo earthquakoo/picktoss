@@ -45,6 +45,7 @@ public enum ErrorInfo {
     DOCUMENT_NOT_FOUND(400, "DOCUMENT_NOT_FOUND", "해당 id의 문서를 찾을 수 없습니다."),
     DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR", "등록할 수 있는 문서의 최대 개수를 초과했습니다."),
     DOCUMENT_SORT_OPTION_NOT_SELECT(400, "DOCUMENT_SORT_OPTION_NOT_SELECT", "문서 정렬 옵션을 선택해야합니다."),
+    DOCUMENT_PAGE_SET_ERROR(400, "DOCUMENT_PAGE_SET_ERROR", "pageSize를 1보다 작게 설정할 수 없습니다"),
 
     /**
      * DocumentBookmark

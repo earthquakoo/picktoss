@@ -20,10 +20,13 @@ public class GetPublicDocumentsResponse {
         private Long id;
         private String name;
         private String emoji;
+        private String creator;
+        private String category;
         private int tryCount;
         private int bookmarkCount;
         private int totalQuizCount;
         private Boolean isBookmarked;
+        private Boolean isOwner;
         private List<GetPublicDocumentQuizDto> quizzes;
     }
 
