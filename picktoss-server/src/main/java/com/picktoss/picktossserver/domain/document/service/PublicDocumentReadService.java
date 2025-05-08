@@ -7,6 +7,7 @@ import com.picktoss.picktossserver.domain.document.dto.response.GetPublicSingleD
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
@@ -67,6 +68,12 @@ public class PublicDocumentReadService {
             }
         }
 
+        boolean isOwner = false;
+        Member member = document.getDirectory().getMember();
+        if (Objects.equals(memberId, member.getId())) {
+            isOwner = true;
+        }
+
 
         return GetPublicSingleDocumentResponse.builder()
                 .id(document.getId())
@@ -76,6 +83,7 @@ public class PublicDocumentReadService {
                 .category(document.getCategory().getName())
                 .tryCount(document.getTryCount())
                 .bookmarkCount(bookmarkCount)
+                .isOwner(isOwner)
                 .isBookmarked(isBookmarked)
                 .totalQuizCount(document.getQuizzes().size())
                 .createdAt(document.getCreatedAt())
