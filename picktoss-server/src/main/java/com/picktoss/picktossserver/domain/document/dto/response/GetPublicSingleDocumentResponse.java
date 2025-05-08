@@ -19,6 +19,7 @@ public class GetPublicSingleDocumentResponse {
     private int tryCount;
     private int bookmarkCount;
     private int totalQuizCount;
+    private Boolean isOwner;
     private Boolean isBookmarked;
     private LocalDateTime createdAt;
     private List<GetPublicSingleDocumentQuizDto> quizzes;
