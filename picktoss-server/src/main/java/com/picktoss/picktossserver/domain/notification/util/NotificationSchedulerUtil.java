@@ -86,7 +86,6 @@ public class NotificationSchedulerUtil {
         List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
 
-            // 2. 현재 시점 기준으로 요일을 계산
             ZoneId zoneId = ZoneId.of("Asia/Seoul");
             LocalDateTime now = LocalDateTime.now(zoneId);
             DayOfWeek currentDay = now.getDayOfWeek();
@@ -94,7 +93,6 @@ public class NotificationSchedulerUtil {
             DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, currentDay);
             LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(now, nextDay);
 
-            // 3. 디버깅 로그
             System.out.println("==== Notification Debug Info ====");
             System.out.println("now (Asia/Seoul): " + now);
             System.out.println("notificationTime: " + notification.getNotificationTime());
@@ -103,11 +101,10 @@ public class NotificationSchedulerUtil {
             System.out.println("nextDay: " + nextDay);
             System.out.println("nextNotificationTime: " + nextNotificationTime);
 
-            // 4. 다음 알림 시간이 이미 지났다면 실패 처리
             if (nextNotificationTime.isBefore(now)) {
                 updateNotificationIsActiveByFailedNotification(notification.getId());
                 updateNotificationStatusCompleteBySendPushNotification(notification.getId());
-                log.warn("Notification Bug 발생 - nextNotificationTime < now");
+                log.info("Notification Bug 발생 - nextNotificationTime < now");
                 return;
             }
 
