@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class NotificationSchedulerUtil {
         List<Notification> notifications = notificationRepository.findAllByNotificationStatusAndIsActiveTrue(NotificationStatus.PENDING);
 
         for (Notification notification : notifications) {
-            if (notification.getNotificationTime().isAfter(LocalDateTime.now())) {
+            if (notification.getNotificationTime().isAfter(LocalDateTime.now(ZoneId.of("Asia/Seoul")))) {
                 scheduleTask(notification, notification.getNotificationTime());
             }
         }
@@ -85,16 +86,29 @@ public class NotificationSchedulerUtil {
         List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
 
-            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
-            System.out.println("nextDay = " + nextDay);
-            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
-            System.out.println("nextNotificationTime = " + nextNotificationTime);
+            // 2. 현재 시점 기준으로 요일을 계산
+            ZoneId zoneId = ZoneId.of("Asia/Seoul");
+            LocalDateTime now = LocalDateTime.now(zoneId);
+            DayOfWeek currentDay = now.getDayOfWeek();
 
-            if (nextNotificationTime.isBefore(LocalDateTime.now())) {
+            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, currentDay);
+            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(now, nextDay);
+
+            // 3. 디버깅 로그
+            System.out.println("==== Notification Debug Info ====");
+            System.out.println("now (Asia/Seoul): " + now);
+            System.out.println("notificationTime: " + notification.getNotificationTime());
+            System.out.println("repeatDays: " + repeatDays);
+            System.out.println("currentDay: " + currentDay);
+            System.out.println("nextDay: " + nextDay);
+            System.out.println("nextNotificationTime: " + nextNotificationTime);
+
+            // 4. 다음 알림 시간이 이미 지났다면 실패 처리
+            if (nextNotificationTime.isBefore(now)) {
                 updateNotificationIsActiveByFailedNotification(notification.getId());
                 updateNotificationStatusCompleteBySendPushNotification(notification.getId());
-                log.info("Notification Bug 발생");
-                return ;
+                log.warn("Notification Bug 발생 - nextNotificationTime < now");
+                return;
             }
 
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
@@ -216,7 +230,7 @@ public class NotificationSchedulerUtil {
     }
 
     private void createNotificationForRedis(String notificationKey, String title, String content, LocalDateTime notificationSendTime, NotificationType notificationType) {
-        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         Map<String, Object> notificationData = Map.of(
                 "title", title,
@@ -261,7 +275,7 @@ public class NotificationSchedulerUtil {
 
         Map<String, Object> notificationReceivedMemberData = Map.of(
                 "notificationKeys", notificationKeys,
-                "createdAt", LocalDateTime.now()
+                "createdAt", LocalDateTime.now(ZoneId.of("Asia/Seoul"))
         );
         redisUtil.setData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdKey, notificationReceivedMemberData);
     }

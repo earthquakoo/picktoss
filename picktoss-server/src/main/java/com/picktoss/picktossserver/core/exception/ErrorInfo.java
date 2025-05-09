@@ -51,6 +51,7 @@ public enum ErrorInfo {
      * DocumentBookmark
      */
     DOCUMENT_BOOKMARK_NOT_FOUND(400, "DOCUMENT_BOOKMARK_NOT_FOUND", "해당 id의 북마크를 찾을 수 없습니다."),
+    ALREADY_EXISTING_DOCUMENT_BOOKMARK(400, "ALREADY_EXISTING_DOCUMENT_BOOKMARK", "이미 북마크가 되어있습니다."),
 
     /**
      * Category
