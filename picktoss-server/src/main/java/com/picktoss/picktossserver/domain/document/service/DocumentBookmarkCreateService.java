@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -28,6 +30,11 @@ public class DocumentBookmarkCreateService {
 
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
+
+        Optional<DocumentBookmark> optionalDocumentBookmark = documentBookmarkRepository.findByDocumentAndMember(document, member);
+        if (optionalDocumentBookmark.isPresent()) {
+            throw new CustomException(ErrorInfo.ALREADY_EXISTING_DOCUMENT_BOOKMARK);
+        }
 
         DocumentBookmark documentBookmark = DocumentBookmark.createDocumentBookmark(member, document);
 
