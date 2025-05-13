@@ -10,6 +10,8 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
+import com.picktoss.picktossserver.global.enums.quiz.DailyQuizType;
+import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,11 +34,18 @@ public class QuizCreateService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public CreateQuizSetResponse createQuizSet(Long documentId, Long memberId, Integer quizCount) {
+    public CreateQuizSetResponse createQuizSet(Long documentId, Long memberId, Integer quizCount, DailyQuizType dailyQuizType) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        List<Quiz> quizzes = quizRepository.findAllByDocumentId(documentId);
+        List<Quiz> quizzes;
+        if (dailyQuizType == DailyQuizType.ALL) {
+            quizzes = quizRepository.findAllByDocumentId(documentId);
+        } else {
+            QuizType quizType = QuizType.valueOf(dailyQuizType.toString());
+            quizzes = quizRepository.findAllByDocumentIdAndQuizType(documentId, quizType);
+        }
+
         Collections.shuffle(quizzes);
 
         if (quizCount > quizzes.size()) {

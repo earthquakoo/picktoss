@@ -10,6 +10,7 @@ import com.picktoss.picktossserver.domain.document.dto.response.GetSingleDocumen
 import com.picktoss.picktossserver.domain.document.service.DocumentReadService;
 import com.picktoss.picktossserver.global.enums.document.BookmarkedDocumentSortOption;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSortOption;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +34,13 @@ public class DocumentReadController {
     @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
-            @PathVariable(name = "document_id") Long documentId) {
+            @PathVariable(name = "document_id") Long documentId,
+            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") QuizSortOption quizSortOption
+            ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId);
+        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId, quizSortOption);
         return ResponseEntity.ok().body(documents);
     }
 

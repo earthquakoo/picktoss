@@ -15,12 +15,14 @@ import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.global.enums.document.BookmarkedDocumentSortOption;
 import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSortOption;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -36,14 +38,20 @@ public class DocumentReadService {
     private final DocumentBookmarkRepository documentBookmarkRepository;
 
     //단일 문서 가져오기
-    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId, QuizSortOption quizSortOption) {
         Document document = documentRepository.findDocumentWithQuizzesByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         String content = s3Provider.findFile(document.getS3Key());
         int characterCount = content.length();
 
-        Set<Quiz> quizzes = document.getQuizzes();
+        List<Quiz> quizzes = new ArrayList<>(document.getQuizzes());
+        if (quizSortOption == QuizSortOption.CREATED_AT) {
+            quizzes.sort(Comparator.comparing(Quiz::getCreatedAt).reversed());
+        } else {
+            quizzes.sort(Comparator.comparing(Quiz::getCorrectAnswerCount).reversed());
+        }
+
         List<GetSingleDocumentResponse.GetSingleDocumentQuizDto> quizDtos = new ArrayList<>();
         for (Quiz quiz : quizzes) {
             List<String> optionList = new ArrayList<>();
