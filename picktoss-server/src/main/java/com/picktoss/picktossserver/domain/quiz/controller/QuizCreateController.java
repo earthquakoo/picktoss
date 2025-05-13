@@ -36,7 +36,7 @@ public class QuizCreateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        CreateQuizSetResponse response = quizCreateService.createQuizSet(documentId, memberId, request.getQuizCount());
+        CreateQuizSetResponse response = quizCreateService.createQuizSet(documentId, memberId, request.getQuizCount(), request.getQuizType());
         return ResponseEntity.ok().body(response);
     }
 }
