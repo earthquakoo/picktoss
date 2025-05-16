@@ -3,9 +3,11 @@ package com.picktoss.picktossserver.domain.quiz.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
+import com.picktoss.picktossserver.domain.quiz.dto.request.DeleteQuizRequest;
 import com.picktoss.picktossserver.domain.quiz.service.QuizDeleteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +24,15 @@ public class QuizDeleteController {
     private final QuizDeleteService quizDeleteService;
 
     @Operation(summary = "퀴즈 삭제")
-    @DeleteMapping("/quizzes/{quiz_id}/delete")
+    @DeleteMapping("/quizzes/delete")
     @ApiErrorCodeExample(QUIZ_NOT_FOUND_ERROR)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteQuiz(@PathVariable("quiz_id") Long quizId) {
+    public void deleteQuiz(
+            @Valid @RequestBody DeleteQuizRequest request
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        quizDeleteService.deleteQuiz(quizId, memberId);
+        quizDeleteService.deleteQuiz(request.getId(), memberId);
     }
 }
