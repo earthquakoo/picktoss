@@ -116,12 +116,19 @@ public class PublicDocumentSearchService {
                 }
             }
 
+            boolean isOwner = false;
+            Member member = document.getDirectory().getMember();
+            if (Objects.equals(memberId, member.getId())) {
+                isOwner = true;
+            }
+
             SearchPublicDocumentsResponse.SearchPublicDocumentsDto publicDocumentsDto = SearchPublicDocumentsResponse.SearchPublicDocumentsDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .emoji(document.getEmoji())
                     .category(document.getCategory().getName())
                     .creatorName(document.getDirectory().getMember().getName())
+                    .isOwner(isOwner)
                     .isBookmarked(isBookmarked)
                     .tryCount(document.getTryCount())
                     .bookmarkCount(bookmarkCount)

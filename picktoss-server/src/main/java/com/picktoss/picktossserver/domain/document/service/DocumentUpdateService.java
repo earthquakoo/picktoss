@@ -9,6 +9,7 @@ import com.picktoss.picktossserver.domain.category.entity.Category;
 import com.picktoss.picktossserver.domain.category.repository.CategoryRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
+import com.picktoss.picktossserver.global.enums.document.QuizGenerationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.CATEGORY_NOT_FOUND;
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -75,6 +75,10 @@ public class DocumentUpdateService {
     public void updateDocumentIsPublic(Long documentId, Long memberId, Boolean isPublic) {
         Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
+
+        if (document.getQuizGenerationStatus() == QuizGenerationStatus.QUIZ_GENERATION_ERROR) {
+            throw new CustomException(QUIZ_GENERATION_FAILED);
+        }
 
         document.updateDocumentIsPublic(isPublic);
     }

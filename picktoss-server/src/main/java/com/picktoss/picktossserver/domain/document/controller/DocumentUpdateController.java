@@ -81,7 +81,7 @@ public class DocumentUpdateController {
 
     @Operation(summary = "문서 공개여부 변경")
     @PatchMapping("/documents/{document_id}/update-public")
-    @ApiErrorCodeExample(DOCUMENT_NOT_FOUND)
+    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, QUIZ_GENERATION_FAILED})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateDocumentIsPublic(
             @PathVariable("document_id") Long documentId,
