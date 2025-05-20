@@ -201,8 +201,12 @@ public class DocumentReadService {
         for (Document document : documents) {
             Set<Quiz> quizzes = document.getQuizzes();
             List<Quiz> quizList = new ArrayList<>(quizzes);
-            Quiz quiz = quizList.getFirst();
-            String question = quiz.getQuestion();
+            String question = "";
+            int totalQuizCount = 0;
+            if (!quizList.isEmpty()) {
+                totalQuizCount = quizzes.size();
+                question = quizList.getFirst().getQuestion();
+            }
 
             GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments documentDto = GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments.builder()
                     .id(document.getId())
@@ -210,7 +214,7 @@ public class DocumentReadService {
                     .emoji(document.getEmoji())
                     .previewContent(question)
                     .isPublic(false)
-                    .totalQuizCount(quizzes.size())
+                    .totalQuizCount(totalQuizCount)
                     .build();
 
             documentDtos.add(documentDto);

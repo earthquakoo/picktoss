@@ -31,6 +31,14 @@ public class DocumentBookmarkCreateService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
 
+        if (memberId.equals(document.getDirectory().getMember().getId())) {
+            throw new CustomException(ErrorInfo.CANNOT_BOOKMARK_OWN_DOCUMENT);
+        }
+
+        if (!document.getIsPublic()) {
+            throw new CustomException(ErrorInfo.CANNOT_BOOKMARK_UNPUBLISHED_DOCUMENT);
+        }
+
         Optional<DocumentBookmark> optionalDocumentBookmark = documentBookmarkRepository.findByDocumentAndMember(document, member);
         if (optionalDocumentBookmark.isPresent()) {
             throw new CustomException(ErrorInfo.ALREADY_EXISTING_DOCUMENT_BOOKMARK);
