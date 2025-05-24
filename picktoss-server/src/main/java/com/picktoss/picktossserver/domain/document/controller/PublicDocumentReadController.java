@@ -5,6 +5,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
 import com.picktoss.picktossserver.domain.document.dto.response.GetPublicSingleDocumentResponse;
 import com.picktoss.picktossserver.domain.document.service.PublicDocumentReadService;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSortOption;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +30,13 @@ public class PublicDocumentReadController {
     @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, CANNOT_VIEW_UNPUBLISHED_DOCUMENT})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetPublicSingleDocumentResponse> getIsPublicSingleDocument(
-            @PathVariable("document_id") Long documentId
+            @PathVariable("document_id") Long documentId,
+            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") QuizSortOption quizSortOption
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetPublicSingleDocumentResponse response = publicDocumentReadService.findIsPublicSingleDocument(documentId, memberId);
+        GetPublicSingleDocumentResponse response = publicDocumentReadService.findIsPublicSingleDocument(documentId, memberId, quizSortOption);
         return ResponseEntity.ok().body(response);
     }
 }
