@@ -55,11 +55,20 @@ public class MemberReadService {
         int monthlySolvedQuizCount = calculateMonthlySolvedQuizCount(memberId);
 
         Category category = member.getCategory();
-        GetMemberInfoResponse.CategoryDto categoryDto = GetMemberInfoResponse.CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .emoji(category.getEmoji())
-                .build();
+        GetMemberInfoResponse.CategoryDto categoryDto;
+        if (category != null) {
+            categoryDto = GetMemberInfoResponse.CategoryDto.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .emoji(category.getEmoji())
+                    .build();
+        } else {
+            categoryDto = GetMemberInfoResponse.CategoryDto.builder()
+                    .id(null)
+                    .name(null)
+                    .emoji(null)
+                    .build();
+        }
 
         return GetMemberInfoResponse.builder()
                 .id(member.getId())
