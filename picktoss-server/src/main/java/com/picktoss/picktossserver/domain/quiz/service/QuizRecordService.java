@@ -151,7 +151,7 @@ public class QuizRecordService {
     }
 
     public GetConsecutiveSolvedDailyQuizDatesResponse findConsecutiveSolvedQuizSetDates(Long memberId, LocalDate solvedDate) {
-        List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdAndIsDailyQuizCompleteTrueAndSolvedDateOrderBySolvedDate(memberId, solvedDate);
+        List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdAndIsDailyQuizCompleteTrueOrderBySolvedDate(memberId);
 
         HashMap<LocalDate, Boolean> solvedDailyQuizByDate = new LinkedHashMap<>();
         List<GetConsecutiveSolvedDailyQuizDatesResponse.GetDailyQuizRecordByDateDto> solvedQuizDateRecords = new ArrayList<>();
