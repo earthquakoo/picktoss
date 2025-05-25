@@ -147,12 +147,12 @@ public class DailyQuizRecordService {
         dailyQuizRecordDetailRepository.save(dailyQuizRecordDetail);
 
         int reward = 0;
-        int consecutiveSolvedDailyQuizDays = 0;
+        int consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId);
         int todaySolvedDailyQuizCount = dailyQuizRecord.getDailyQuizRecordDetails().size();
 
         if (todaySolvedDailyQuizCount == 10) {
+            consecutiveSolvedDailyQuizDays += 1;
             dailyQuizRecord.updateIsDailyQuizCompleteTrue();
-            consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId);
             if (consecutiveSolvedDailyQuizDays % 5 == 0) {
                 reward = 20;
             } else {

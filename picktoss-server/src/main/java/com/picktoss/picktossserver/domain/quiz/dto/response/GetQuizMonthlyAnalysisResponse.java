@@ -18,6 +18,7 @@ public class GetQuizMonthlyAnalysisResponse {
     private QuizAnswerRateMonthlyAnalysisQuizTypeDto quizTypes;
     private double averageCorrectAnswerRate; // 평균 정답률
     private int maxSolvedQuizCount; // 가장 퀴즈를 많이 푼 날의 개수
+    private int averageDailyQuizCount; // 월간 평균 퀴즈 개수
     private int monthlyTotalQuizCount; // 한 달간 푼 퀴즈 개수
 
     @Getter
@@ -32,6 +33,7 @@ public class GetQuizMonthlyAnalysisResponse {
     @Builder
     public static class QuizAnswerRateMonthlyAnalysisCategoryDto {
         private String categoryName;
+        private String categoryColor;
         private int totalQuizCount;
     }
 

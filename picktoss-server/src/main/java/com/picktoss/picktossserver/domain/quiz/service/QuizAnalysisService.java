@@ -38,7 +38,7 @@ public class QuizAnalysisService {
 
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
-        HashMap<String, Integer> totalQuizCountByCategory = new LinkedHashMap<>();
+        HashMap<Category, Integer> totalQuizCountByCategory = new LinkedHashMap<>();
 
         int multipleChoiceQuizCount = 0;
         int mixUpQuizCount = 0;
@@ -59,7 +59,7 @@ public class QuizAnalysisService {
             }
 
             Category category = quizSetQuiz.getQuiz().getDocument().getCategory();
-            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+            totalQuizCountByCategory.put(category, totalQuizCountByCategory.getOrDefault(category, 0) + 1);
 
             Quiz quiz = quizSetQuiz.getQuiz();
             if (quiz.getQuizType() == QuizType.MIX_UP) {
@@ -79,7 +79,7 @@ public class QuizAnalysisService {
             }
 
             Category category = dailyQuizRecordDetail.getQuiz().getDocument().getCategory();
-            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+            totalQuizCountByCategory.put(category, totalQuizCountByCategory.getOrDefault(category, 0) + 1);
 
             Quiz quiz = dailyQuizRecordDetail.getQuiz();
             if (quiz.getQuizType() == QuizType.MIX_UP) {
@@ -113,10 +113,11 @@ public class QuizAnalysisService {
         }
 
         List<GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisCategoryDto> categoryDtos = new ArrayList<>();
-        for (String categoryName : totalQuizCountByCategory.keySet()) {
+        for (Category category : totalQuizCountByCategory.keySet()) {
             GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisCategoryDto categoryDto = GetQuizWeeklyAnalysisResponse.QuizAnswerRateWeeklyAnalysisCategoryDto.builder()
-                    .categoryName(categoryName)
-                    .totalQuizCount(totalQuizCountByCategory.get(categoryName))
+                    .categoryName(category.getName())
+                    .categoryColor(category.getColor())
+                    .totalQuizCount(totalQuizCountByCategory.get(category))
                     .build();
 
             categoryDtos.add(categoryDto);
@@ -148,7 +149,7 @@ public class QuizAnalysisService {
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> lastMonthTotalQuizCountDateMap = new LinkedHashMap<>();
-        HashMap<String, Integer> totalQuizCountByCategory = new LinkedHashMap<>();
+        HashMap<Category, Integer> totalQuizCountByCategory = new LinkedHashMap<>();
 
         int maxSolvedQuizCount = 0;
         int monthlyTotalQuizCount = 0;
@@ -178,7 +179,7 @@ public class QuizAnalysisService {
             }
 
             Category category = quizSetQuiz.getQuiz().getDocument().getCategory();
-            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+            totalQuizCountByCategory.put(category, totalQuizCountByCategory.getOrDefault(category, 0) + 1);
 
             Quiz quiz = quizSetQuiz.getQuiz();
             if (quiz.getQuizType() == QuizType.MIX_UP) {
@@ -205,7 +206,7 @@ public class QuizAnalysisService {
             }
 
             Category category = dailyQuizRecordDetail.getQuiz().getDocument().getCategory();
-            totalQuizCountByCategory.put(category.getName(), totalQuizCountByCategory.getOrDefault(category.getName(), 0) + 1);
+            totalQuizCountByCategory.put(category, totalQuizCountByCategory.getOrDefault(category, 0) + 1);
 
             Quiz quiz = dailyQuizRecordDetail.getQuiz();
             if (quiz.getQuizType() == QuizType.MIX_UP) {
@@ -235,15 +236,17 @@ public class QuizAnalysisService {
         }
 
         List<GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisCategoryDto> categoryDtos = new ArrayList<>();
-        for (String categoryName : totalQuizCountByCategory.keySet()) {
+        for (Category category : totalQuizCountByCategory.keySet()) {
             GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisCategoryDto categoryDto = GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisCategoryDto.builder()
-                    .categoryName(categoryName)
-                    .totalQuizCount(totalQuizCountByCategory.get(categoryName))
+                    .categoryName(category.getName())
+                    .categoryColor(category.getColor())
+                    .totalQuizCount(totalQuizCountByCategory.get(category))
                     .build();
 
             categoryDtos.add(categoryDto);
         }
 
+        int averageDailyQuizCount = monthlyTotalQuizCount / 30;
         double averageCorrectRate = (double) monthlyTotalCorrectAnswerCount / (double) monthlyTotalQuizCount * 100.0;
 
         GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisQuizTypeDto quizTypeDto = GetQuizMonthlyAnalysisResponse.QuizAnswerRateMonthlyAnalysisQuizTypeDto.builder()
@@ -251,7 +254,7 @@ public class QuizAnalysisService {
                 .multipleChoiceQuizCount(multipleChoiceQuizCount)
                 .build();
 
-        return new GetQuizMonthlyAnalysisResponse(quizzesDtos, categoryDtos, quizTypeDto, averageCorrectRate, maxSolvedQuizCount, monthlyTotalQuizCount);
+        return new GetQuizMonthlyAnalysisResponse(quizzesDtos, categoryDtos, quizTypeDto, averageCorrectRate, maxSolvedQuizCount, averageDailyQuizCount, monthlyTotalQuizCount);
     }
 
 
