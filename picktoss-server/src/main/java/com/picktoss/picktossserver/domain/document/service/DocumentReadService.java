@@ -72,6 +72,7 @@ public class DocumentReadService {
                     .explanation(quiz.getExplanation())
                     .options(optionList)
                     .quizType(quiz.getQuizType())
+                    .isReviewNeeded(quiz.isReviewNeeded())
                     .build();
 
             quizDtos.add(quizDto);
