@@ -82,6 +82,7 @@ public class DailyQuizRecordService {
                     .isBookmarked(false)
                     .options(optionList)
                     .quizType(quiz.getQuizType())
+                    .documentId(quiz.getDocument().getId())
                     .build();
 
             quizzesDtos.add(quizzesDto);
@@ -116,6 +117,7 @@ public class DailyQuizRecordService {
                         .isBookmarked(true)
                         .options(optionList)
                         .quizType(quiz.getQuizType())
+                        .documentId(quiz.getDocument().getId())
                         .build();
 
                 quizzesDtos.add(quizzesDto);
