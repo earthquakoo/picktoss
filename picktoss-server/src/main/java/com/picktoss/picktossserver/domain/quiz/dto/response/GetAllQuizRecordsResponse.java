@@ -12,16 +12,24 @@ import java.util.List;
 @AllArgsConstructor
 public class GetAllQuizRecordsResponse {
 
-    private List<GetAllQuizRecordQuizSetDto> quizSets;
-    private List<GetAllQuizRecordDailyQuizDto> dailyQuizRecords;
+    private List<GetAllQuizRecordsDto> quizRecords;
+
+    @Getter
+    @Builder
+    public static class GetAllQuizRecordsDto {
+        private LocalDate solvedDate;
+        private List<GetAllQuizRecordQuizSetDto> quizSets;
+        private List<GetAllQuizRecordDailyQuizDto> dailyQuizRecords;
+    }
 
     @Getter
     @Builder
     public static class GetAllQuizRecordQuizSetDto {
         private Long quizSetId;
         private String quizSetName;
+        private String emoji;
         private int totalQuizCount;
-        private LocalDateTime createdAt;
+        private int correctAnswerCount;
     }
 
     @Getter
@@ -29,6 +37,5 @@ public class GetAllQuizRecordsResponse {
     public static class GetAllQuizRecordDailyQuizDto {
         private Long dailyQuizRecordId;
         private int totalQuizCount;
-        private LocalDate solvedDate;
     }
 }

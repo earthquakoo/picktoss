@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.quiz.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetAllQuizRecordsResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetConsecutiveSolvedDailyQuizDatesResponse;
 import com.picktoss.picktossserver.domain.quiz.dto.response.GetSingleDailyQuizRecordResponse;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,36 +35,54 @@ public class QuizRecordService {
 
     public GetAllQuizRecordsResponse findAllQuizRecords(Long memberId) {
         List<QuizSet> quizSets = quizSetRepository.findAllByMemberIdAndSolvedTrueOrderByCreatedAtDesc(memberId);
-
-        List<GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto> quizSetDtos = new ArrayList<>();
-        for (QuizSet quizSet : quizSets) {
-            String documentName = quizSet.getQuizSetQuizzes().getFirst().getQuiz().getDocument().getName();
-
-            GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto quizSetDto = GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto.builder()
-                    .quizSetId(quizSet.getId())
-                    .quizSetName(documentName)
-                    .totalQuizCount(quizSet.getQuizSetQuizzes().size())
-                    .createdAt(quizSet.getCreatedAt())
-                    .build();
-
-            quizSetDtos.add(quizSetDto);
-        }
-
         List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdOrderBySolvedDateDesc(memberId);
 
-        List<GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto> dailyQuizDtos = new ArrayList<>();
-        for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
+        // solvedDate 기준으로 그룹핑
+        Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto>> quizSetGroupedByDate = new HashMap<>();
+        for (QuizSet quizSet : quizSets) {
+            LocalDate solvedDate = quizSet.getCreatedAt().toLocalDate();
+            Document document = quizSet.getQuizSetQuizzes().getFirst().getQuiz().getDocument();
+            int correctCount = (int) quizSet.getQuizSetQuizzes().stream().filter(QuizSetQuiz::getIsAnswer).count();
 
-            GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto dailyQUizDto = GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto.builder()
-                    .dailyQuizRecordId(dailyQuizRecord.getId())
-                    .totalQuizCount(dailyQuizRecord.getDailyQuizRecordDetails().size())
-                    .solvedDate(dailyQuizRecord.getSolvedDate())
+            GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto.builder()
+                    .quizSetId(quizSet.getId())
+                    .quizSetName(document.getName())
+                    .emoji(document.getEmoji())
+                    .totalQuizCount(quizSet.getQuizSetQuizzes().size())
+                    .correctAnswerCount(correctCount)
                     .build();
 
-            dailyQuizDtos.add(dailyQUizDto);
+            quizSetGroupedByDate.computeIfAbsent(solvedDate, k -> new ArrayList<>()).add(dto);
         }
-        return new GetAllQuizRecordsResponse(quizSetDtos, dailyQuizDtos);
+
+        Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto>> dailyQuizGroupedByDate = new HashMap<>();
+        for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
+            LocalDate solvedDate = dailyQuizRecord.getSolvedDate();
+
+            GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto.builder()
+                    .dailyQuizRecordId(dailyQuizRecord.getId())
+                    .totalQuizCount(dailyQuizRecord.getDailyQuizRecordDetails().size())
+                    .build();
+
+            dailyQuizGroupedByDate.computeIfAbsent(solvedDate, k -> new ArrayList<>()).add(dto);
+        }
+
+        Set<LocalDate> allDates = new HashSet<>();
+        allDates.addAll(quizSetGroupedByDate.keySet());
+        allDates.addAll(dailyQuizGroupedByDate.keySet());
+
+        List<GetAllQuizRecordsResponse.GetAllQuizRecordsDto> quizRecords = allDates.stream()
+                .sorted(Comparator.reverseOrder())
+                .map(date -> GetAllQuizRecordsResponse.GetAllQuizRecordsDto.builder()
+                        .solvedDate(date)
+                        .quizSets(quizSetGroupedByDate.getOrDefault(date, Collections.emptyList()))
+                        .dailyQuizRecords(dailyQuizGroupedByDate.getOrDefault(date, Collections.emptyList()))
+                        .build())
+                .collect(Collectors.toList());
+
+        return new GetAllQuizRecordsResponse(quizRecords);
     }
+
 
     public GetSingleQuizSetRecordResponse findSingleQuizSetRecord(Long memberId, Long quizSetId) {
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberIdAndSolvedTrue(quizSetId, memberId);
