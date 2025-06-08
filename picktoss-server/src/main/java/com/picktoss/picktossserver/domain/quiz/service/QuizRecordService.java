@@ -50,6 +50,7 @@ public class QuizRecordService {
                     .emoji(document.getEmoji())
                     .totalQuizCount(quizSet.getQuizSetQuizzes().size())
                     .correctAnswerCount(correctCount)
+                    .solvedDateTime(quizSet.getCreatedAt())
                     .build();
 
             quizSetGroupedByDate.computeIfAbsent(solvedDate, k -> new ArrayList<>()).add(dto);
@@ -57,11 +58,12 @@ public class QuizRecordService {
 
         Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto>> dailyQuizGroupedByDate = new HashMap<>();
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
-            LocalDate solvedDate = dailyQuizRecord.getSolvedDate();
+            LocalDate solvedDate = dailyQuizRecord.getSolvedDate().toLocalDate();
 
             GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto.builder()
                     .dailyQuizRecordId(dailyQuizRecord.getId())
                     .totalQuizCount(dailyQuizRecord.getDailyQuizRecordDetails().size())
+                    .solvedDateTime(dailyQuizRecord.getSolvedDate())
                     .build();
 
             dailyQuizGroupedByDate.computeIfAbsent(solvedDate, k -> new ArrayList<>()).add(dto);
@@ -72,16 +74,31 @@ public class QuizRecordService {
         allDates.addAll(dailyQuizGroupedByDate.keySet());
 
         List<GetAllQuizRecordsResponse.GetAllQuizRecordsDto> quizRecords = allDates.stream()
-                .sorted(Comparator.reverseOrder())
-                .map(date -> GetAllQuizRecordsResponse.GetAllQuizRecordsDto.builder()
-                        .solvedDate(date)
-                        .quizSets(quizSetGroupedByDate.getOrDefault(date, Collections.emptyList()))
-                        .dailyQuizRecords(dailyQuizGroupedByDate.getOrDefault(date, Collections.emptyList()))
-                        .build())
+                .sorted(Comparator.reverseOrder()) // solvedDate 내림차순 정렬
+                .map(date -> {
+                    List<GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto> sortedQuizSets =
+                            quizSetGroupedByDate.getOrDefault(date, Collections.emptyList())
+                                    .stream()
+                                    .sorted(Comparator.comparing(GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto::getSolvedDateTime))
+                                    .collect(Collectors.toList());
+
+                    List<GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto> sortedDailyQuizzes =
+                            dailyQuizGroupedByDate.getOrDefault(date, Collections.emptyList())
+                                    .stream()
+                                    .sorted(Comparator.comparing(GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto::getSolvedDateTime))
+                                    .collect(Collectors.toList());
+
+                    return GetAllQuizRecordsResponse.GetAllQuizRecordsDto.builder()
+                            .solvedDate(date)
+                            .quizSets(sortedQuizSets)
+                            .dailyQuizRecords(sortedDailyQuizzes)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return new GetAllQuizRecordsResponse(quizRecords);
     }
+
 
 
     public GetSingleQuizSetRecordResponse findSingleQuizSetRecord(Long memberId, Long quizSetId) {
@@ -186,7 +203,7 @@ public class QuizRecordService {
         }
 
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
-            LocalDate date = dailyQuizRecord.getSolvedDate();
+            LocalDate date = dailyQuizRecord.getSolvedDate().toLocalDate();
             solvedDailyQuizByDate.put(date, true);
         }
 
@@ -209,7 +226,7 @@ public class QuizRecordService {
             return 0;
         }
 
-        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate();
+        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate().toLocalDate();
         if (!firstQuizSetDate.equals(LocalDate.now()) && !firstQuizSetDate.equals(LocalDate.now().minusDays(1))) {
             return 0;
         }
@@ -218,7 +235,7 @@ public class QuizRecordService {
         int currentConsecutiveDays = 0;
 
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
-            LocalDate solvedDate = dailyQuizRecord.getSolvedDate();
+            LocalDate solvedDate = dailyQuizRecord.getSolvedDate().toLocalDate();
 
             if (previousDate == null || previousDate.minusDays(1).equals(solvedDate)) {
                 currentConsecutiveDays += 1;

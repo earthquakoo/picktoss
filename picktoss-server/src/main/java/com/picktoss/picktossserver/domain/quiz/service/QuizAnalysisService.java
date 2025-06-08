@@ -71,7 +71,7 @@ public class QuizAnalysisService {
 
         for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
             DailyQuizRecord dailyQuizRecord = dailyQuizRecordDetail.getDailyQuizRecord();
-            LocalDate date = dailyQuizRecord.getSolvedDate();
+            LocalDate date = dailyQuizRecord.getSolvedDate().toLocalDate();
 
             totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
             if (!Objects.isNull(dailyQuizRecordDetail.getIsAnswer()) && dailyQuizRecordDetail.getIsAnswer()) {
@@ -191,7 +191,7 @@ public class QuizAnalysisService {
 
         for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
             DailyQuizRecord dailyQuizRecord = dailyQuizRecordDetail.getDailyQuizRecord();
-            LocalDate date = dailyQuizRecord.getSolvedDate();
+            LocalDate date = dailyQuizRecord.getSolvedDate().toLocalDate();
 
             if (!date.isBefore(lastMonthStart) && !date.isAfter(lastMonthEnd)) {
                 lastMonthTotalQuizCountDateMap.put(date, lastMonthTotalQuizCountDateMap.getOrDefault(date, 0) + 1);
