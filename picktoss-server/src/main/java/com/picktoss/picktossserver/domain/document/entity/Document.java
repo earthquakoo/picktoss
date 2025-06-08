@@ -26,7 +26,7 @@ public class Document extends AuditBase {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
     @Column(name = "emoji", nullable = false)
@@ -67,7 +67,6 @@ public class Document extends AuditBase {
 
     // Constructor methods
     public static Document createDocument(
-            String name,
             String s3Key,
             String emoji,
             Boolean isPublic,
@@ -77,7 +76,6 @@ public class Document extends AuditBase {
             Directory directory
     ) {
         return Document.builder()
-                .name(name)
                 .s3Key(s3Key)
                 .emoji(emoji)
                 .isPublic(isPublic)

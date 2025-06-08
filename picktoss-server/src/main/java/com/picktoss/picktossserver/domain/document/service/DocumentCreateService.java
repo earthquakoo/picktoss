@@ -49,7 +49,7 @@ public class DocumentCreateService {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    public Long createDocument(String documentName, String emoji, Long categoryId, MultipartFile file, DocumentType documentType, QuizType quizType, Boolean isPublic, Integer starCount, Long memberId) {
+    public Long createDocument(String emoji, Long categoryId, MultipartFile file, DocumentType documentType, QuizType quizType, Boolean isPublic, Integer starCount, Long memberId) {
         SubscriptionPlanType subscriptionPlanType = findMemberSubscriptionPlanType(memberId);
 
         Category category = categoryRepository.findById(categoryId)
@@ -62,7 +62,7 @@ public class DocumentCreateService {
         withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType);
 
         String s3Key = UUID.randomUUID().toString();
-        Document document = Document.createDocument(documentName, s3Key, emoji, isPublic, category, UNPROCESSED, documentType, directory);
+        Document document = Document.createDocument(s3Key, emoji, isPublic, category, UNPROCESSED, documentType, directory);
         documentRepository.save(document);
 
         createOutboxByCreateDocument(quizType, starCount, document);

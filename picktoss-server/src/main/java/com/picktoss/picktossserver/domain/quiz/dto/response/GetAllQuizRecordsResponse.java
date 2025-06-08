@@ -30,6 +30,7 @@ public class GetAllQuizRecordsResponse {
         private String emoji;
         private int totalQuizCount;
         private int correctAnswerCount;
+        private LocalDateTime solvedDateTime;
     }
 
     @Getter
@@ -37,5 +38,6 @@ public class GetAllQuizRecordsResponse {
     public static class GetAllQuizRecordDailyQuizDto {
         private Long dailyQuizRecordId;
         private int totalQuizCount;
+        private LocalDateTime solvedDateTime;
     }
 }

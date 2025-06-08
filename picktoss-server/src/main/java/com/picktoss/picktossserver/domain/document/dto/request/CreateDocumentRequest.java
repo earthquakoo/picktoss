@@ -12,7 +12,6 @@ public class CreateDocumentRequest {
 
     private String star;
     private String emoji;
-    private String documentName;
     private Long categoryId;
     private Boolean isPublic;
     private QuizType quizType;
