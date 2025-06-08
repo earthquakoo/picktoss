@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -172,7 +171,7 @@ public class DailyQuizRecordService {
 
     @Transactional
     private DailyQuizRecord checkPresentDailyQuizRecord(Member member) {
-        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDateTime.now());
+        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now());
         if (optionalDailyQuizRecord.isEmpty()) {
             DailyQuizRecord dailyQuizRecord = DailyQuizRecord.createDailyQuizRecord(member);
             dailyQuizRecordRepository.save(dailyQuizRecord);

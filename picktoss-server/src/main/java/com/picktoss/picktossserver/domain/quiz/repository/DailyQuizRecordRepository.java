@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,10 +13,10 @@ public interface DailyQuizRecordRepository extends JpaRepository<DailyQuizRecord
 
     @Query("SELECT dqr FROM DailyQuizRecord dqr " +
             "WHERE dqr.member.id = :memberId " +
-            "AND dqr.solvedDate = :solvedDate")
+            "AND DATE(dqr.solvedDate) = :today")
     Optional<DailyQuizRecord> findByMemberIdAndSolvedDate(
             @Param("memberId") Long memberId,
-            @Param("solvedDate") LocalDateTime solvedDate
+            @Param("today") LocalDate today
     );
 
     @Query("SELECT dqr FROM DailyQuizRecord dqr " +
