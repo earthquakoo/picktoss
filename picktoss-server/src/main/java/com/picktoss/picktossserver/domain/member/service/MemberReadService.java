@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -90,10 +91,10 @@ public class MemberReadService {
 
         LocalDate now = LocalDate.now();
         YearMonth yearMonth = YearMonth.of(now.getYear(), now.getMonth());
-        LocalDate startOfDate = yearMonth.atDay(1);
-        LocalDate endOfDate = yearMonth.atEndOfMonth();
+        LocalDateTime startOfDate = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfDate = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
 
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDate.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDate, endOfDate);
         List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startOfDate, endOfDate);
 
         if (!quizSetQuizzes.isEmpty()) {

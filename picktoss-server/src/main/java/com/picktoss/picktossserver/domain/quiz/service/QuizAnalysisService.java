@@ -34,7 +34,7 @@ public class QuizAnalysisService {
         LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
 
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
-        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startDate, endDate);
+        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startOfDay, endOfDay);
 
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
@@ -144,7 +144,7 @@ public class QuizAnalysisService {
         LocalDate lastMonthEnd = startMonthDate.minusMonths(1).withDayOfMonth(currentDate.getDayOfMonth());
 
         List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, lastMonthStart.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
-        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, lastMonthStart, endOfDate);
+        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, lastMonthStart.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
 
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
