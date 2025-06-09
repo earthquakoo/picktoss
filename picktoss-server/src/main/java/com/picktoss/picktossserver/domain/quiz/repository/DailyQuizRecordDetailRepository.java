@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DailyQuizRecordDetailRepository extends JpaRepository<DailyQuizRecordDetail, Long> {
@@ -29,7 +29,7 @@ public interface DailyQuizRecordDetailRepository extends JpaRepository<DailyQuiz
             "AND dqr.solvedDate <= :endDate")
     List<DailyQuizRecordDetail> findAllByMemberIdAndDate(
             @Param("memberId") Long memberId,
-            @Param("startDate") LocalDate starDate,
-            @Param("endDate") LocalDate endDate
+            @Param("startDate") LocalDateTime starDate,
+            @Param("endDate") LocalDateTime endDate
     );
 }
