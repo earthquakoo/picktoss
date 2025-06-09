@@ -2,7 +2,6 @@ package com.picktoss.picktossserver.domain.outbox.entity;
 
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.global.enums.outbox.OutboxStatus;
-import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,9 +24,6 @@ public class Outbox {
     @Column(name = "try_count", nullable = false)
     private int tryCount;
 
-    @Column(name = "created_quiz_type", nullable = false)
-    private QuizType createdQuizType;
-
     @Column(name = "used_stars", nullable = false)
     private Integer usedStars;
 
@@ -36,11 +32,10 @@ public class Outbox {
     private Document document;
 
     // Constructor methods
-    public static Outbox createOutbox(OutboxStatus status, QuizType createdQuizType, Integer usedStars, Document document) {
+    public static Outbox createOutbox(OutboxStatus status, Integer usedStars, Document document) {
         return Outbox.builder()
                 .status(status)
                 .tryCount(0)
-                .createdQuizType(createdQuizType)
                 .usedStars(usedStars)
                 .document(document)
                 .build();
