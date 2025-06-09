@@ -147,10 +147,12 @@ public class QuizRecordService {
         }
 
         double averageCorrectRate = (double) correctAnswerCount / (double) totalQuizCount * 100.0;
+        QuizSet quizSet = quizSetQuizzes.getFirst().getQuizSet();
+        LocalDateTime createdAt = quizSet.getCreatedAt();
 
-        LocalDateTime createdAt = quizSetQuizzes.getFirst().getQuizSet().getCreatedAt();
+        Document document = quizSetQuizzes.getFirst().getQuiz().getDocument();
 
-        return new GetSingleQuizSetRecordResponse(totalQuizCount, elapsedTimeMs, averageCorrectRate, createdAt, quizSetRecordDtos);
+        return new GetSingleQuizSetRecordResponse(document.getName(), document.getEmoji(), totalQuizCount, elapsedTimeMs, averageCorrectRate, createdAt, quizSetRecordDtos);
     }
 
     public GetSingleDailyQuizRecordResponse findSingleDailyQuizRecord(Long dailyQuizRecordId, Long memberId) {
