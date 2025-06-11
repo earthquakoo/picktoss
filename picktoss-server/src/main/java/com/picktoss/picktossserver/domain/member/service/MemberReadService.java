@@ -4,16 +4,16 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentBookmarkRepository;
+import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.member.dto.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecordDetail;
-import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordDetailRepository;
-import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +34,10 @@ public class MemberReadService {
 
     private final S3Provider s3Provider;
     private final MemberRepository memberRepository;
+    private final DocumentRepository documentRepository;
     private final DocumentBookmarkRepository documentBookmarkRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
-    private final QuizRepository quizRepository;
 
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
@@ -48,7 +48,7 @@ public class MemberReadService {
             imageUrl = s3Provider.findImage(member.getS3Key());
         }
 
-        List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
         List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
 
         Star star = member.getStar();
@@ -80,7 +80,7 @@ public class MemberReadService {
                 .socialPlatform(member.getSocialPlatform())
                 .star(star.getStar())
                 .isQuizNotificationEnabled(member.isQuizNotificationEnabled())
-                .totalQuizCount(quizzes.size())
+                .totalQuizCount(documents.size())
                 .bookmarkCount(documentBookmarks.size())
                 .monthlySolvedQuizCount(monthlySolvedQuizCount)
                 .build();
