@@ -61,4 +61,8 @@ public class NotificationSendUtil {
             System.out.println("FCM Exception = " + e.getMessage());
         }
     }
+
+    public void sendNotificationByDailyQuizNotSolved(Long memberId) {
+
+    }
 }

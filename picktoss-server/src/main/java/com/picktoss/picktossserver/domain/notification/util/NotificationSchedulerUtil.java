@@ -11,7 +11,9 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
+import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecord;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
+import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -47,6 +50,7 @@ public class NotificationSchedulerUtil {
     private final MemberRepository memberRepository;
     private final NotificationUtil notificationUtil;
     private final QuizSetRepository quizSetRepository;
+    private final DailyQuizRecordRepository dailyQuizRecordRepository;
 
     private Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
@@ -92,14 +96,6 @@ public class NotificationSchedulerUtil {
 
             DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, currentDay);
             LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(now, nextDay);
-
-            System.out.println("==== Notification Debug Info ====");
-            System.out.println("now (Asia/Seoul): " + now);
-            System.out.println("notificationTime: " + notification.getNotificationTime());
-            System.out.println("repeatDays: " + repeatDays);
-            System.out.println("currentDay: " + currentDay);
-            System.out.println("nextDay: " + nextDay);
-            System.out.println("nextNotificationTime: " + nextNotificationTime);
 
             if (nextNotificationTime.isBefore(now)) {
                 updateNotificationIsActiveByFailedNotification(notification.getId());
@@ -177,11 +173,10 @@ public class NotificationSchedulerUtil {
         return () -> {
             List<Member> members = memberRepository.findAllByIsQuizNotificationEnabledTrue();
             for (Member member : members) {
-                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
                 boolean b = filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member);
-                System.out.println("filter = " + b);
                 if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
 
+                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
                 if (optionalToken.isEmpty()) {
                     continue;
@@ -283,7 +278,7 @@ public class NotificationSchedulerUtil {
         }
 
         if (notificationType == NotificationType.DAILY_QUIZ) {
-            return notificationTargetByTodayQuiz(notificationTarget, member);
+            return notificationTargetByNotSolvedDailyQuiz(member);
         }
 
         return true;
@@ -299,5 +294,14 @@ public class NotificationSchedulerUtil {
 
 //        return quizUtil.checkConsecutiveUnsolvedQuizSetsOverFourDays(quizSets);
         return false;
+    }
+
+    private boolean notificationTargetByNotSolvedDailyQuiz(Member member) {
+        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now());
+        if (optionalDailyQuizRecord.isEmpty()) {
+            return true;
+        }
+        DailyQuizRecord dailyQuizRecord = optionalDailyQuizRecord.get();
+        return !dailyQuizRecord.getIsDailyQuizComplete();
     }
 }
