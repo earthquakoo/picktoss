@@ -46,11 +46,6 @@ public class SecurityConfig {
     @Value("${picktoss.server_url}")
     private String picktossServerUrl;
 
-    private static final String corsAllowedOriginTest = "http://localhost:5173";
-    private static final String corsAllowedOriginReact = "https://picktoss.vercel.app";
-    private static final String corsAllowedOriginNgrok = "https://a0d0-222-238-36-157.ngrok-free.app";
-    private static final String corsAllowedOriginNgrokTest = "https://1bbc-222-238-36-157.ngrok-free.app";
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -79,7 +74,9 @@ public class SecurityConfig {
                                 "/api/v2/auth/invite/{invite_code}/creator",
                                 "/api/v2/auth/invite/verify",
                                 "/api/v2/categories",
-                                "/api/v2/documents/public"
+                                "/api/v2/documents/public",
+                                "/api/v2/documents/{document_id}/public",
+                                "/api/v2/documents/public/search"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

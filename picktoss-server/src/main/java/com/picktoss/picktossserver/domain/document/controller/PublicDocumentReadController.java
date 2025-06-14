@@ -34,7 +34,7 @@ public class PublicDocumentReadController {
             @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") QuizSortOption quizSortOption
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
         GetPublicSingleDocumentResponse response = publicDocumentReadService.findIsPublicSingleDocument(documentId, memberId, quizSortOption);
         return ResponseEntity.ok().body(response);

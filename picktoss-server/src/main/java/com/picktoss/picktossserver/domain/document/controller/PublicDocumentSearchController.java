@@ -46,7 +46,7 @@ public class PublicDocumentSearchController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<SearchPublicDocumentsResponse> searchPublicDocuments(@Valid @RequestBody SearchRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
         SearchPublicDocumentsResponse response = publicDocumentSearchService.searchPublicDocuments(request.getKeyword(), memberId);
         return ResponseEntity.ok().body(response);
