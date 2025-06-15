@@ -44,7 +44,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "JOIN FETCH d.quizzes " +
+            "LEFT JOIN FETCH d.quizzes " +
             "WHERE d.id IN :documentIds " +
             "AND dir.member.id = :memberId")
     List<Document> findByDocumentIdsInAndMemberId(
