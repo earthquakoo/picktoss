@@ -43,13 +43,18 @@ public enum ErrorInfo {
      * Document
      **/
     DOCUMENT_NOT_FOUND(400, "DOCUMENT_NOT_FOUND", "해당 id의 문서를 찾을 수 없습니다."),
+    QUIZ_GENERATION_FAILED(400, "QUIZ_GENERATION_FAILED", "퀴즈 생성에 실패한 문서는 공개할 수 없습니다."),
     DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR(400, "DOCUMENT_UPLOAD_LIMIT_EXCEED_ERROR", "등록할 수 있는 문서의 최대 개수를 초과했습니다."),
     DOCUMENT_SORT_OPTION_NOT_SELECT(400, "DOCUMENT_SORT_OPTION_NOT_SELECT", "문서 정렬 옵션을 선택해야합니다."),
-
+    DOCUMENT_PAGE_SET_ERROR(400, "DOCUMENT_PAGE_SET_ERROR", "pageSize를 1보다 작게 설정할 수 없습니다"),
+    CANNOT_VIEW_UNPUBLISHED_DOCUMENT(400, "CANNOT_VIEW_UNPUBLISHED_DOCUMENT", "공개되지 않은 문서는 조회할 수 없습니다."),
     /**
      * DocumentBookmark
      */
     DOCUMENT_BOOKMARK_NOT_FOUND(400, "DOCUMENT_BOOKMARK_NOT_FOUND", "해당 id의 북마크를 찾을 수 없습니다."),
+    CANNOT_BOOKMARK_OWN_DOCUMENT(400, "CANNOT_BOOKMARK_OWN_DOCUMENT", "자신의 문서는 북마크할 수 없습니다"),
+    CANNOT_BOOKMARK_UNPUBLISHED_DOCUMENT(400, "CANNOT_BOOKMARK_UNPUBLISHED_DOCUMENT", "공개되지 않은 문서는 북마크할 수 없습니다."),
+    ALREADY_EXISTING_DOCUMENT_BOOKMARK(400, "ALREADY_EXISTING_DOCUMENT_BOOKMARK", "이미 북마크가 되어있습니다."),
 
     /**
      * Category

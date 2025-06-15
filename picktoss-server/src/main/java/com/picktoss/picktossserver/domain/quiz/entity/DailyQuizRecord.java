@@ -4,7 +4,7 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class DailyQuizRecord {
     private Boolean isDailyQuizComplete;
 
     @Column(name = "solved_date", nullable = false)
-    private LocalDate solvedDate;
+    private LocalDateTime solvedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -36,7 +36,7 @@ public class DailyQuizRecord {
     public static DailyQuizRecord createDailyQuizRecord(Member member) {
         return DailyQuizRecord.builder()
                 .isDailyQuizComplete(false)
-                .solvedDate(LocalDate.now())
+                .solvedDate(LocalDateTime.now())
                 .member(member)
                 .dailyQuizRecordDetails(new ArrayList<>())
                 .build();

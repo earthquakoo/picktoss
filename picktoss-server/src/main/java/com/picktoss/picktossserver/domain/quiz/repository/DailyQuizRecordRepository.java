@@ -13,20 +13,18 @@ public interface DailyQuizRecordRepository extends JpaRepository<DailyQuizRecord
 
     @Query("SELECT dqr FROM DailyQuizRecord dqr " +
             "WHERE dqr.member.id = :memberId " +
-            "AND dqr.solvedDate = :solvedDate")
+            "AND DATE(dqr.solvedDate) = :today")
     Optional<DailyQuizRecord> findByMemberIdAndSolvedDate(
             @Param("memberId") Long memberId,
-            @Param("solvedDate") LocalDate solvedDate
+            @Param("today") LocalDate today
     );
 
     @Query("SELECT dqr FROM DailyQuizRecord dqr " +
             "WHERE dqr.member.id = :memberId " +
             "AND dqr.isDailyQuizComplete = true " +
-            "AND dqr.solvedDate = :solvedDate " +
             "ORDER BY dqr.solvedDate")
-    List<DailyQuizRecord> findAllByMemberIdAndIsDailyQuizCompleteTrueAndSolvedDateOrderBySolvedDate(
-            @Param("memberId") Long memberId,
-            @Param("solvedDate") LocalDate solvedDate
+    List<DailyQuizRecord> findAllByMemberIdAndIsDailyQuizCompleteTrueOrderBySolvedDate(
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT dqr FROM DailyQuizRecord dqr " +

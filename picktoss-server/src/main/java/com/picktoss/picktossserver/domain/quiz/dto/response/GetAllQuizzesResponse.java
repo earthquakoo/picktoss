@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-public class GetAllQuizzesResponse {
+public class  GetAllQuizzesResponse {
 
     private List<GetAllQuizzesDto> quizzes;
 
@@ -25,5 +25,6 @@ public class GetAllQuizzesResponse {
         private Boolean isBookmarked;
         private List<String> options;
         private QuizType quizType;
+        private Long documentId;
     }
 }

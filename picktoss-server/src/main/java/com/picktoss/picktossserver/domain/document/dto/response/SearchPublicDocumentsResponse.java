@@ -20,6 +20,7 @@ public class SearchPublicDocumentsResponse {
         private String emoji;
         private String category;
         private String creatorName;
+        private Boolean isOwner;
         private Boolean isBookmarked;
         private int tryCount;
         private int bookmarkCount;

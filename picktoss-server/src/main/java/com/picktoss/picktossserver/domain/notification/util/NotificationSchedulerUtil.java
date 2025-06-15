@@ -11,7 +11,9 @@ import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
+import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecord;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSet;
+import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetRepository;
 import com.picktoss.picktossserver.global.enums.notification.NotificationStatus;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
@@ -26,7 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +50,7 @@ public class NotificationSchedulerUtil {
     private final MemberRepository memberRepository;
     private final NotificationUtil notificationUtil;
     private final QuizSetRepository quizSetRepository;
+    private final DailyQuizRecordRepository dailyQuizRecordRepository;
 
     private Map<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
@@ -54,7 +59,7 @@ public class NotificationSchedulerUtil {
         List<Notification> notifications = notificationRepository.findAllByNotificationStatusAndIsActiveTrue(NotificationStatus.PENDING);
 
         for (Notification notification : notifications) {
-            if (notification.getNotificationTime().isAfter(LocalDateTime.now())) {
+            if (notification.getNotificationTime().isAfter(LocalDateTime.now(ZoneId.of("Asia/Seoul")))) {
                 scheduleTask(notification, notification.getNotificationTime());
             }
         }
@@ -85,16 +90,18 @@ public class NotificationSchedulerUtil {
         List<DayOfWeek> repeatDays = notificationUtil.stringsToDayOfWeeks(notification.getRepeatDays());
         if (repeatDays != null && !repeatDays.isEmpty()) {
 
-            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, notification.getNotificationTime().getDayOfWeek());
-            System.out.println("nextDay = " + nextDay);
-            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(notification.getNotificationTime(), nextDay);
-            System.out.println("nextNotificationTime = " + nextNotificationTime);
+            ZoneId zoneId = ZoneId.of("Asia/Seoul");
+            LocalDateTime now = LocalDateTime.now(zoneId);
+            DayOfWeek currentDay = now.getDayOfWeek();
 
-            if (nextNotificationTime.isBefore(LocalDateTime.now())) {
+            DayOfWeek nextDay = notificationUtil.findNextDay(repeatDays, currentDay);
+            LocalDateTime nextNotificationTime = notificationUtil.calculateNextNotificationTime(now, nextDay);
+
+            if (nextNotificationTime.isBefore(now)) {
                 updateNotificationIsActiveByFailedNotification(notification.getId());
                 updateNotificationStatusCompleteBySendPushNotification(notification.getId());
-                log.info("Notification Bug 발생");
-                return ;
+                log.info("Notification Bug 발생 - nextNotificationTime < now");
+                return;
             }
 
             updateNotificationTimeBySendPushNotification(notification.getId(), nextNotificationTime);
@@ -166,11 +173,10 @@ public class NotificationSchedulerUtil {
         return () -> {
             List<Member> members = memberRepository.findAllByIsQuizNotificationEnabledTrue();
             for (Member member : members) {
-                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
                 boolean b = filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member);
-                System.out.println("filter = " + b);
                 if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
 
+                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
                 if (optionalToken.isEmpty()) {
                     continue;
@@ -181,28 +187,28 @@ public class NotificationSchedulerUtil {
                         .setToken(fcmToken)
                         .putData("title", notification.getTitle())
                         .putData("content", notification.getContent())
-                        .setNotification(
-                                com.google.firebase.messaging.Notification.builder()
-                                        .setTitle(notification.getTitle())
-                                        .setBody(notification.getContent())
-                                        .build()
-                        )
-                        .setAndroidConfig(AndroidConfig.builder()
-                                .setNotification(
-                                        AndroidNotification.builder()
-                                                .setClickAction("push_click")
-                                                .build())
-                                .build()
-                        )
-                        .setApnsConfig(ApnsConfig.builder()
-                                .setAps(Aps.builder()
-                                        .setAlert(ApsAlert.builder()
-                                                .build())
-                                        .setSound("default")
-                                        .setCategory("push_click")
-                                        .build())
-                                .build()
-                        )
+//                        .setNotification(
+//                                com.google.firebase.messaging.Notification.builder()
+//                                        .setTitle(notification.getTitle())
+//                                        .setBody(notification.getContent())
+//                                        .build()
+//                        )
+//                        .setAndroidConfig(AndroidConfig.builder()
+//                                .setNotification(
+//                                        AndroidNotification.builder()
+//                                                .setClickAction("push_click")
+//                                                .build())
+//                                .build()
+//                        )
+//                        .setApnsConfig(ApnsConfig.builder()
+//                                .setAps(Aps.builder()
+//                                        .setAlert(ApsAlert.builder()
+//                                                .build())
+//                                        .setSound("default")
+//                                        .setCategory("push_click")
+//                                        .build())
+//                                .build()
+//                        )
                         .build();
                 try {
                     String response = FirebaseMessaging.getInstance().send(message);
@@ -216,7 +222,7 @@ public class NotificationSchedulerUtil {
     }
 
     private void createNotificationForRedis(String notificationKey, String title, String content, LocalDateTime notificationSendTime, NotificationType notificationType) {
-        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         Map<String, Object> notificationData = Map.of(
                 "title", title,
@@ -261,7 +267,7 @@ public class NotificationSchedulerUtil {
 
         Map<String, Object> notificationReceivedMemberData = Map.of(
                 "notificationKeys", notificationKeys,
-                "createdAt", LocalDateTime.now()
+                "createdAt", LocalDateTime.now(ZoneId.of("Asia/Seoul"))
         );
         redisUtil.setData(RedisConstant.REDIS_NOTIFICATION_RECEIVED_MEMBER_PREFIX, memberIdKey, notificationReceivedMemberData);
     }
@@ -272,7 +278,7 @@ public class NotificationSchedulerUtil {
         }
 
         if (notificationType == NotificationType.DAILY_QUIZ) {
-            return notificationTargetByTodayQuiz(notificationTarget, member);
+            return notificationTargetByNotSolvedDailyQuiz(member);
         }
 
         return true;
@@ -288,5 +294,14 @@ public class NotificationSchedulerUtil {
 
 //        return quizUtil.checkConsecutiveUnsolvedQuizSetsOverFourDays(quizSets);
         return false;
+    }
+
+    private boolean notificationTargetByNotSolvedDailyQuiz(Member member) {
+        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now());
+        if (optionalDailyQuizRecord.isEmpty()) {
+            return true;
+        }
+        DailyQuizRecord dailyQuizRecord = optionalDailyQuizRecord.get();
+        return !dailyQuizRecord.getIsDailyQuizComplete();
     }
 }

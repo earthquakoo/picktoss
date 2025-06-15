@@ -12,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 public class GetSingleQuizSetRecordResponse {
 
+    private String name;
+    private String emoji;
     private Integer totalQuizCount;
     private Integer totalElapsedTimeMs;
     private double averageCorrectAnswerRate; // 정답률

@@ -27,32 +27,34 @@ public class NotificationSendUtil {
 
         Message message = Message.builder()
                 .setToken(fcmToken)
-                .setNotification(
-                        com.google.firebase.messaging.Notification.builder()
-                                .setTitle(title)
-                                .setBody(content)
-                                .build()
-                )
-                .setAndroidConfig(AndroidConfig.builder()
-                        .setNotification(
-                                AndroidNotification.builder()
-                                        .setTitle(title)
-                                        .setBody(content)
-                                        .setClickAction("push_click")
-                                        .build())
-                        .build()
-                )
-                .setApnsConfig(ApnsConfig.builder()
-                        .setAps(Aps.builder()
-                                .setAlert(ApsAlert.builder()
-                                        .setTitle(title)
-                                        .setBody(content)
-                                        .build())
-                                .setSound("default")
-                                .setCategory("push_click")
-                                .build())
-                        .build()
-                )
+                .putData("title", title)
+                .putData("content", content)
+//                .setNotification(
+//                        com.google.firebase.messaging.Notification.builder()
+//                                .setTitle(title)
+//                                .setBody(content)
+//                                .build()
+//                )
+//                .setAndroidConfig(AndroidConfig.builder()
+//                        .setNotification(
+//                                AndroidNotification.builder()
+//                                        .setTitle(title)
+//                                        .setBody(content)
+//                                        .setClickAction("push_click")
+//                                        .build())
+//                        .build()
+//                )
+//                .setApnsConfig(ApnsConfig.builder()
+//                        .setAps(Aps.builder()
+//                                .setAlert(ApsAlert.builder()
+//                                        .setTitle(title)
+//                                        .setBody(content)
+//                                        .build())
+//                                .setSound("default")
+//                                .setCategory("push_click")
+//                                .build())
+//                        .build()
+//                )
                 .build();
         try {
             String response = FirebaseMessaging.getInstance().send(message);
@@ -60,5 +62,9 @@ public class NotificationSendUtil {
         } catch (FirebaseMessagingException e) {
             System.out.println("FCM Exception = " + e.getMessage());
         }
+    }
+
+    public void sendNotificationByDailyQuizNotSolved(Long memberId) {
+
     }
 }

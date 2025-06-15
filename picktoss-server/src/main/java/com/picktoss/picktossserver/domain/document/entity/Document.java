@@ -26,10 +26,10 @@ public class Document extends AuditBase {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "emoji", nullable = false)
+    @Column(name = "emoji")
     private String emoji;
 
     @Enumerated(EnumType.STRING)
@@ -67,21 +67,15 @@ public class Document extends AuditBase {
 
     // Constructor methods
     public static Document createDocument(
-            String name,
             String s3Key,
-            String emoji,
             Boolean isPublic,
-            Category category,
             QuizGenerationStatus quizGenerationStatus,
             DocumentType documentType,
             Directory directory
     ) {
         return Document.builder()
-                .name(name)
                 .s3Key(s3Key)
-                .emoji(emoji)
                 .isPublic(isPublic)
-                .category(category)
                 .tryCount(0)
                 .quizGenerationStatus(quizGenerationStatus)
                 .documentType(documentType)

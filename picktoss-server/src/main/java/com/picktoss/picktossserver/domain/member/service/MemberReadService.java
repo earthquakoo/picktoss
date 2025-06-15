@@ -4,16 +4,16 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.category.entity.Category;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentBookmarkRepository;
+import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
 import com.picktoss.picktossserver.domain.member.dto.response.GetMemberInfoResponse;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.quiz.entity.DailyQuizRecordDetail;
-import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordDetailRepository;
-import com.picktoss.picktossserver.domain.quiz.repository.QuizRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -33,10 +34,10 @@ public class MemberReadService {
 
     private final S3Provider s3Provider;
     private final MemberRepository memberRepository;
+    private final DocumentRepository documentRepository;
     private final DocumentBookmarkRepository documentBookmarkRepository;
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
-    private final QuizRepository quizRepository;
 
     public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
@@ -47,7 +48,7 @@ public class MemberReadService {
             imageUrl = s3Provider.findImage(member.getS3Key());
         }
 
-        List<Quiz> quizzes = quizRepository.findAllByMemberId(memberId);
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
         List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
 
         Star star = member.getStar();
@@ -55,11 +56,20 @@ public class MemberReadService {
         int monthlySolvedQuizCount = calculateMonthlySolvedQuizCount(memberId);
 
         Category category = member.getCategory();
-        GetMemberInfoResponse.CategoryDto categoryDto = GetMemberInfoResponse.CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .emoji(category.getEmoji())
-                .build();
+        GetMemberInfoResponse.CategoryDto categoryDto;
+        if (category != null) {
+            categoryDto = GetMemberInfoResponse.CategoryDto.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .emoji(category.getEmoji())
+                    .build();
+        } else {
+            categoryDto = GetMemberInfoResponse.CategoryDto.builder()
+                    .id(null)
+                    .name(null)
+                    .emoji(null)
+                    .build();
+        }
 
         return GetMemberInfoResponse.builder()
                 .id(member.getId())
@@ -70,7 +80,7 @@ public class MemberReadService {
                 .socialPlatform(member.getSocialPlatform())
                 .star(star.getStar())
                 .isQuizNotificationEnabled(member.isQuizNotificationEnabled())
-                .totalQuizCount(quizzes.size())
+                .totalQuizCount(documents.size())
                 .bookmarkCount(documentBookmarks.size())
                 .monthlySolvedQuizCount(monthlySolvedQuizCount)
                 .build();
@@ -81,10 +91,10 @@ public class MemberReadService {
 
         LocalDate now = LocalDate.now();
         YearMonth yearMonth = YearMonth.of(now.getYear(), now.getMonth());
-        LocalDate startOfDate = yearMonth.atDay(1);
-        LocalDate endOfDate = yearMonth.atEndOfMonth();
+        LocalDateTime startOfDate = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime endOfDate = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
 
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDate.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDate, endOfDate);
         List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startOfDate, endOfDate);
 
         if (!quizSetQuizzes.isEmpty()) {

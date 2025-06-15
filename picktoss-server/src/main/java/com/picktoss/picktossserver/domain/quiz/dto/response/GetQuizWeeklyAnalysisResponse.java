@@ -33,6 +33,7 @@ public class GetQuizWeeklyAnalysisResponse {
     @Builder
     public static class QuizAnswerRateWeeklyAnalysisCategoryDto {
         private String categoryName;
+        private String categoryColor;
         private int totalQuizCount;
     }
 

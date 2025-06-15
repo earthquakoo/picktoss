@@ -7,17 +7,16 @@ import com.picktoss.picktossserver.domain.document.dto.response.GetPublicSingleD
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Option;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
+import com.picktoss.picktossserver.global.enums.quiz.QuizSortOption;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +25,23 @@ public class PublicDocumentReadService {
 
     private final DocumentRepository documentRepository;
 
-    public GetPublicSingleDocumentResponse findIsPublicSingleDocument(Long documentId, Long memberId) {
+    public GetPublicSingleDocumentResponse findIsPublicSingleDocument(Long documentId, Long memberId, QuizSortOption quizSortOption) {
         Document document = documentRepository.findByDocumentIdAndIsPublic(documentId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
 
+        if (!document.getIsPublic()) {
+            throw new CustomException(ErrorInfo.CANNOT_VIEW_UNPUBLISHED_DOCUMENT);
+        }
+
         List<GetPublicSingleDocumentResponse.GetPublicSingleDocumentQuizDto> quizDtos = new ArrayList<>();
 
-        Set<Quiz> quizzes = document.getQuizzes();
+        List<Quiz> quizzes = new ArrayList<>(document.getQuizzes());
+        if (quizSortOption == QuizSortOption.CREATED_AT) {
+            quizzes.sort(Comparator.comparing(Quiz::getCreatedAt).reversed());
+        } else {
+            quizzes.sort(Comparator.comparing(Quiz::getCorrectAnswerCount).reversed());
+        }
+
         for (Quiz quiz : quizzes) {
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
@@ -67,6 +76,11 @@ public class PublicDocumentReadService {
             }
         }
 
+        boolean isOwner = false;
+        Member member = document.getDirectory().getMember();
+        if (Objects.equals(memberId, member.getId())) {
+            isOwner = true;
+        }
 
         return GetPublicSingleDocumentResponse.builder()
                 .id(document.getId())
@@ -76,6 +90,7 @@ public class PublicDocumentReadService {
                 .category(document.getCategory().getName())
                 .tryCount(document.getTryCount())
                 .bookmarkCount(bookmarkCount)
+                .isOwner(isOwner)
                 .isBookmarked(isBookmarked)
                 .totalQuizCount(document.getQuizzes().size())
                 .createdAt(document.getCreatedAt())

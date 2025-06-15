@@ -16,7 +16,6 @@ public class NotificationUtil {
 
     public DayOfWeek findNextDay(List<DayOfWeek> repeatDays, DayOfWeek currentDay) {
         repeatDays.sort(Comparator.comparingInt(DayOfWeek::getValue));
-        System.out.println("repeatDays = " + repeatDays);
         for (DayOfWeek day : repeatDays) {
             if (day.getValue() > currentDay.getValue()) {
                 return day;
@@ -31,7 +30,7 @@ public class NotificationUtil {
     }
 
     public Instant toInstant(LocalDateTime startTime) {
-        return startTime.atZone(ZoneId.systemDefault()).toInstant();
+        return startTime.atZone(ZoneId.of("Asia/Seoul")).toInstant();
     }
 
     public List<String> dayOfWeeksToString(List<DayOfWeek> repeatDays) {

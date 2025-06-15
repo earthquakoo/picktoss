@@ -21,14 +21,18 @@ public class Category {
     @Column(name = "emoji", nullable = false)
     private String emoji;
 
+    @Column(name = "color", nullable = false)
+    private String color;
+
     @Column(name = "orders", nullable = false)
     private Integer orders;
 
-    public static Category createCategory(String name, String emoji, Integer orders) {
+    public static Category createCategory(String name, String emoji, String color, Integer orders) {
         return Category.builder()
                 .name(name)
                 .emoji(emoji)
                 .orders(orders)
+                .color(color)
                 .build();
     }
 }

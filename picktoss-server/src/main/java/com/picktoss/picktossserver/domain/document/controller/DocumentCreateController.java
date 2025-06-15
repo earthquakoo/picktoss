@@ -39,7 +39,7 @@ public class DocumentCreateController {
         Long memberId = jwtUserInfo.getMemberId();
         Integer star = Integer.valueOf(request.getStar());
 
-        Long documentId = documentCreateService.createDocument(request.getDocumentName(), request.getEmoji(), request.getCategoryId(), request.getFile(), request.getDocumentType(), request.getQuizType(), request.getIsPublic(), star, memberId);
+        Long documentId = documentCreateService.createDocument(request.getFile(), request.getDocumentType(), request.getIsPublic(), star, memberId);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -54,7 +54,7 @@ public class DocumentCreateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getQuizType(), request.getStar());
+        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getStar());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 }

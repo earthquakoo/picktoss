@@ -4,7 +4,6 @@ import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.outbox.entity.Outbox;
 import com.picktoss.picktossserver.domain.outbox.repository.OutboxRepository;
 import com.picktoss.picktossserver.global.enums.outbox.OutboxStatus;
-import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +18,8 @@ public class OutboxService {
     private final OutboxRepository outboxRepository;
 
     @Transactional
-    public void createOutbox(OutboxStatus status, QuizType createdQuizType, Integer usedStars, Document document) {
-        Outbox outbox = Outbox.createOutbox(status, createdQuizType, usedStars, document);
+    public void createOutbox(OutboxStatus status, Integer usedStars, Document document) {
+        Outbox outbox = Outbox.createOutbox(status, usedStars, document);
 
         outboxRepository.save(outbox);
     }

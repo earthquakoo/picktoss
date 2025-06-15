@@ -71,7 +71,7 @@ public class TransactionOutboxJobConfig {
                     Member member = document.getDirectory().getMember();
                     document.updateDocumentStatusProcessingByGenerateAiPick();
                     outbox.addTryCountBySendMessage();
-                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(member.getId(), document.getS3Key(), document.getId(), outbox.getCreatedQuizType(), outbox.getUsedStars()));
+                    sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(member.getId(), document.getS3Key(), document.getId(), outbox.getUsedStars()));
                 }
                 return RepeatStatus.FINISHED;
             }

@@ -82,6 +82,7 @@ public class DailyQuizRecordService {
                     .isBookmarked(false)
                     .options(optionList)
                     .quizType(quiz.getQuizType())
+                    .documentId(quiz.getDocument().getId())
                     .build();
 
             quizzesDtos.add(quizzesDto);
@@ -116,6 +117,7 @@ public class DailyQuizRecordService {
                         .isBookmarked(true)
                         .options(optionList)
                         .quizType(quiz.getQuizType())
+                        .documentId(quiz.getDocument().getId())
                         .build();
 
                 quizzesDtos.add(quizzesDto);
@@ -147,12 +149,12 @@ public class DailyQuizRecordService {
         dailyQuizRecordDetailRepository.save(dailyQuizRecordDetail);
 
         int reward = 0;
-        int consecutiveSolvedDailyQuizDays = 0;
+        int consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId);
         int todaySolvedDailyQuizCount = dailyQuizRecord.getDailyQuizRecordDetails().size();
 
         if (todaySolvedDailyQuizCount == 10) {
+            consecutiveSolvedDailyQuizDays += 1;
             dailyQuizRecord.updateIsDailyQuizCompleteTrue();
-            consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId);
             if (consecutiveSolvedDailyQuizDays % 5 == 0) {
                 reward = 20;
             } else {
@@ -184,7 +186,7 @@ public class DailyQuizRecordService {
             return 0;
         }
 
-        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate();
+        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate().toLocalDate();
         if (!firstQuizSetDate.equals(LocalDate.now()) && !firstQuizSetDate.equals(LocalDate.now().minusDays(1))) {
             return 0;
         }
@@ -193,7 +195,7 @@ public class DailyQuizRecordService {
         int currentConsecutiveDays = 0;
 
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
-            LocalDate solvedDate = dailyQuizRecord.getSolvedDate();
+            LocalDate solvedDate = dailyQuizRecord.getSolvedDate().toLocalDate();
 
             if (previousDate == null || previousDate.minusDays(1).equals(solvedDate)) {
                 currentConsecutiveDays += 1;

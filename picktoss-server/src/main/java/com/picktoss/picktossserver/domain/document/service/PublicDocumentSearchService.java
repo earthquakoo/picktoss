@@ -1,10 +1,13 @@
 package com.picktoss.picktossserver.domain.document.service;
 
+import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.document.dto.response.GetPublicDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.dto.response.SearchPublicDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
+import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.quiz.entity.Quiz;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,8 +28,12 @@ public class PublicDocumentSearchService {
 
     private final DocumentRepository documentRepository;
 
-    public GetPublicDocumentsResponse findPublicDocuments(Long categoryId, Long memberId, int page) {
-        Pageable pageable = PageRequest.of(page, 15);
+    public GetPublicDocumentsResponse findPublicDocuments(Long categoryId, Long memberId, int page, int pageSize) {
+        if (pageSize < 1) {
+            throw new CustomException(ErrorInfo.DOCUMENT_PAGE_SET_ERROR);
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize);
 
         Page<Document> documents;
         if (categoryId == null) {
@@ -66,12 +73,21 @@ public class PublicDocumentSearchService {
                 }
             }
 
+            boolean isOwner = false;
+            Member member = document.getDirectory().getMember();
+            if (Objects.equals(memberId, member.getId())) {
+                isOwner = true;
+            }
+
             GetPublicDocumentsResponse.GetPublicDocumentsDto documentsDto = GetPublicDocumentsResponse.GetPublicDocumentsDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .emoji(document.getEmoji())
+                    .creator(member.getName())
+                    .category(document.getCategory().getName())
                     .tryCount(document.getTryCount())
                     .isBookmarked(isBookmarked)
+                    .isOwner(isOwner)
                     .bookmarkCount(bookmarkCount)
                     .totalQuizCount(document.getQuizzes().size())
                     .quizzes(quizDtos)
@@ -100,12 +116,19 @@ public class PublicDocumentSearchService {
                 }
             }
 
+            boolean isOwner = false;
+            Member member = document.getDirectory().getMember();
+            if (Objects.equals(memberId, member.getId())) {
+                isOwner = true;
+            }
+
             SearchPublicDocumentsResponse.SearchPublicDocumentsDto publicDocumentsDto = SearchPublicDocumentsResponse.SearchPublicDocumentsDto.builder()
                     .id(document.getId())
                     .name(document.getName())
                     .emoji(document.getEmoji())
                     .category(document.getCategory().getName())
                     .creatorName(document.getDirectory().getMember().getName())
+                    .isOwner(isOwner)
                     .isBookmarked(isBookmarked)
                     .tryCount(document.getTryCount())
                     .bookmarkCount(bookmarkCount)
