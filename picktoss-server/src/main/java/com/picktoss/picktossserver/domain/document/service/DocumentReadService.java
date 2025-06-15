@@ -47,7 +47,7 @@ public class DocumentReadService {
 
         List<Quiz> quizzes = new ArrayList<>(document.getQuizzes());
         if (quizSortOption == QuizSortOption.CREATED_AT) {
-            quizzes.sort(Comparator.comparing(Quiz::getCreatedAt).reversed());
+            quizzes.sort(Comparator.comparing(Quiz::getId).reversed());
         } else {
             quizzes.sort(Comparator.comparing(Quiz::getCorrectAnswerCount).reversed());
         }
@@ -56,13 +56,14 @@ public class DocumentReadService {
         for (Quiz quiz : quizzes) {
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-                Set<Option> options = quiz.getOptions();
+                List<String> options = quiz.getOptions().stream()
+                        .sorted(Comparator.comparing(Option::getId))
+                        .map(Option::getOption)
+                        .toList();
                 if (options.isEmpty()) {
                     continue;
                 }
-                for (Option option : options) {
-                    optionList.add(option.getOption());
-                }
+                optionList.addAll(options);
             }
 
             GetSingleDocumentResponse.GetSingleDocumentQuizDto quizDto = GetSingleDocumentResponse.GetSingleDocumentQuizDto.builder()
