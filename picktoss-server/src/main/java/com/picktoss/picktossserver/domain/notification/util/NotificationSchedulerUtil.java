@@ -83,7 +83,7 @@ public class NotificationSchedulerUtil {
 
     private void handleNotification(Notification notification) {
 
-        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
+//        createNotificationForRedis(notification.getNotificationKey(), notification.getTitle(), notification.getContent(), notification.getNotificationTime(), notification.getNotificationType());
 
         sendNotification(notification).run();
 
@@ -176,7 +176,7 @@ public class NotificationSchedulerUtil {
                 boolean b = filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member);
                 if (!filterNotificationTarget(notification.getNotificationType(), notification.getNotificationTarget(), member)) continue;
 
-                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
+//                addNotificationReceivedMemberData(member.getId(), notification.getNotificationKey());
                 Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, member.getId().toString(), String.class);
                 if (optionalToken.isEmpty()) {
                     continue;
