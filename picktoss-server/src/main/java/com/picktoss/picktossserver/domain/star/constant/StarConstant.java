@@ -2,7 +2,7 @@ package com.picktoss.picktossserver.domain.star.constant;
 
 public final class StarConstant {
 
-    public static final int SIGN_UP_STAR = 30;
+    public static final int SIGN_UP_STAR = 200;
 
     public static final int INVITE_FRIEND_REWARD = 50;
 
