@@ -125,6 +125,7 @@ public class DocumentReadService {
         for (Document document : documents) {
             int reviewNeededQuizCount = 0;
             List<Quiz> quizzes = new ArrayList<>(document.getQuizzes());
+            quizzes.sort(Comparator.comparing(Quiz::getId).reversed());
             for (Quiz quiz : quizzes) {
                 boolean reviewNeeded = quiz.isReviewNeeded();
                 if (reviewNeeded) {
