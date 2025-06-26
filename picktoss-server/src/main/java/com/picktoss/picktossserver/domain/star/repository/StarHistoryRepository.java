@@ -13,7 +13,7 @@ public interface StarHistoryRepository extends JpaRepository<StarHistory, Long> 
     @Query("SELECT sh FROM StarHistory sh " +
             "JOIN FETCH sh.star s " +
             "WHERE s.member.id = :memberId " +
-            "ORDER BY sh.createdAt")
+            "ORDER BY sh.createdAt DESC")
     List<StarHistory> findAllByMemberIdOrderByCreatedAt(
             @Param("memberId") Long memberId
     );
@@ -21,7 +21,8 @@ public interface StarHistoryRepository extends JpaRepository<StarHistory, Long> 
     @Query("SELECT sh FROM StarHistory sh " +
             "JOIN FETCH sh.star s " +
             "WHERE s.member.id = :memberId " +
-            "AND sh.transactionType = :transactionType")
+            "AND sh.transactionType = :transactionType " +
+            "ORDER BY sh.createdAt DESC")
     List<StarHistory> findAllByMemberIdAndTransactionTypeOrderByCreatedAt(
             @Param("memberId") Long memberId,
             @Param("transactionType") TransactionType transactionType

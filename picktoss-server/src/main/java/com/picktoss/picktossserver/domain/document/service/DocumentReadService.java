@@ -124,15 +124,16 @@ public class DocumentReadService {
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
             int reviewNeededQuizCount = 0;
-            Set<Quiz> quizzes = document.getQuizzes();
+            List<Quiz> quizzes = new ArrayList<>(document.getQuizzes());
+            quizzes.sort(Comparator.comparing(Quiz::getId).reversed());
             for (Quiz quiz : quizzes) {
                 boolean reviewNeeded = quiz.isReviewNeeded();
                 if (reviewNeeded) {
                     reviewNeededQuizCount += 1;
                 }
             }
-            String content = s3Provider.findFile(document.getS3Key());
-            String previewContent = content.substring(0, 100);
+
+            String previewContent = quizzes.getFirst().getQuestion();
 
             int bookmarkCount = 0;
 

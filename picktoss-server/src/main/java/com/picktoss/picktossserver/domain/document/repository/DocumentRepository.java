@@ -98,7 +98,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN FETCH d.quizzes " +
-            "WHERE d.isPublic = true")
+            "WHERE d.isPublic = true " +
+            "ORDER BY d.createdAt DESC")
     Page<Document> findAllByIsPublic(
             Pageable pageable
     );
@@ -106,7 +107,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN FETCH d.quizzes " +
             "WHERE d.isPublic = true " +
-            "AND d.category.id = :categoryId")
+            "AND d.category.id = :categoryId " +
+            "ORDER BY d.createdAt DESC")
     Page<Document> findAllByIsPublicAndCategoryId(
             @Param("categoryId") Long categoryId,
             Pageable pageable
