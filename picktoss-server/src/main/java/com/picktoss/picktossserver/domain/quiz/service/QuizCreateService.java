@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.quiz.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
 import com.picktoss.picktossserver.domain.quiz.dto.response.CreateQuizSetResponse;
@@ -35,6 +36,7 @@ public class QuizCreateService {
 
     @Transactional
     public CreateQuizSetResponse createQuizSet(Long documentId, Long memberId, Integer quizCount, DailyQuizType dailyQuizType) {
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
@@ -45,6 +47,9 @@ public class QuizCreateService {
             QuizType quizType = QuizType.valueOf(dailyQuizType.toString());
             quizzes = quizRepository.findAllByDocumentIdAndQuizType(documentId, quizType);
         }
+
+        Document document = quizzes.getFirst().getDocument();
+        document.updateDocumentTryCountBySolvedQuizSet();
 
         Collections.shuffle(quizzes);
 
