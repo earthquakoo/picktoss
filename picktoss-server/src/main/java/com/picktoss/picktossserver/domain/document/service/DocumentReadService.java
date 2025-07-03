@@ -133,7 +133,11 @@ public class DocumentReadService {
                 }
             }
 
-            String previewContent = quizzes.getFirst().getQuestion();
+            String previewContent = "";
+
+            if (!quizzes.isEmpty()) {
+                previewContent = quizzes.getFirst().getQuestion();
+            }
 
             int bookmarkCount = 0;
 
