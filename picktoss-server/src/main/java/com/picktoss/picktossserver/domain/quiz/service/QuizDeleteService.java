@@ -23,6 +23,8 @@ public class QuizDeleteService {
                 .orElseThrow(() -> new CustomException(QUIZ_NOT_FOUND_ERROR));
 
         Document document = quiz.getDocument();
+        document.getQuizzes().remove(quiz);
+
         if (document.getQuizzes().size() - 1 <= 5) {
             document.updateDocumentIsPublic(false);
         }

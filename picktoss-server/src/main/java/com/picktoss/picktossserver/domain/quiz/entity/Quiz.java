@@ -6,9 +6,7 @@ import com.picktoss.picktossserver.global.enums.quiz.QuizType;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -55,11 +53,11 @@ public class Quiz extends AuditBase {
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Option> options = new HashSet<>();
 
-    @OneToMany(mappedBy = "quiz", orphanRemoval = true)
-    private List<QuizSetQuiz> quizSetQuizzes = new ArrayList<>();
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<QuizSetQuiz> quizSetQuizzes = new HashSet<>();
 
-    @OneToMany(mappedBy = "quiz", orphanRemoval = true)
-    private List<DailyQuizRecordDetail> dailyQuizRecordDetails = new ArrayList<>();
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<DailyQuizRecordDetail> dailyQuizRecordDetails = new HashSet<>();
 
     // Business Logics
     public void addCorrectAnswerCount() {
