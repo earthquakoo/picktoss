@@ -38,7 +38,6 @@ public class QuizUpdateService {
 
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
-        document.updateDocumentTryCountBySolvedQuizSet();
 
         boolean isOwner = false;
         Member member = document.getDirectory().getMember();
