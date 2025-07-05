@@ -1,6 +1,7 @@
 package com.picktoss.picktossserver.domain.auth.controller;
 
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.domain.auth.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.service.AuthCreateService;
 import com.picktoss.picktossserver.domain.auth.service.AuthTestService;
 import com.picktoss.picktossserver.domain.auth.util.AuthUtil;
@@ -24,7 +25,7 @@ public class AuthTestController {
     private final AuthTestService authTestService;
     private final AuthUtil authUtil;
 
-    @Operation(summary = "Oauth url api")
+    @Operation(summary = "Google Oauth url api")
     @GetMapping("/oauth/url")
     public RedirectView oauthUrlApi() {
         String oauthUrl = authTestService.getRedirectUri();
@@ -32,7 +33,7 @@ public class AuthTestController {
         return new RedirectView(oauthUrl);
     }
 
-    @Operation(summary = "Oauth callback")
+    @Operation(summary = "Google Oauth callback")
     @GetMapping("/callback")
     public String googleLogin(@RequestParam("code") String code) {
         String idToken = authTestService.getOauthAccessToken(code);
@@ -43,5 +44,32 @@ public class AuthTestController {
         JwtTokenDto jwtTokenDto = authTestService.createMember(memberInfoDto);
         System.out.println("jwtTokenDto.getAccessToken() = " + jwtTokenDto.getAccessToken());
         return jwtTokenDto.getAccessToken();
+    }
+
+    @Operation(summary = "Kakao Oauth url api")
+    @GetMapping("/oauth/url/kakao")
+    public RedirectView kakaoOauthUrlApi() {
+        String kakaoRedirectUri = authTestService.getKakaoRedirectUri();
+        return new RedirectView(kakaoRedirectUri);
+    }
+
+    @Operation(summary = "Kakao Oauth callback")
+    @GetMapping("/kakao/callback")
+    public void kakaoLogin(@RequestParam("code") String code) {
+        String kakaoOauthAccessToken = authTestService.getKakaoOauthAccessToken(code);
+        System.out.println("kakaoOauthAccessToken = " + kakaoOauthAccessToken);
+    }
+
+    @Operation(summary = "Get Kakao user info")
+    @GetMapping("/kakao/info")
+    public void getKakaoUserInfo(@RequestParam("code") String code) {
+        String oauthAccessMemberInfo = authTestService.getOauthAccessMemberInfo(code);
+        System.out.println("oauthAccessMemberInfo = " + oauthAccessMemberInfo);
+        KakaoMemberDto kakaoMemberDto = authUtil.transJsonToKakaoMemberDto(oauthAccessMemberInfo);
+        String email = kakaoMemberDto.getKakaoAccount().getEmail();
+        String nickname = kakaoMemberDto.getKakaoAccount().getProfile().getNickName();
+
+        System.out.println("email = " + email);
+        System.out.println("nickname = " + nickname);
     }
 }

@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
-import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.core.s3.S3Provider;
@@ -17,23 +15,18 @@ import com.picktoss.picktossserver.domain.auth.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.OauthResponseDto;
 import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
-import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
 import com.picktoss.picktossserver.domain.auth.entity.EmailVerification;
 import com.picktoss.picktossserver.domain.auth.repository.EmailVerificationRepository;
-import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.directory.repository.DirectoryRepository;
 import com.picktoss.picktossserver.domain.member.dto.dto.MemberInfoDto;
 import com.picktoss.picktossserver.domain.member.entity.Member;
 import com.picktoss.picktossserver.domain.member.repository.MemberRepository;
-import com.picktoss.picktossserver.domain.star.constant.StarConstant;
 import com.picktoss.picktossserver.domain.star.entity.Star;
 import com.picktoss.picktossserver.domain.star.entity.StarHistory;
 import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import com.picktoss.picktossserver.domain.star.repository.StarRepository;
 import com.picktoss.picktossserver.global.enums.auth.CheckInviteCodeResponseType;
 import com.picktoss.picktossserver.global.enums.member.SocialPlatform;
-import com.picktoss.picktossserver.global.enums.star.Source;
-import com.picktoss.picktossserver.global.enums.star.TransactionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -101,72 +94,6 @@ public class AuthService {
             return responseEntity.getBody().getIdToken().split("\\.")[1];
         }
         return null;
-    }
-
-    @Transactional
-    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String inviteLink) {
-        String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
-
-        if (socialPlatform == SocialPlatform.KAKAO) {
-            KakaoMemberDto kakaoMemberDto = transJsonToKakaoMemberDto(memberInfo);
-            Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
-
-            if (optionalMember.isEmpty()) {
-                String uniqueCode = generateUniqueCode();
-                String nickname = "Picktoss#" + uniqueCode;
-                Member member = Member.createKakaoMember(nickname, kakaoMemberDto.getId());
-                memberRepository.save(member);
-
-                Star star = Star.createStar(StarConstant.SIGN_UP_STAR, member);
-                StarHistory starHistory = StarHistory.createStarHistory("회원 가입", StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
-
-                starRepository.save(star);
-                starHistoryRepository.save(starHistory);
-
-                Directory directory = Directory.createDefaultDirectory(member);
-                directoryRepository.save(directory);
-
-
-                if (inviteLink != null) {
-                    verifyInviteCode(inviteLink, member.getId());
-                }
-                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
-                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
-            } else {
-                Member member = optionalMember.get();
-                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
-                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
-            }
-        } else if (socialPlatform == SocialPlatform.GOOGLE) {
-            GoogleMemberDto googleMemberDto = transJsonToGoogleMemberDto(memberInfo);
-            Optional<Member> optionalMember = memberRepository.findByClientId(googleMemberDto.getId());
-
-            if (optionalMember.isEmpty()) {
-                Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
-                memberRepository.save(member);
-
-                if (inviteLink != null) {
-                    verifyInviteCode(inviteLink, member.getId());
-                }
-                Star star = Star.createStar(StarConstant.SIGN_UP_STAR, member);
-                StarHistory starHistory = StarHistory.createStarHistory("회원 가입", StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
-
-                starRepository.save(star);
-                starHistoryRepository.save(starHistory);
-
-                Directory directory = Directory.createDefaultDirectory(member);
-                directoryRepository.save(directory);
-                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
-                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), true);
-            } else {
-                Member member = optionalMember.get();
-                JwtTokenDto jwtTokenDto = jwtTokenProvider.generateToken(member);
-                return new LoginResponse(jwtTokenDto.getAccessToken(), jwtTokenDto.getAccessTokenExpiration(), false);
-            }
-
-        } else {
-            throw new CustomException(ErrorInfo.INVALID_SOCIAL_PLATFORM);
-        }
     }
 
     public String getOauthAccessMemberInfo(String accessToken, SocialPlatform socialPlatform) {
