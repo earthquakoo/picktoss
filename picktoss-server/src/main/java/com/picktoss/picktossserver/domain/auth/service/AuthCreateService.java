@@ -51,6 +51,7 @@ public class AuthCreateService {
     @Transactional
     public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
+        System.out.println("memberInfo = " + memberInfo);
 
         if (socialPlatform == SocialPlatform.KAKAO) {
             KakaoMemberDto kakaoMemberDto = authUtil.transJsonToKakaoMemberDto(memberInfo);
