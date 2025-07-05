@@ -103,6 +103,9 @@ oauth:
     client_id: ${PICKTOSS_NOTION_CLIENT_ID}
     client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
     redirect_uri: ${PICKTOSS_NOTION_OAUTH_REDIRECT_URI}
+  kakao:
+    client_id: ${PICKTOSS_KAKAO_OAUTH_CLIENT_ID}
+    redirect_uri: ${PICKTOSS_KAKAO_OAUTH_REDIRECT_URI}
 
 cloud:
   aws:

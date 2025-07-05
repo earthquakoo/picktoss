@@ -95,11 +95,12 @@ public class Member extends AuditBase {
                 .build();
     }
 
-    public static Member createKakaoMember(String name, String clientId) {
+    public static Member createKakaoMember(String name, String clientId, String email) {
         return Member.builder()
                 .name(name)
                 .clientId(clientId)
                 .socialPlatform(SocialPlatform.KAKAO)
+                .email(email)
                 .isQuizNotificationEnabled(false)
                 .role(MemberRole.ROLE_USER)
                 .build();

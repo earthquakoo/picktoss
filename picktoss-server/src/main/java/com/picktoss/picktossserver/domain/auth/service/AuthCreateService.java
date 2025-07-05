@@ -60,7 +60,7 @@ public class AuthCreateService {
             if (optionalMember.isEmpty()) {
                 Member member = createKakaoMember(kakaoMemberDto);
 
-                Star star = createMemberStar(member);
+                createMemberStar(member);
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
@@ -78,7 +78,7 @@ public class AuthCreateService {
             if (optionalMember.isEmpty()) {
                 Member member = createGoogleMember(googleMemberDto);
 
-                Star star = createMemberStar(member);
+                createMemberStar(member);
                 createDefaultDirectory(member);
                 createMemberSubscription(member);
 
@@ -126,10 +126,7 @@ public class AuthCreateService {
 
     @Transactional
     private Member createKakaoMember(KakaoMemberDto kakaoMemberDto) {
-        String uniqueCode = authUtil.generateUniqueCode();
-        String nickname = "Picktoss#" + uniqueCode;
-
-        Member member = Member.createKakaoMember(nickname, kakaoMemberDto.getId());
+        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail());
         memberRepository.save(member);
 
         return member;

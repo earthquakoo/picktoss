@@ -19,10 +19,11 @@ import com.picktoss.picktossserver.global.enums.star.Source;
 import com.picktoss.picktossserver.global.enums.star.TransactionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -48,6 +49,12 @@ public class AuthTestService {
 
     @Value("${oauth.google.redirect_uri}")
     private String redirectUri;
+
+    @Value("${oauth.kakao.client_id}")
+    private String kakaoOauthClientId;
+
+    @Value("${oauth.kakao.redirect_uri}")
+    private String kakaoOauthRedirectUri;
 
     @Transactional
     public JwtTokenDto createMember(MemberInfoDto memberInfoDto) {
@@ -89,14 +96,6 @@ public class AuthTestService {
         subscriptionRepository.save(subscription);
     }
 
-    public String getRedirectUri() {
-        return String.format(
-                "https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
-                oauthClientId,
-                redirectUri
-        );
-    }
-
     public String getOauthAccessToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();
         HashMap<String, String> params = new HashMap<>();
@@ -116,5 +115,59 @@ public class AuthTestService {
             return responseEntity.getBody().getIdToken().split("\\.")[1];
         }
         return null;
+    }
+
+    public String getRedirectUri() {
+        return String.format(
+                "https://accounts.google.com/o/oauth2/auth?client_id=%s&response_type=code&redirect_uri=%s&scope=openid%%20email%%20profile",
+                oauthClientId,
+                redirectUri
+        );
+    }
+
+    public String getKakaoRedirectUri() {
+        return String.format(
+                "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=%s&redirect_uri=%s",
+                kakaoOauthClientId,
+                kakaoOauthRedirectUri
+        );
+    }
+
+    public String getKakaoOauthAccessToken(String accessCode) {
+        RestTemplate restTemplate = new RestTemplate();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        String kakaoUri = "https://kauth.kakao.com/oauth/token";
+
+        params.add("code", accessCode);
+        params.add("client_id", kakaoOauthClientId);
+        params.add("redirect_uri", kakaoOauthRedirectUri);
+        params.add("grant_type", "authorization_code");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        ResponseEntity<OauthResponseDto> responseEntity =
+                restTemplate.postForEntity(kakaoUri, request, OauthResponseDto.class);
+
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            return responseEntity.getBody().getAccessToken();
+        }
+        return null;
+    }
+
+    public String getOauthAccessMemberInfo(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+        RestTemplate restTemplate = new RestTemplate();
+
+        final String getKakaoUserInfoUrl = "https://kapi.kakao.com/v2/user/me";
+
+        ResponseEntity<String> response = restTemplate.exchange(getKakaoUserInfoUrl, HttpMethod.GET, request, String.class);
+        return response.getBody();
     }
 }
