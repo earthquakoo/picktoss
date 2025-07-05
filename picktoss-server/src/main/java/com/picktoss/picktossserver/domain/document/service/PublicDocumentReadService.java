@@ -29,9 +29,9 @@ public class PublicDocumentReadService {
         Document document = documentRepository.findByDocumentIdAndIsPublic(documentId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
 
-        if (!document.getIsPublic()) {
-            throw new CustomException(ErrorInfo.CANNOT_VIEW_UNPUBLISHED_DOCUMENT);
-        }
+//        if (!document.getIsPublic()) {
+//            throw new CustomException(ErrorInfo.CANNOT_VIEW_UNPUBLISHED_DOCUMENT);
+//        }
 
         List<GetPublicSingleDocumentResponse.GetPublicSingleDocumentQuizDto> quizDtos = new ArrayList<>();
 
