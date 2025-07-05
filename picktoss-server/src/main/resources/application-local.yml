@@ -62,6 +62,9 @@ oauth:
   notion:
     client_id: ${PICKTOSS_NOTION_CLIENT_ID}
     client_secret: ${PICKTOSS_NOTION_CLIENT_SECRET}
+  kakao:
+    client_id: ${PICKTOSS_KAKAO_OAUTH_CLIENT_ID}
+    redirect_uri: ${PICKTOSS_KAKAO_OAUTH_REDIRECT_URI}
 
 mailgun:
   api_key: ${PICKTOSS_MAILGUN_API_KEY}
