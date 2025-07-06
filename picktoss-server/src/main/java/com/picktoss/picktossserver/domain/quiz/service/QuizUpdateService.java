@@ -101,9 +101,7 @@ public class QuizUpdateService {
             optionList.get(i).updateOptionContent(options.get(i));
         }
 
-        Set<Option> newOptionSet = new HashSet<>(optionList);
-
-        quiz.updateQuizInfoByInvalidQuiz(question, answer, explanation, newOptionSet);
+        quiz.updateQuizInfoByInvalidQuiz(question, answer, explanation);
     }
 
     @Transactional
