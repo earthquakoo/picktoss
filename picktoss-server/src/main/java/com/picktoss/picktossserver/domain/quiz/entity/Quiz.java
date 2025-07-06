@@ -80,7 +80,7 @@ public class Quiz extends AuditBase {
         this.isReviewNeeded = false;
     }
 
-    public void updateQuizInfoByInvalidQuiz(String question, String answer, String explanation, Set<Option> options) {
+    public void updateQuizInfoByInvalidQuiz(String question, String answer, String explanation) {
         if (question != null && !question.isEmpty()) {
             this.question = question;
         }
@@ -91,10 +91,6 @@ public class Quiz extends AuditBase {
 
         if (explanation != null && !explanation.isEmpty()) {
             this.explanation = explanation;
-        }
-
-        if (options != null && !options.isEmpty()) {
-            this.options = options;
         }
     }
 }
