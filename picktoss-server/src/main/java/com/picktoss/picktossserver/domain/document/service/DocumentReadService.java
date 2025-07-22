@@ -172,8 +172,10 @@ public class DocumentReadService {
 
         if (documentSortOption == BookmarkedDocumentSortOption.QUIZ_COUNT) {
             documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndIsPublicTrueOrderByQuizCountDesc(memberId);
-        } else {
+        } else if (documentSortOption == BookmarkedDocumentSortOption.CREATED_AT) {
             documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndIsPublicTrueOrderByCreatedAtDesc(memberId);
+        } else {
+            documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndIsPublicTrueOrderByNameDesc(memberId);
         }
 
         List<GetBookmarkedDocumentsResponse.GetBookmarkedDocumentsDto> documentsDtos = new ArrayList<>();

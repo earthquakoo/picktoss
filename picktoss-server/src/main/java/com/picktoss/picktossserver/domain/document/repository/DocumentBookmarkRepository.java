@@ -55,4 +55,14 @@ public interface DocumentBookmarkRepository extends JpaRepository<DocumentBookma
     List<DocumentBookmark> findAllByMemberIdAndIsPublicTrueOrderByCreatedAtDesc(
             @Param("memberId") Long memberId
     );
+
+    @Query("SELECT db FROM DocumentBookmark db " +
+            "JOIN db.document d " +
+            "LEFT JOIN d.quizzes q " +
+            "WHERE db.member.id = :memberId " +
+            "AND d.isPublic = true " +
+            "ORDER BY d.name DESC")
+    List<DocumentBookmark> findAllByMemberIdAndIsPublicTrueOrderByNameDesc(
+            @Param("memberId") Long memberId
+    );
 }
