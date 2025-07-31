@@ -2,8 +2,9 @@ package com.picktoss.picktossserver.domain.document.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.document.dto.response.GetPublicDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.dto.response.SearchPublicDocumentsResponse;
+import com.picktoss.picktossserver.domain.document.dto.response.SearchDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentRepository;
@@ -23,6 +24,7 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class PublicDocumentSearchService {
 
+    private final S3Provider s3Provider;
     private final DocumentRepository documentRepository;
 
     public GetPublicDocumentsResponse findPublicDocuments(Long categoryId, Long memberId, int page, int pageSize) {
@@ -95,46 +97,67 @@ public class PublicDocumentSearchService {
         return new GetPublicDocumentsResponse(totalPages, totalDocuments, documentsDtos);
     }
 
-    public SearchPublicDocumentsResponse searchPublicDocuments(String keyword, Long memberId) {
-        List<Document> documents = documentRepository.findAllByIsPublicAndKeyword(keyword);
+    public SearchDocumentsResponse searchPublicDocuments(String keyword, Long memberId) {
+        List<Document> documents = documentRepository.findAllByIsPublicOrOwnerAndKeyword(keyword, memberId);
 
-        List<SearchPublicDocumentsResponse.SearchPublicDocumentsDto> publicDocumentsDtos = new ArrayList<>();
+        List<SearchDocumentsResponse.SearchDocumentsDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
-            boolean isBookmarked = false;
-            int bookmarkCount = 0;
-            Set<DocumentBookmark> documentBookmarks = document.getDocumentBookmarks();
-            if (documentBookmarks != null && !documentBookmarks.isEmpty()) {
-                bookmarkCount = documentBookmarks.size();
+            List<SearchDocumentsResponse.SearchDocumentsQuizDto> quizDtos = new ArrayList<>();
 
-                for (DocumentBookmark documentBookmark : documentBookmarks) {
-                    if (Objects.equals(documentBookmark.getMember().getId(), memberId)) {
-                        isBookmarked = true;
-                    }
+            String content = s3Provider.findFile(document.getS3Key());
+            String documentName = document.getName();
+
+            boolean isOwner = Objects.equals(memberId, document.getDirectory().getMember().getId());
+            boolean isBookmarked = Optional.ofNullable(document.getDocumentBookmarks())
+                    .orElse(Collections.emptySet())
+                    .stream()
+                    .anyMatch(bookmark -> Objects.equals(memberId, bookmark.getMember().getId()));
+
+            int bookmarkCount = 0;
+            if (document.getIsPublic()) {
+                Set<DocumentBookmark> documentBookmarkList = document.getDocumentBookmarks();
+                if (documentBookmarkList != null && !documentBookmarkList.isEmpty()) {
+                    bookmarkCount = documentBookmarkList.size();
                 }
             }
 
-            boolean isOwner = false;
-            Member member = document.getDirectory().getMember();
-            if (Objects.equals(memberId, member.getId())) {
-                isOwner = true;
+            for (Quiz quiz : document.getQuizzes()) {
+                if (quiz.getQuestion().toLowerCase().contains(keyword.toLowerCase())
+                        || quiz.getAnswer().toLowerCase().contains(keyword.toLowerCase())
+                        || quiz.getExplanation().toLowerCase().contains(keyword.toLowerCase())
+                        || content.toLowerCase().contains(keyword.toLowerCase())
+                        || documentName.toLowerCase().contains(keyword.toLowerCase())) {
+
+                    SearchDocumentsResponse.SearchDocumentsQuizDto quizDto =
+                            SearchDocumentsResponse.SearchDocumentsQuizDto.builder()
+                                    .question(quiz.getQuestion())
+                                    .answer(quiz.getAnswer())
+                                    .explanation(quiz.getExplanation())
+                                    .build();
+
+                    quizDtos.add(quizDto);
+
+                    SearchDocumentsResponse.SearchDocumentsDto documentDto =
+                            SearchDocumentsResponse.SearchDocumentsDto.builder()
+                                    .id(document.getId())
+                                    .name(document.getName())
+                                    .emoji(document.getEmoji())
+                                    .content(content)
+                                    .isOwner(isOwner)
+                                    .isPublic(document.getIsPublic())
+                                    .isBookmarked(isBookmarked)
+                                    .tryCount(document.getTryCount())
+                                    .bookmarkCount(bookmarkCount)
+                                    .totalQuizCount(document.getQuizzes().size())
+                                    .quizzes(quizDtos)
+                                    .build();
+
+                    documentDtos.add(documentDto);
+                    break;
+                }
             }
-
-            SearchPublicDocumentsResponse.SearchPublicDocumentsDto publicDocumentsDto = SearchPublicDocumentsResponse.SearchPublicDocumentsDto.builder()
-                    .id(document.getId())
-                    .name(document.getName())
-                    .emoji(document.getEmoji())
-                    .category(document.getCategory().getName())
-                    .creatorName(document.getDirectory().getMember().getName())
-                    .isOwner(isOwner)
-                    .isBookmarked(isBookmarked)
-                    .tryCount(document.getTryCount())
-                    .bookmarkCount(bookmarkCount)
-                    .totalQuizCount(document.getQuizzes().size())
-                    .build();
-
-            publicDocumentsDtos.add(publicDocumentsDto);
         }
 
-        return new SearchPublicDocumentsResponse(publicDocumentsDtos);
+        return new SearchDocumentsResponse(documentDtos);
     }
 }

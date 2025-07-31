@@ -79,6 +79,7 @@ public class SecurityConfig {
                                 "/api/v2/categories",
                                 "/api/v2/documents/public",
                                 "/api/v2/documents/{document_id}/public",
+                                "/api/v2/documents/{document_id}",
                                 "/api/v2/documents/public/search"
                         )
                         .permitAll()

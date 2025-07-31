@@ -44,6 +44,20 @@ public class DocumentReadController {
         return ResponseEntity.ok().body(documents);
     }
 
+//    @Operation(summary = "단일 문서 가져오기")
+//    @GetMapping("/documents/{document_id}")
+//    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
+//    @ResponseStatus(HttpStatus.OK)
+//    public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
+//            @PathVariable(name = "document_id") Long documentId
+//    ) {
+//        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+//        Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
+//
+//        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId);
+//        return ResponseEntity.ok().body(documents);
+//    }
+
     @Operation(summary = "모든 문서 가져오기")
     @GetMapping("/documents")
     @ApiErrorCodeExamples({AMAZON_SERVICE_EXCEPTION, DOCUMENT_SORT_OPTION_NOT_SELECT})

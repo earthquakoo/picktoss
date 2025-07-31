@@ -6,7 +6,7 @@ import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.domain.document.dto.request.SearchRequest;
 import com.picktoss.picktossserver.domain.document.dto.response.GetPublicDocumentsResponse;
-import com.picktoss.picktossserver.domain.document.dto.response.SearchPublicDocumentsResponse;
+import com.picktoss.picktossserver.domain.document.dto.response.SearchDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.service.PublicDocumentSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,11 +44,11 @@ public class PublicDocumentSearchController {
     @Operation(summary = "공개된 문서 검색")
     @PostMapping("/documents/public/search")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<SearchPublicDocumentsResponse> searchPublicDocuments(@Valid @RequestBody SearchRequest request) {
+    public ResponseEntity<SearchDocumentsResponse> searchPublicDocuments(@Valid @RequestBody SearchRequest request) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
-        SearchPublicDocumentsResponse response = publicDocumentSearchService.searchPublicDocuments(request.getKeyword(), memberId);
+        SearchDocumentsResponse response = publicDocumentSearchService.searchPublicDocuments(request.getKeyword(), memberId);
         return ResponseEntity.ok().body(response);
     }
 }

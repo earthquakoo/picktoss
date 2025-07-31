@@ -32,4 +32,17 @@ public interface DailyQuizRecordDetailRepository extends JpaRepository<DailyQuiz
             @Param("startDate") LocalDateTime starDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("SELECT dqrd FROM DailyQuizRecordDetail dqrd " +
+            "JOIN FETCH dqrd.dailyQuizRecord dqr " +
+            "JOIN FETCH dqrd.quiz q " +
+            "JOIN FETCH q.document d " +
+            "WHERE dqr.member.id = :memberId " +
+            "AND d.id = :documentId " +
+            "AND dqr.solvedDate >= :oneMonthAgo")
+    List<DailyQuizRecordDetail> findAllByMemberIdAndDocumentIdAndSolvedDateAfter(
+            @Param("memberId") Long memberId,
+            @Param("documentId") Long documentId,
+            @Param("oneMonthAgo") LocalDateTime oneMonthAgo
+    );
 }
