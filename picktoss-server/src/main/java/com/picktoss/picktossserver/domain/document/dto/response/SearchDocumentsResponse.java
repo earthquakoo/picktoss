@@ -11,7 +11,6 @@ import java.util.List;
 public class SearchDocumentsResponse {
 
     private List<SearchDocumentsDto> documents;
-    private List<SearchBookmarkDocumentsDto> bookmarkedDocuments;
 
     @Getter
     @Builder
@@ -20,19 +19,9 @@ public class SearchDocumentsResponse {
         private String name;
         private String emoji;
         private String content;
+        private Boolean isOwner;
         private Boolean isPublic;
-        private int tryCount;
-        private int bookmarkCount;
-        private int totalQuizCount;
-        private List<SearchDocumentsQuizDto> quizzes;
-    }
-
-    @Getter
-    @Builder
-    public static class SearchBookmarkDocumentsDto {
-        private Long id;
-        private String name;
-        private String emoji;
+        private Boolean isBookmarked;
         private int tryCount;
         private int bookmarkCount;
         private int totalQuizCount;

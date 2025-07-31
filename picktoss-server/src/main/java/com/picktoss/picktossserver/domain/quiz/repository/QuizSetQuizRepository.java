@@ -50,4 +50,20 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             @Param("startDateTime") LocalDateTime starDateTime,
             @Param("endDateTime") LocalDateTime endDateTime
     );
+
+    @Query("SELECT qsq FROM QuizSetQuiz qsq " +
+            "JOIN FETCH qsq.quizSet qs " +
+            "JOIN FETCH qsq.quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.directory dir " +
+            "WHERE qs.member.id = :memberId " +
+            "AND d.id = :documentId " +
+            "AND qsq.createdAt >= :oneMonthAgo " +
+            "AND qs.solved = true")
+    List<QuizSetQuiz> findAllByMemberIdAndDocumentIdAndCreatedAtAfterAndSolvedTrue(
+            @Param("memberId") Long memberId,
+            @Param("documentId") Long documentId,
+            @Param("oneMonthAgo") LocalDateTime oneMonthAgo
+    );
 }
