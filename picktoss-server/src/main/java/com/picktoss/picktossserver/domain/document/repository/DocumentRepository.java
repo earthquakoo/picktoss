@@ -40,9 +40,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "LEFT JOIN FETCH d.documentBookmarks " +
             "LEFT JOIN FETCH d.quizzes q " +
             "LEFT JOIN FETCH q.options " +
-            "WHERE d.id = :documentId")
+            "WHERE d.id = :documentId " +
+            "AND (dir.member.id = :memberId OR d.isPublic = true)")
     Optional<Document> findDocumentWithQuizzesByDocumentId(
-            @Param("documentId") Long documentId
+            @Param("documentId") Long documentId,
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
