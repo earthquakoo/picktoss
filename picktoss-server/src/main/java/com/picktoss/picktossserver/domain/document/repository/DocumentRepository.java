@@ -36,6 +36,17 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
+            "JOIN FETCH d.category c " +
+            "LEFT JOIN FETCH d.documentBookmarks " +
+            "LEFT JOIN FETCH d.quizzes q " +
+            "LEFT JOIN FETCH q.options " +
+            "WHERE d.id = :documentId")
+    Optional<Document> findDocumentWithQuizzesByDocumentId(
+            @Param("documentId") Long documentId
+    );
+
+    @Query("SELECT d FROM Document d " +
+            "JOIN FETCH d.directory dir " +
             "WHERE dir.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberId(
@@ -116,10 +127,12 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN FETCH d.quizzes " +
-            "WHERE d.isPublic = true " +
+            "JOIN FETCH d.directory dir " +
+            "WHERE (d.isPublic = true OR dir.member.id = :memberId) " +
             "AND d.name LIKE %:keyword%")
-    List<Document> findAllByIsPublicAndKeyword(
-            @Param("keyword") String keyword
+    List<Document> findAllByIsPublicOrOwnerAndKeyword(
+            @Param("keyword") String keyword,
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
