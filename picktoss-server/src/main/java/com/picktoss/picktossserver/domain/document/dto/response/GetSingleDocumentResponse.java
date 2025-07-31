@@ -20,7 +20,9 @@ public class GetSingleDocumentResponse {
     private String emoji;
     private String content;
     private String category;
+    private Boolean isOwner;
     private Boolean isPublic;
+    private int tryCount;
     private int bookmarkCount;
     private int characterCount;
     private int totalQuizCount;
@@ -28,6 +30,7 @@ public class GetSingleDocumentResponse {
     private DocumentType documentType;
     private QuizGenerationStatus quizGenerationStatus;
     private List<GetSingleDocumentQuizDto> quizzes;
+    private List<GetSingleDocumentReviewNeededDto> reviewNeededQuizzes;
 
     @Getter
     @Builder
@@ -38,6 +41,16 @@ public class GetSingleDocumentResponse {
         private String explanation;
         private List<String> options;
         private QuizType quizType;
-        private boolean isReviewNeeded;
+    }
+
+    @Getter
+    @Builder
+    public static class GetSingleDocumentReviewNeededDto {
+        private Long id;
+        private String question;
+        private String answer;
+        private String explanation;
+        private List<String> options;
+        private QuizType quizType;
     }
 }
