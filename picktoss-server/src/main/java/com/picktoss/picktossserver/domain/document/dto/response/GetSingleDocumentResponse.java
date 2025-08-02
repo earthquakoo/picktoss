@@ -20,8 +20,10 @@ public class GetSingleDocumentResponse {
     private String emoji;
     private String content;
     private String category;
+    private String creator;
     private Boolean isOwner;
     private Boolean isPublic;
+    private Boolean isBookmarked;
     private int tryCount;
     private int bookmarkCount;
     private int characterCount;
