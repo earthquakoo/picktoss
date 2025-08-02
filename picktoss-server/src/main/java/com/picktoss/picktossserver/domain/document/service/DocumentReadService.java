@@ -230,10 +230,15 @@ public class DocumentReadService {
         }
 
         int bookmarkCount = 0;
-        if (document.getIsPublic()) {
+        boolean isBookmarked = false;
+
+        if (Boolean.TRUE.equals(document.getIsPublic())) {
             Set<DocumentBookmark> documentBookmarks = document.getDocumentBookmarks();
+
             if (documentBookmarks != null && !documentBookmarks.isEmpty()) {
                 bookmarkCount = documentBookmarks.size();
+                isBookmarked = documentBookmarks.stream()
+                        .anyMatch(bookmark -> Objects.equals(bookmark.getMember().getId(), memberId));
             }
         }
 
@@ -244,10 +249,12 @@ public class DocumentReadService {
                 .name(document.getName())
                 .emoji(document.getEmoji())
                 .content(content)
+                .creator(member.getName())
                 .tryCount(document.getTryCount())
                 .bookmarkCount(bookmarkCount)
                 .isOwner(isOwner)
                 .isPublic(document.getIsPublic())
+                .isBookmarked(isBookmarked)
                 .characterCount(characterCount)
                 .totalQuizCount(quizDtos.size())
                 .createdAt(document.getCreatedAt())
