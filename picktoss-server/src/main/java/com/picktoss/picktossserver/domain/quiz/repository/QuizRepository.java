@@ -71,6 +71,15 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             @Param("memberId") Long memberId
     );
 
+    @Query("SELECT q FROM Quiz q " +
+            "LEFT JOIN FETCH q.options " +
+            "JOIN FETCH q.document d " +
+            "JOIN FETCH d.directory dir " +
+            "WHERE q.question LIKE %:keyword% OR q.answer LIKE %:keyword%")
+    List<Quiz> findAllByKeyword(
+            @Param("keyword") String keyword
+    );
+
     // 클라이언트 테스트 전용 API(실제 서비스 사용 X)
     @Query("SELECT q FROM Quiz q " +
             "LEFT JOIN FETCH q.options " +
