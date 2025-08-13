@@ -22,7 +22,7 @@ public class QuizReadService {
     private final QuizSetQuizRepository quizSetQuizRepository;
 
     public GetQuizSetResponse findQuizSetByQuizSetId(Long quizSetId, Long memberId) {
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetIdAndMemberId(quizSetId, memberId);
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByQuizSetId(quizSetId);
 
         List<GetQuizSetResponse.GetQuizSetQuizDto> quizDtos = new ArrayList<>();
         for (QuizSetQuiz quizzes : quizSetQuizzes) {

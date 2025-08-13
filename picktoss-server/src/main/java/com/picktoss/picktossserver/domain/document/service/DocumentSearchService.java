@@ -1,6 +1,5 @@
 package com.picktoss.picktossserver.domain.document.service;
 
-import com.picktoss.picktossserver.core.s3.S3Provider;
 import com.picktoss.picktossserver.domain.document.dto.response.SearchDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class DocumentSearchService {
 
-    private final S3Provider s3Provider;
     private final DocumentRepository documentRepository;
     private final DocumentBookmarkRepository documentBookmarkRepository;
 
@@ -42,7 +40,6 @@ public class DocumentSearchService {
         for (Document document : allDocuments) {
             List<SearchDocumentsResponse.SearchDocumentsQuizDto> quizDtos = new ArrayList<>();
 
-            String content = s3Provider.findFile(document.getS3Key());
             String documentName = document.getName();
 
             boolean isOwner = Objects.equals(memberId, document.getDirectory().getMember().getId());
@@ -60,7 +57,6 @@ public class DocumentSearchService {
                 if (quiz.getQuestion().toLowerCase().contains(keyword.toLowerCase())
                         || quiz.getAnswer().toLowerCase().contains(keyword.toLowerCase())
                         || quiz.getExplanation().toLowerCase().contains(keyword.toLowerCase())
-                        || content.toLowerCase().contains(keyword.toLowerCase())
                         || documentName.toLowerCase().contains(keyword.toLowerCase())) {
 
                     SearchDocumentsResponse.SearchDocumentsQuizDto quizDto =
@@ -77,7 +73,6 @@ public class DocumentSearchService {
                                     .id(document.getId())
                                     .name(document.getName())
                                     .emoji(document.getEmoji())
-                                    .content(content)
                                     .isOwner(isOwner)
                                     .isPublic(document.getIsPublic())
                                     .isBookmarked(isBookmarked)

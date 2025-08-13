@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -58,7 +60,10 @@ public class SecurityConfig {
                 .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))
                 .formLogin(FormLoginConfigurer::disable)
                 .httpBasic(HttpBasicConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(new AntPathRequestMatcher("/api/v2/documents/{document_id:[0-9]+}"))
+                        .permitAll()
                         .requestMatchers(
                                 "/",
                                 "/api/v2/oauth/url",
@@ -70,7 +75,6 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api/v2/health-check",
                                 "/api/v2/login",
-                                "/api/v2/backend/login",
                                 "/api/v2/test/**",
                                 "/api/v2/admin/login",
                                 "/api/v2/admin/sign-up",
@@ -79,8 +83,9 @@ public class SecurityConfig {
                                 "/api/v2/categories",
                                 "/api/v2/documents/public",
                                 "/api/v2/documents/{document_id}/public",
-                                "/api/v2/documents/{document_id}",
-                                "/api/v2/documents/public/search"
+                                "/api/v2/documents/public/search",
+                                "/api/v2/documents/{document_id}/quiz-sets",
+                                "/api/v2/quiz-sets/{quiz_set_id}"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

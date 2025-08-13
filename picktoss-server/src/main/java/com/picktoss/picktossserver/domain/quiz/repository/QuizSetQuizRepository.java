@@ -16,11 +16,9 @@ public interface QuizSetQuizRepository extends JpaRepository<QuizSetQuiz, Long> 
             "JOIN FETCH q.document d " +
             "JOIN FETCH d.directory dir " +
             "JOIN FETCH qsq.quizSet qs " +
-            "WHERE qs.id = :quizSetId " +
-            "AND qs.member.id = :memberId")
-    List<QuizSetQuiz> findAllByQuizSetIdAndMemberId(
-            @Param("quizSetId") Long quizSetId,
-            @Param("memberId") Long memberId
+            "WHERE qs.id = :quizSetId")
+    List<QuizSetQuiz> findAllByQuizSetId(
+            @Param("quizSetId") Long quizSetId
     );
 
     @Query("SELECT qsq FROM QuizSetQuiz qsq " +
