@@ -36,9 +36,11 @@ public class QuizCreateService {
 
     @Transactional
     public CreateQuizSetResponse createQuizSet(Long documentId, Long memberId, Integer quizCount, DailyQuizType dailyQuizType) {
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        Member member = null;
+        if (memberId != null) {
+            member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        }
 
         List<Quiz> quizzes;
         if (dailyQuizType == DailyQuizType.ALL) {

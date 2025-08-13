@@ -49,6 +49,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
+            "LEFT JOIN FETCH d.documentBookmarks " +
             "WHERE dir.member.id = :memberId " +
             "ORDER BY d.createdAt DESC")
     List<Document> findAllByMemberId(
@@ -129,13 +130,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN FETCH d.quizzes " +
+            "LEFT JOIN FETCH d.documentBookmarks " +
             "JOIN FETCH d.directory dir " +
-            "WHERE (d.isPublic = true OR dir.member.id = :memberId) " +
-            "AND d.name LIKE %:keyword%")
-    List<Document> findAllByIsPublicOrOwnerAndKeyword(
-            @Param("keyword") String keyword,
-            @Param("memberId") Long memberId
-    );
+            "WHERE d.isPublic = true " +
+            "ORDER BY d.createdAt DESC")
+    List<Document> findAllByIsPublic();
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
@@ -144,15 +143,4 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findAllByIsNotPublicAndMemberId(
             @Param("memberId") Long memberId
     );
-
-    @Query("SELECT d FROM Document d " +
-            "LEFT JOIN FETCH d.documentBookmarks " +
-            "LEFT JOIN FETCH d.quizzes " +
-            "JOIN FETCH d.category c " +
-            "JOIN FETCH d.directory dir " +
-            "WHERE d.id = :documentId")
-    Optional<Document> findByDocumentIdAndIsPublic(
-            @Param("documentId") Long documentId
-    );
-
 }
