@@ -56,7 +56,6 @@ springdoc:
     - com.picktoss.picktossserver.domain.auth.controller
     - com.picktoss.picktossserver.domain.fcm.controller
     - com.picktoss.picktossserver.domain.category.controller
-#    - com.picktoss.picktossserver.domain.directory.controller
     - com.picktoss.picktossserver.domain.document.controller
     - com.picktoss.picktossserver.domain.member.controller
     - com.picktoss.picktossserver.domain.quiz.controller
