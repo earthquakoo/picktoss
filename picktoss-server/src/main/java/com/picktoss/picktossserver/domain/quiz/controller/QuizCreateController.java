@@ -34,7 +34,7 @@ public class QuizCreateController {
             @Valid @RequestBody CreateQuizSetRequest request
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
         CreateQuizSetResponse response = quizCreateService.createQuizSet(documentId, memberId, request.getQuizCount(), request.getQuizType());
         return ResponseEntity.ok().body(response);

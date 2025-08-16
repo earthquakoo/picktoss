@@ -18,7 +18,6 @@ public class SearchDocumentsResponse {
         private Long id;
         private String name;
         private String emoji;
-        private String content;
         private Boolean isOwner;
         private Boolean isPublic;
         private Boolean isBookmarked;

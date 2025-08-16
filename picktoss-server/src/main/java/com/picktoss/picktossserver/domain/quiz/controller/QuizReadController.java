@@ -27,7 +27,7 @@ public class QuizReadController {
             @PathVariable("quiz_set_id") Long quizSetId
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
+        Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
         GetQuizSetResponse response = quizReadService.findQuizSetByQuizSetId(quizSetId, memberId);
         return ResponseEntity.ok().body(response);
