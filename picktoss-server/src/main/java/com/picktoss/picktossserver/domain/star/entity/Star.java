@@ -96,6 +96,17 @@ public class Star extends AuditBase {
         return starHistory;
     }
 
+    public StarHistory depositStarBySpecialInviteReward(Star star) {
+        StarHistory lastStarHistory = star.getStarHistories().getLast();
+        Integer changeAmount = StarConstant.SPECIAL_INVITE_REWARD;
+        Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
+
+        StarHistory starHistory = StarHistory.createStarHistory("이벤트 친구 초대 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+
+        this.star += StarConstant.SPECIAL_INVITE_REWARD;
+        return starHistory;
+    }
+
     public void updateIsUnlimitedStarsForSubscriptionProType() {
         this.isUnlimited = true;
     }

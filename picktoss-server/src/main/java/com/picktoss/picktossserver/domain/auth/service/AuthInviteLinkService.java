@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -63,9 +65,9 @@ public class AuthInviteLinkService {
 
         Map<String, Object> inviteCodeKeyData = Map.of(
                 "inviteMemberId", memberId,
-                "isUsed", false,
                 "createdAt", createdAt,
-                "expiresAt", createdAt.plusDays(3)
+                "expiresAt", createdAt.plusDays(3),
+                "joinedMemberIds", new ArrayList<Long>()
         );
 
         redisUtil.setData(RedisConstant.REDIS_INVITE_MEMBER_PREFIX, memberIdKey, memberIdKeyData, RedisConstant.REDIS_INVITE_LINK_EXPIRATION_DURATION_MILLIS);
@@ -76,18 +78,23 @@ public class AuthInviteLinkService {
 
     // 초대 코드 유효성 검사
     public void verifyInviteCode(String inviteCode) {
-        Optional<Map> optionalInviteCodeData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+        Optional<Map> optionalInviteCodeData =
+                redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
 
         if (optionalInviteCodeData.isEmpty()) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
 
         Map inviteCodeKeyData = optionalInviteCodeData.get();
-        Object isUsedObject = inviteCodeKeyData.get("isUsed");
-        Boolean isUsed = new ObjectMapper().convertValue(isUsedObject, new TypeReference<Boolean>() {});
+        String expiresAtStr = (String) inviteCodeKeyData.get("expiresAt");
 
-        if (isUsed) {
-            throw new CustomException(ALREADY_USED_INVITED_CODE);
+        LocalDateTime expiresAt = LocalDateTime.parse(expiresAtStr);
+        LocalDateTime now = LocalDateTime.now();
+
+        long validDays = "KONKUK".equals(inviteCode) ? 90 : 3;
+
+        if (expiresAt.isBefore(now) || expiresAt.isAfter(now.plusDays(validDays))) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
     }
 
@@ -109,12 +116,26 @@ public class AuthInviteLinkService {
         }
 
         Map inviteCodeKeyData = optionalInviteCodeKeyData.get();
-        Object isUsedObject = inviteCodeKeyData.get("isUsed");
-        Boolean isUsed = new ObjectMapper().convertValue(isUsedObject, new TypeReference<Boolean>() {});
+        Object expiresAtObject = inviteCodeKeyData.get("expiresAt");
 
-        if (isUsed) {
-            redisUtil.deleteData(RedisConstant.REDIS_INVITE_MEMBER_PREFIX, memberIdKey);
-            redisUtil.deleteData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode);
+        String expiresAtStr = (String) inviteCodeKeyData.get("expiresAt");
+
+        LocalDateTime expiresAt = LocalDateTime.parse(expiresAtStr);
+        LocalDateTime now = LocalDateTime.now();
+
+        long validDays = "KONKUK".equals(inviteCode) ? 90 : 3;
+
+        if (expiresAt.isBefore(now) || expiresAt.isAfter(now.plusDays(validDays))) {
+            throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
+        }
+
+        Object joinedMemberIdsObject = inviteCodeKeyData.get("joinedMemberIds");
+        List<Long> joinedMemberIds = new ObjectMapper().convertValue(
+                joinedMemberIdsObject,
+                new TypeReference<List<Long>>() {}
+        );
+
+        if (joinedMemberIds != null && joinedMemberIds.contains(memberId)) {
             return new CheckInviteCodeBySignUpResponse(CheckInviteCodeResponseType.READY);
         }
 
@@ -145,6 +166,14 @@ public class AuthInviteLinkService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
+        // ✅ KONKUK 이벤트 코드일 경우
+        if ("KONKUK".equalsIgnoreCase(inviteCode)) {
+            verifyInviteCode(inviteCode);
+            depositStarBySpecialInviteReward(member.getStar());
+            updateInviteCodeDataWithMember(memberId, inviteCode);
+            return;
+        }
+
         verifyInviteCode(inviteCode);
         depositStarByInviteFriendReward(member.getStar());
 
@@ -153,7 +182,7 @@ public class AuthInviteLinkService {
                 .orElseThrow(() -> new CustomException(ErrorInfo.INVITED_MEMBER_NOT_FOUND));
 
         depositStarByInviteFriendReward(invitedMember.getStar());
-        updateInviteCodeDataIsUsed(inviteCode);
+        updateInviteCodeDataWithMember(memberId, inviteCode);
 
         notificationSendUtil.sendNotificationByStarReward(invitedMemberId);
     }
@@ -164,21 +193,38 @@ public class AuthInviteLinkService {
         starHistoryRepository.save(starHistory);
     }
 
-    private void updateInviteCodeDataIsUsed(String inviteCode) {
+    @Transactional
+    private void depositStarBySpecialInviteReward(Star star) {
+        StarHistory starHistory = star.depositStarBySpecialInviteReward(star);
+        starHistoryRepository.save(starHistory);
+    }
+
+    private void updateInviteCodeDataWithMember(Long memberId, String inviteCode) {
         Optional<Map> optionalInviteCodeKeyData = redisUtil.getData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, Map.class);
+
         if (optionalInviteCodeKeyData.isEmpty()) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
 
         Map inviteCodeKeyData = optionalInviteCodeKeyData.get();
-        Object optionalIsUsed = inviteCodeKeyData.get("isUsed");
-        Boolean isUsed = new ObjectMapper().convertValue(optionalIsUsed, new TypeReference<Boolean>() {});
 
-        if (isUsed) {
+        Object joinedMemberIdsObject = inviteCodeKeyData.get("joinedMemberIds");
+        List<Long> joinedMemberIds = new ObjectMapper().convertValue(
+                joinedMemberIdsObject,
+                new TypeReference<List<Long>>() {}
+        );
+
+        if (joinedMemberIds == null) {
+            joinedMemberIds = new ArrayList<>();
+        }
+
+        if (joinedMemberIds.contains(memberId)) {
             throw new CustomException(ALREADY_USED_INVITED_CODE);
         }
 
-        inviteCodeKeyData.put("isUsed", true);
+        joinedMemberIds.add(memberId);
+        inviteCodeKeyData.put("joinedMemberIds", joinedMemberIds);
+
         redisUtil.setData(RedisConstant.REDIS_INVITE_CODE_PREFIX, inviteCode, inviteCodeKeyData);
     }
 
