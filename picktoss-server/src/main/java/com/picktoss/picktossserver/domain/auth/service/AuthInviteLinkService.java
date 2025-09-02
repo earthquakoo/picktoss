@@ -116,7 +116,6 @@ public class AuthInviteLinkService {
         }
 
         Map inviteCodeKeyData = optionalInviteCodeKeyData.get();
-        Object expiresAtObject = inviteCodeKeyData.get("expiresAt");
 
         String expiresAtStr = (String) inviteCodeKeyData.get("expiresAt");
 
