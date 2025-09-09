@@ -25,6 +25,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -44,6 +46,9 @@ public class SecurityConfig {
 
     @Value("${cors.cors_allowed_origin_backoffice}")
     private String corsAllowedOriginBackoffice;
+
+    @Value("${cors.cors_allowed_origin_localization}")
+    private String corsAllowedOriginLocalization;
 
     @Value("${picktoss.server_url}")
     private String picktossServerUrl;
@@ -105,7 +110,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-//        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginTest, corsAllowedOriginReact, corsAllowedOriginNgrok, corsAllowedOriginNgrokTest));
+        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginLocalization));
         config.addAllowedOriginPattern("*");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");

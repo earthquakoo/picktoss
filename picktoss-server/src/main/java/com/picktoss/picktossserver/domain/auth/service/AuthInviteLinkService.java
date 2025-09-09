@@ -91,7 +91,10 @@ public class AuthInviteLinkService {
         LocalDateTime expiresAt = LocalDateTime.parse(expiresAtStr);
         LocalDateTime now = LocalDateTime.now();
 
-        long validDays = "KONKUK".equals(inviteCode) ? 90 : 3;
+        long validDays = 3;
+        if ("KONKUK".equalsIgnoreCase(inviteCode) || "SANGMYUNG".equalsIgnoreCase(inviteCode)) {
+            validDays = 90;
+        }
 
         if (expiresAt.isBefore(now) || expiresAt.isAfter(now.plusDays(validDays))) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
@@ -116,14 +119,16 @@ public class AuthInviteLinkService {
         }
 
         Map inviteCodeKeyData = optionalInviteCodeKeyData.get();
-        Object expiresAtObject = inviteCodeKeyData.get("expiresAt");
 
         String expiresAtStr = (String) inviteCodeKeyData.get("expiresAt");
 
         LocalDateTime expiresAt = LocalDateTime.parse(expiresAtStr);
         LocalDateTime now = LocalDateTime.now();
 
-        long validDays = "KONKUK".equals(inviteCode) ? 90 : 3;
+        long validDays = 3;
+        if ("KONKUK".equalsIgnoreCase(inviteCode) || "SANGMYUNG".equalsIgnoreCase(inviteCode)) {
+            validDays = 90;
+        }
 
         if (expiresAt.isBefore(now) || expiresAt.isAfter(now.plusDays(validDays))) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
@@ -168,6 +173,13 @@ public class AuthInviteLinkService {
 
         // ✅ KONKUK 이벤트 코드일 경우
         if ("KONKUK".equalsIgnoreCase(inviteCode)) {
+            verifyInviteCode(inviteCode);
+            depositStarBySpecialInviteReward(member.getStar());
+            updateInviteCodeDataWithMember(memberId, inviteCode);
+            return;
+        }
+
+        if ("SANGMYUNG".equalsIgnoreCase(inviteCode)) {
             verifyInviteCode(inviteCode);
             depositStarBySpecialInviteReward(member.getStar());
             updateInviteCodeDataWithMember(memberId, inviteCode);
