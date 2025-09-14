@@ -26,5 +26,6 @@ public class  GetAllQuizzesResponse {
         private List<String> options;
         private QuizType quizType;
         private Long documentId;
+        private Boolean isOwner;
     }
 }

@@ -65,6 +65,12 @@ public class DailyQuizRecordService {
 
         List<GetAllQuizzesResponse.GetAllQuizzesDto> quizzesDtos = new ArrayList<>();
         for (Quiz quiz : quizzes) {
+            boolean isOwner = false;
+            Member member = quiz.getDocument().getDirectory().getMember();
+            if (Objects.equals(memberId, member.getId())) {
+                isOwner = true;
+            }
+
             List<String> optionList = new ArrayList<>();
             if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                 Set<Option> options = quiz.getOptions();
@@ -83,6 +89,7 @@ public class DailyQuizRecordService {
                     .options(optionList)
                     .quizType(quiz.getQuizType())
                     .documentId(quiz.getDocument().getId())
+                    .isOwner(isOwner)
                     .build();
 
             quizzesDtos.add(quizzesDto);
@@ -100,6 +107,12 @@ public class DailyQuizRecordService {
             Document document = documentBookmark.getDocument();
             Set<Quiz> quizSets = document.getQuizzes();
             for (Quiz quiz : quizSets) {
+                boolean isOwner = false;
+                Member member = quiz.getDocument().getDirectory().getMember();
+                if (Objects.equals(memberId, member.getId())) {
+                    isOwner = true;
+                }
+
                 List<String> optionList = new ArrayList<>();
                 if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
                     Set<Option> options = quiz.getOptions();
@@ -118,6 +131,7 @@ public class DailyQuizRecordService {
                         .options(optionList)
                         .quizType(quiz.getQuizType())
                         .documentId(quiz.getDocument().getId())
+                        .isOwner(isOwner)
                         .build();
 
                 quizzesDtos.add(quizzesDto);
