@@ -91,12 +91,7 @@ public class AuthInviteLinkService {
         LocalDateTime expiresAt = LocalDateTime.parse(expiresAtStr);
         LocalDateTime now = LocalDateTime.now();
 
-        long validDays = 3;
-        if ("KONKUK".equalsIgnoreCase(inviteCode) || "SANGMYUNG".equalsIgnoreCase(inviteCode)) {
-            validDays = 90;
-        }
-
-        if (expiresAt.isBefore(now) || expiresAt.isAfter(now.plusDays(validDays))) {
+        if (expiresAt.isBefore(now)) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
     }
@@ -125,12 +120,7 @@ public class AuthInviteLinkService {
         LocalDateTime expiresAt = LocalDateTime.parse(expiresAtStr);
         LocalDateTime now = LocalDateTime.now();
 
-        long validDays = 3;
-        if ("KONKUK".equalsIgnoreCase(inviteCode) || "SANGMYUNG".equalsIgnoreCase(inviteCode)) {
-            validDays = 90;
-        }
-
-        if (expiresAt.isBefore(now) || expiresAt.isAfter(now.plusDays(validDays))) {
+        if (expiresAt.isBefore(now)) {
             throw new CustomException(INVITE_LINK_EXPIRED_OR_NOT_FOUND);
         }
 
