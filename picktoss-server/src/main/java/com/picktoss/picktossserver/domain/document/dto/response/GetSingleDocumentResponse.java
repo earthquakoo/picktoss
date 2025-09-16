@@ -51,6 +51,7 @@ public class GetSingleDocumentResponse {
         private Long id;
         private String question;
         private String answer;
+        private String choseAnswer;
         private String explanation;
         private List<String> options;
         private QuizType quizType;

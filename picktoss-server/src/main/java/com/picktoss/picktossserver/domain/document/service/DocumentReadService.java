@@ -153,25 +153,13 @@ public class DocumentReadService {
                     .build();
 
             quizDtos.add(quizDto);
-
-            if (isOwner && quiz.isReviewNeeded()) {
-                GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto reviewNeededDto = GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto.builder()
-                        .id(quiz.getId())
-                        .question(quiz.getQuestion())
-                        .answer(quiz.getAnswer())
-                        .explanation(quiz.getExplanation())
-                        .options(optionList)
-                        .quizType(quiz.getQuizType())
-                        .build();
-
-                reviewNeedEdQuizzes.add(reviewNeededDto);
-            }
         }
 
-        if (!isOwner && memberId != null) {
+        if (memberId != null) {
             List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndDocumentIdAndCreatedAtAfterAndSolvedTrue(memberId, documentId, oneMonthAgo);
             for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
                 if (!quizSetQuiz.getIsAnswer()) {
+                    String choseAnswer = quizSetQuiz.getChoseAnswer();
                     Quiz quiz = quizSetQuiz.getQuiz();
                     List<String> optionList = new ArrayList<>();
                     if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
@@ -189,6 +177,7 @@ public class DocumentReadService {
                             .id(quiz.getId())
                             .question(quiz.getQuestion())
                             .answer(quiz.getAnswer())
+                            .choseAnswer(choseAnswer)
                             .explanation(quiz.getExplanation())
                             .options(optionList)
                             .quizType(quiz.getQuizType())
@@ -202,6 +191,7 @@ public class DocumentReadService {
             for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
                 if (!dailyQuizRecordDetail.getIsAnswer()) {
                     Quiz quiz = dailyQuizRecordDetail.getQuiz();
+                    String choseAnswer = dailyQuizRecordDetail.getChoseAnswer();
 
                     List<String> optionList = new ArrayList<>();
                     if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
@@ -219,6 +209,7 @@ public class DocumentReadService {
                             .id(quiz.getId())
                             .question(quiz.getQuestion())
                             .answer(quiz.getAnswer())
+                            .choseAnswer(choseAnswer)
                             .explanation(quiz.getExplanation())
                             .options(optionList)
                             .quizType(quiz.getQuizType())
