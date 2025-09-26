@@ -49,6 +49,9 @@ public class Document extends AuditBase {
     @Column(name = "document_type", nullable = false)
     private DocumentType documentType;
 
+    @Column(name = "language", nullable = false)
+    private String language;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "directory_id", nullable = false)
     private Directory directory;
