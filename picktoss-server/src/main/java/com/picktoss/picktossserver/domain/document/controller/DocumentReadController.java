@@ -3,13 +3,11 @@ package com.picktoss.picktossserver.domain.document.controller;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtUserInfo;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.domain.document.dto.response.GetAllDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.dto.response.GetBookmarkedDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.dto.response.GetIsNotPublicDocumentsResponse;
 import com.picktoss.picktossserver.domain.document.dto.response.GetSingleDocumentResponse;
 import com.picktoss.picktossserver.domain.document.service.DocumentReadService;
 import com.picktoss.picktossserver.global.enums.document.BookmarkedDocumentSortOption;
-import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.picktoss.picktossserver.core.exception.ErrorInfo.*;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.AMAZON_SERVICE_EXCEPTION;
+import static com.picktoss.picktossserver.core.exception.ErrorInfo.DOCUMENT_NOT_FOUND;
 
 @Tag(name = "Document")
 @RestController
@@ -57,18 +56,18 @@ public class DocumentReadController {
         return ResponseEntity.ok().body(documents);
     }
 
-    @Operation(summary = "모든 문서 가져오기")
-    @GetMapping("/documents")
-    @ApiErrorCodeExamples({AMAZON_SERVICE_EXCEPTION, DOCUMENT_SORT_OPTION_NOT_SELECT})
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
-            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") DocumentSortOption documentSortOption) {
-        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-        Long memberId = jwtUserInfo.getMemberId();
-
-        GetAllDocumentsResponse response = documentReadService.findAllDocuments(memberId, documentSortOption);
-        return ResponseEntity.ok().body(response);
-    }
+//    @Operation(summary = "모든 문서 가져오기")
+//    @GetMapping("/documents")
+//    @ApiErrorCodeExamples({AMAZON_SERVICE_EXCEPTION, DOCUMENT_SORT_OPTION_NOT_SELECT})
+//    @ResponseStatus(HttpStatus.OK)
+//    public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
+//            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") DocumentSortOption documentSortOption) {
+//        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
+//        Long memberId = jwtUserInfo.getMemberId();
+//
+//        GetAllDocumentsResponse response = documentReadService.findAllDocuments(memberId, documentSortOption);
+//        return ResponseEntity.ok().body(response);
+//    }
 
     @Operation(summary = "북마크된 모든 문서 가져오기")
     @GetMapping("/documents/bookmarked")
@@ -93,5 +92,4 @@ public class DocumentReadController {
         GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId);
         return ResponseEntity.ok().body(response);
     }
-
 }
