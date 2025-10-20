@@ -1,5 +1,6 @@
 package com.picktoss.picktossserver.domain.document.service;
 
+import com.picktoss.picktossserver.core.eventlistener.event.s3.S3UploadEvent;
 import com.picktoss.picktossserver.core.eventlistener.event.sqs.SQSMessageEvent;
 import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadPublisher;
 import com.picktoss.picktossserver.core.eventlistener.publisher.sqs.SQSEventMessagePublisher;
@@ -61,10 +62,10 @@ public class DocumentCreateService {
         Document document = Document.createDocument(s3Key, isPublic, UNPROCESSED, documentType, directory, language);
         documentRepository.save(document);
 
-//        createOutboxByCreateDocument(starCount, document);
+        createOutboxByCreateDocument(starCount, document);
 
-//        s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));
-//        sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(memberId, s3Key, document.getId(), starCount));
+        s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));
+        sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(memberId, s3Key, document.getId(), starCount));
 
         return document.getId();
     }
