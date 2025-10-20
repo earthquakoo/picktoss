@@ -256,6 +256,4 @@ public class QuizAnalysisService {
 
         return new GetQuizMonthlyAnalysisResponse(quizzesDtos, categoryDtos, quizTypeDto, averageCorrectRate, maxSolvedQuizCount, averageDailyQuizCount, monthlyTotalQuizCount);
     }
-
-
 }

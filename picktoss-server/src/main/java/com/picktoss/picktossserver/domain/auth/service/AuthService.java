@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.email.MailgunEmailSenderManager;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.core.s3.S3Provider;
@@ -54,6 +55,7 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final DirectoryRepository directoryRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MessageService messageService;
 
     @Value("${oauth.google.client_id}")
     private String oauthClientId;
@@ -237,7 +239,8 @@ public class AuthService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
         Star star = member.getStar();
-        StarHistory starHistory = star.depositStarByInviteFriendReward(star);
+        String description = messageService.getMessage("star.history.invite_friend_reward");
+        StarHistory starHistory = star.depositStarByInviteFriendReward(star, description);
         starHistoryRepository.save(starHistory);
 
         String memberIdKey = memberId.toString();

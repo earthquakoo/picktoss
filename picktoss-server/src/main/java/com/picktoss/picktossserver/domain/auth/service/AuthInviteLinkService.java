@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.domain.auth.dto.response.CheckInviteCodeBySignUpResponse;
@@ -38,6 +39,7 @@ public class AuthInviteLinkService {
     private final StarHistoryRepository starHistoryRepository;
     private final NotificationSendUtil notificationSendUtil;
     private final AuthUtil authUtil;
+    private final MessageService messageService;
 
     public String createInviteLink(Long memberId) {
         String initLink = "https://picktoss.com/invite/";
@@ -191,13 +193,15 @@ public class AuthInviteLinkService {
 
     @Transactional
     private void depositStarByInviteFriendReward(Star star) {
-        StarHistory starHistory = star.depositStarByInviteFriendReward(star);
+        String description = messageService.getMessage("star.history.invite_friend_reward");
+        StarHistory starHistory = star.depositStarByInviteFriendReward(star, description);
         starHistoryRepository.save(starHistory);
     }
 
     @Transactional
     private void depositStarBySpecialInviteReward(Star star) {
-        StarHistory starHistory = star.depositStarBySpecialInviteReward(star);
+        String description = messageService.getMessage("star.history.special_invite_reward");
+        StarHistory starHistory = star.depositStarBySpecialInviteReward(star, description);
         starHistoryRepository.save(starHistory);
     }
 

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,9 @@ public class PublicDocumentSearchController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
-        GetPublicDocumentsResponse response = publicDocumentSearchService.findPublicDocuments(categoryId, memberId, page, pageSize);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetPublicDocumentsResponse response = publicDocumentSearchService.findPublicDocuments(categoryId, memberId, page, pageSize, language);
         return ResponseEntity.ok().body(response);
     }
 
@@ -48,7 +51,9 @@ public class PublicDocumentSearchController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
-        SearchDocumentsResponse response = publicDocumentSearchService.searchPublicDocuments(request.getKeyword(), memberId);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        SearchDocumentsResponse response = publicDocumentSearchService.searchPublicDocuments(request.getKeyword(), memberId, language);
         return ResponseEntity.ok().body(response);
     }
 }

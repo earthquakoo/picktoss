@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.quiz.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentBookmarkRepository;
@@ -40,6 +41,8 @@ public class DailyQuizRecordService {
     private final DocumentBookmarkRepository documentBookmarkRepository;
     private final MemberRepository memberRepository;
     private final StarHistoryRepository starHistoryRepository;
+
+    private final MessageService messageService;
 
     public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource) {
         List<Quiz> quizzes = new ArrayList<>();
@@ -225,8 +228,8 @@ public class DailyQuizRecordService {
     @Transactional
     private void depositStarByDailyQuizComplete(Member member, int reward) {
         Star star = member.getStar();
-
-        StarHistory starHistory = star.depositStarBySolvedDailyQuizReward(star, reward);
+        String description = messageService.getMessage("star.history.daily_quiz_reward");
+        StarHistory starHistory = star.depositStarBySolvedDailyQuizReward(star, reward, description);
         starHistoryRepository.save(starHistory);
     }
 }

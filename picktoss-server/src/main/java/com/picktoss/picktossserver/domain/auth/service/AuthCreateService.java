@@ -112,12 +112,6 @@ public class AuthCreateService {
     }
 
     @Transactional
-    private void depositStarByInviteFriendReward(Star star) {
-        StarHistory starHistory = star.depositStarByInviteFriendReward(star);
-        starHistoryRepository.save(starHistory);
-    }
-
-    @Transactional
     private void createMemberSubscription(Member member) {
         Subscription subscription = Subscription.createSubscription(null, member);
 

@@ -74,7 +74,8 @@ public class Document extends AuditBase {
             Boolean isPublic,
             QuizGenerationStatus quizGenerationStatus,
             DocumentType documentType,
-            Directory directory
+            Directory directory,
+            String language
     ) {
         return Document.builder()
                 .s3Key(s3Key)
@@ -83,6 +84,7 @@ public class Document extends AuditBase {
                 .quizGenerationStatus(quizGenerationStatus)
                 .documentType(documentType)
                 .directory(directory)
+                .language(language)
                 .build();
     }
 

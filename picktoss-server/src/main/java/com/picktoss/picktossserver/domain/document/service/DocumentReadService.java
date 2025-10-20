@@ -40,78 +40,9 @@ public class DocumentReadService {
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
 
-    //단일 문서 가져오기
-//    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId, QuizSortOption quizSortOption) {
-//        Document document = documentRepository.findDocumentWithQuizzesByDocumentIdAndMemberId(documentId, memberId)
-//                .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
-//
-//        String content = s3Provider.findFile(document.getS3Key());
-//        int characterCount = content.length();
-//
-//        List<Quiz> quizzes = new ArrayList<>(document.getQuizzes());
-//        if (quizSortOption == QuizSortOption.CREATED_AT) {
-//            quizzes.sort(Comparator.comparing(Quiz::getId).reversed());
-//        } else {
-//            quizzes.sort(Comparator.comparing(Quiz::getCorrectAnswerCount).reversed());
-//        }
-//
-//        List<GetSingleDocumentResponse.GetSingleDocumentQuizDto> quizDtos = new ArrayList<>();
-//        for (Quiz quiz : quizzes) {
-//            List<String> optionList = new ArrayList<>();
-//            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-//                List<String> options = quiz.getOptions().stream()
-//                        .sorted(Comparator.comparing(Option::getId))
-//                        .map(Option::getOption)
-//                        .toList();
-//                if (options.isEmpty()) {
-//                    continue;
-//                }
-//                optionList.addAll(options);
-//            }
-//
-//            GetSingleDocumentResponse.GetSingleDocumentQuizDto quizDto = GetSingleDocumentResponse.GetSingleDocumentQuizDto.builder()
-//                    .id(quiz.getId())
-//                    .question(quiz.getQuestion())
-//                    .answer(quiz.getAnswer())
-//                    .explanation(quiz.getExplanation())
-//                    .options(optionList)
-//                    .quizType(quiz.getQuizType())
-//                    .isReviewNeeded(quiz.isReviewNeeded())
-//                    .build();
-//
-//            quizDtos.add(quizDto);
-//        }
-//
-//        int bookmarkCount = 0;
-//
-//        if (document.getIsPublic()) {
-//            Set<DocumentBookmark> documentBookmarks = document.getDocumentBookmarks();
-//            if (documentBookmarks != null && !documentBookmarks.isEmpty()) {
-//                bookmarkCount = documentBookmarks.size();
-//            }
-//        }
-//
-//        QuizGenerationStatus quizGenerationStatus = document.updateDocumentStatusClientResponse(document.getQuizGenerationStatus());
-//
-//        return GetSingleDocumentResponse.builder()
-//                .id(document.getId())
-//                .name(document.getName())
-//                .emoji(document.getEmoji())
-//                .content(content)
-//                .bookmarkCount(bookmarkCount)
-//                .isPublic(document.getIsPublic())
-//                .characterCount(characterCount)
-//                .totalQuizCount(quizDtos.size())
-//                .createdAt(document.getCreatedAt())
-//                .documentType(document.getDocumentType())
-//                .category(document.getCategory().getName())
-//                .quizGenerationStatus(quizGenerationStatus)
-//                .quizzes(quizDtos)
-//                .build();
-//    }
 
-    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
-        Document document = documentRepository.findDocumentWithQuizzesByDocumentId(documentId, memberId)
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId, String language) {
+        Document document = documentRepository.findDocumentByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
                 .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
 
         String content = s3Provider.findFile(document.getS3Key());
@@ -258,18 +189,12 @@ public class DocumentReadService {
     }
 
     //모든 문서 가져오기
-    public GetAllDocumentsResponse findAllDocuments(Long memberId, DocumentSortOption documentSortOption) {
-        List<Document> documents;
+    public GetAllDocumentsResponse findAllDocuments(Long memberId, DocumentSortOption documentSortOption, String language) {
+        DocumentSortOption option = (documentSortOption == null)
+                ? DocumentSortOption.WRONG_ANSWER_COUNT
+                : documentSortOption;
 
-        if (documentSortOption == DocumentSortOption.CREATED_AT) {
-            documents = documentRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId);
-        } else if (documentSortOption == DocumentSortOption.NAME) {
-            documents = documentRepository.findAllByMemberIdOrderByNameAsc(memberId);
-        } else if (documentSortOption == DocumentSortOption.QUIZ_COUNT) {
-            documents = documentRepository.findAllByMemberIdOrderByQuizCountDesc(memberId);
-        } else {
-            documents = documentRepository.findAllOrderByWrongAnswerCount(memberId);
-        }
+        List<Document> documents = option.fetchDocuments(documentRepository, memberId, language);
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
@@ -317,16 +242,12 @@ public class DocumentReadService {
     }
 
     //북마크된 문서 가져오기
-    public GetBookmarkedDocumentsResponse findBookmarkedDocuments(Long memberId, BookmarkedDocumentSortOption documentSortOption) {
-        List<DocumentBookmark> documentBookmarks;
+    public GetBookmarkedDocumentsResponse findBookmarkedDocuments(Long memberId, BookmarkedDocumentSortOption documentSortOption, String language) {
+        BookmarkedDocumentSortOption option = (documentSortOption == null)
+                ? BookmarkedDocumentSortOption.NAME
+                : documentSortOption;
 
-        if (documentSortOption == BookmarkedDocumentSortOption.QUIZ_COUNT) {
-            documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndIsPublicTrueOrderByQuizCountDesc(memberId);
-        } else if (documentSortOption == BookmarkedDocumentSortOption.CREATED_AT) {
-            documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndIsPublicTrueOrderByCreatedAtDesc(memberId);
-        } else {
-            documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndIsPublicTrueOrderByNameDesc(memberId);
-        }
+        List<DocumentBookmark> documentBookmarks = option.fetchDocuments(documentBookmarkRepository, memberId, language);
 
         List<GetBookmarkedDocumentsResponse.GetBookmarkedDocumentsDto> documentsDtos = new ArrayList<>();
         for (DocumentBookmark documentBookmark : documentBookmarks) {
@@ -353,8 +274,8 @@ public class DocumentReadService {
         return new GetBookmarkedDocumentsResponse(documentsDtos);
     }
 
-    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId) {
-        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberId(memberId);
+    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId, String language) {
+        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberIdAndLanguage(memberId, language);
 
         List<GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments> documentDtos = new ArrayList<>();
         for (Document document : documents) {
@@ -381,70 +302,4 @@ public class DocumentReadService {
 
         return new GetIsNotPublicDocumentsResponse(documentDtos);
     }
-
-//    private List<GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto> findIsReviewNeededQuizzesByIsOwner(Long memberId, boolean isOwner) {
-//        List<GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto> reviewNeedEdQuizzes = new ArrayList<>();
-//
-//        if (!isOwner && memberId != null) {
-//            List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndDocumentIdAndCreatedAtAfterAndSolvedTrue(memberId, documentId, oneMonthAgo);
-//            for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-//                if (!quizSetQuiz.getIsAnswer()) {
-//                    Quiz quiz = quizSetQuiz.getQuiz();
-//                    List<String> optionList = new ArrayList<>();
-//                    if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-//                        List<String> options = quiz.getOptions().stream()
-//                                .sorted(Comparator.comparing(Option::getId))
-//                                .map(Option::getOption)
-//                                .toList();
-//                        if (options.isEmpty()) {
-//                            continue;
-//                        }
-//                        optionList.addAll(options);
-//                    }
-//
-//                    GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto reviewNeededDto = GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto.builder()
-//                            .id(quiz.getId())
-//                            .question(quiz.getQuestion())
-//                            .answer(quiz.getAnswer())
-//                            .explanation(quiz.getExplanation())
-//                            .options(optionList)
-//                            .quizType(quiz.getQuizType())
-//                            .build();
-//
-//                    reviewNeedEdQuizzes.add(reviewNeededDto);
-//                }
-//            }
-//
-//            List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDocumentIdAndSolvedDateAfter(memberId, documentId, oneMonthAgo);
-//            for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
-//                if (!dailyQuizRecordDetail.getIsAnswer()) {
-//                    Quiz quiz = dailyQuizRecordDetail.getQuiz();
-//
-//                    List<String> optionList = new ArrayList<>();
-//                    if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
-//                        List<String> options = quiz.getOptions().stream()
-//                                .sorted(Comparator.comparing(Option::getId))
-//                                .map(Option::getOption)
-//                                .toList();
-//                        if (options.isEmpty()) {
-//                            continue;
-//                        }
-//                        optionList.addAll(options);
-//                    }
-//
-//                    GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto reviewNeededDto = GetSingleDocumentResponse.GetSingleDocumentReviewNeededDto.builder()
-//                            .id(quiz.getId())
-//                            .question(quiz.getQuestion())
-//                            .answer(quiz.getAnswer())
-//                            .explanation(quiz.getExplanation())
-//                            .options(optionList)
-//                            .quizType(quiz.getQuizType())
-//                            .build();
-//
-//                    reviewNeedEdQuizzes.add(reviewNeededDto);
-//                }
-//            }
-//        }
-//        return reviewNeedEdQuizzes;
-//    }
 }
