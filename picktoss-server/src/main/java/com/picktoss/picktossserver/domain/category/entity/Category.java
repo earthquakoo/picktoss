@@ -27,12 +27,16 @@ public class Category {
     @Column(name = "orders", nullable = false)
     private Integer orders;
 
-    public static Category createCategory(String name, String emoji, String color, Integer orders) {
+    @Column(name = "language", nullable = false)
+    private String language;
+
+    public static Category createCategory(String name, String emoji, String color, Integer orders, String language) {
         return Category.builder()
                 .name(name)
                 .emoji(emoji)
                 .orders(orders)
                 .color(color)
+                .language(language)
                 .build();
     }
 }

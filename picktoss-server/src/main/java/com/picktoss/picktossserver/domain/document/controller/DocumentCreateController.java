@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,9 @@ public class DocumentCreateController {
         Long memberId = jwtUserInfo.getMemberId();
         Integer star = Integer.valueOf(request.getStar());
 
-        Long documentId = documentCreateService.createDocument(request.getFile(), request.getDocumentType(), request.getIsPublic(), star, memberId);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        Long documentId = documentCreateService.createDocument(request.getFile(), request.getDocumentType(), request.getIsPublic(), star, memberId, language);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 
@@ -54,7 +57,9 @@ public class DocumentCreateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getStar());
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getStar(), language);
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 }

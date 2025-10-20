@@ -13,6 +13,7 @@ import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,21 +29,6 @@ public class DocumentReadController {
     private final JwtTokenProvider jwtTokenProvider;
     private final DocumentReadService documentReadService;
 
-//    @Operation(summary = "단일 문서 가져오기")
-//    @GetMapping("/documents/{document_id}")
-//    @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
-//    @ResponseStatus(HttpStatus.OK)
-//    public ResponseEntity<GetSingleDocumentResponse> getSingleDocument(
-//            @PathVariable(name = "document_id") Long documentId,
-//            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") QuizSortOption quizSortOption
-//            ) {
-//        JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
-//        Long memberId = jwtUserInfo.getMemberId();
-//
-//        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId, quizSortOption);
-//        return ResponseEntity.ok().body(documents);
-//    }
-
     @Operation(summary = "단일 문서 가져오기")
     @GetMapping("/documents/{document_id}")
     @ApiErrorCodeExamples({DOCUMENT_NOT_FOUND, AMAZON_SERVICE_EXCEPTION})
@@ -53,7 +39,9 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
-        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId, language);
         return ResponseEntity.ok().body(documents);
     }
 
@@ -66,7 +54,9 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllDocumentsResponse response = documentReadService.findAllDocuments(memberId, documentSortOption);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetAllDocumentsResponse response = documentReadService.findAllDocuments(memberId, documentSortOption, language);
         return ResponseEntity.ok().body(response);
     }
 
@@ -79,7 +69,9 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetBookmarkedDocumentsResponse response = documentReadService.findBookmarkedDocuments(memberId, documentSortOption);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetBookmarkedDocumentsResponse response = documentReadService.findBookmarkedDocuments(memberId, documentSortOption, language);
         return ResponseEntity.ok().body(response);
     }
 
@@ -90,8 +82,9 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId, language);
         return ResponseEntity.ok().body(response);
     }
-
 }

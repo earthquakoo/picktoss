@@ -27,7 +27,7 @@ public class PublicDocumentSearchService {
     private final DocumentRepository documentRepository;
     private final QuizRepository quizRepository;
 
-    public GetPublicDocumentsResponse findPublicDocuments(Long categoryId, Long memberId, int page, int pageSize) {
+    public GetPublicDocumentsResponse findPublicDocuments(Long categoryId, Long memberId, int page, int pageSize, String language) {
         if (pageSize < 1) {
             throw new CustomException(ErrorInfo.DOCUMENT_PAGE_SET_ERROR);
         }
@@ -36,9 +36,9 @@ public class PublicDocumentSearchService {
 
         Page<Document> documents;
         if (categoryId == null) {
-            documents = documentRepository.findAllByIsPublic(pageable);
+            documents = documentRepository.findAllByIsPublicAndLanguage(pageable, language);
         } else {
-            documents = documentRepository.findAllByIsPublicAndCategoryId(categoryId, pageable);
+            documents = documentRepository.findAllByIsPublicAndCategoryIdAndLanguage(pageable, categoryId, language);
         }
 
         int totalPages = documents.getTotalPages();
@@ -97,8 +97,8 @@ public class PublicDocumentSearchService {
         return new GetPublicDocumentsResponse(totalPages, totalDocuments, documentsDtos);
     }
 
-    public SearchDocumentsResponse searchPublicDocuments(String keyword, Long memberId) {
-        List<Document> documents = documentRepository.findAllByIsPublic();
+    public SearchDocumentsResponse searchPublicDocuments(String keyword, Long memberId, String language) {
+        List<Document> documents = documentRepository.findAllByIsPublicAndLanguage(language);
 
         List<SearchDocumentsResponse.SearchDocumentsDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {

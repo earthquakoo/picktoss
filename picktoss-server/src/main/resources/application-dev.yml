@@ -29,6 +29,9 @@ spring:
     prefix: classpath:templates/
     suffix: .html
     cache: false
+  messages:
+    basename: message/messages
+    encoding: UTF-8
 
   jpa:
     hibernate.default_batch_fetch_size: 1000

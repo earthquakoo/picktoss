@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,9 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllCategoriesResponse> getAllCategories() {
 
-        GetAllCategoriesResponse response = categoryService.findAllCategory();
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetAllCategoriesResponse response = categoryService.findAllCategory(language);
         return ResponseEntity.ok().body(response);
     }
 
@@ -34,6 +37,6 @@ public class CategoryController {
     public void createCategory(
             @Valid @RequestBody CreateCategoryRequest request
     ) {
-        categoryService.createCategory(request.getName(), request.getEmoji(), request.getColor(), request.getOrders());
+        categoryService.createCategory(request.getName(), request.getEmoji(), request.getColor(), request.getOrders(), request.getLanguage());
     }
 }

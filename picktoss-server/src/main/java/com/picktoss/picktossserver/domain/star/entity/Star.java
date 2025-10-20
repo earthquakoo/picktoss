@@ -47,7 +47,7 @@ public class Star extends AuditBase {
                 .build();
     }
 
-    public StarHistory withdrawalStarByCreateDocument(Star star, Integer starCount, SubscriptionPlanType subscriptionPlanType) {
+    public StarHistory withdrawalStarByCreateDocument(Star star, Integer starCount, SubscriptionPlanType subscriptionPlanType, String description) {
         if (star.getIsUnlimited() && subscriptionPlanType == SubscriptionPlanType.PRO) {
             starCount = 0;
         }
@@ -59,49 +59,39 @@ public class Star extends AuditBase {
         Integer curStarCount = star.getStar();
         Integer changeStarCount = curStarCount - starCount;
 
-        StarHistory starHistory = StarHistory.createStarHistory("문서 생성으로 인한 지출", starCount, changeStarCount, TransactionType.WITHDRAWAL, Source.SERVICE, star);
+        StarHistory starHistory = StarHistory.createStarHistory(description, starCount, changeStarCount, TransactionType.WITHDRAWAL, Source.SERVICE, star);
 
         this.star -= starCount;
         return starHistory;
     }
 
-    public StarHistory depositStarByQuizSetSolvedReward(Star star, int reward) {
+    public StarHistory depositStarBySolvedDailyQuizReward(Star star, int reward, String description) {
         Integer curStarCount = star.getStar();
         Integer changeStarCount = curStarCount + reward;
 
-        StarHistory starHistory = StarHistory.createStarHistory("퀴즈셋 풀이 보상", reward, changeStarCount, TransactionType.DEPOSIT, Source.REWARD, star);
+        StarHistory starHistory = StarHistory.createStarHistory(description, reward, changeStarCount, TransactionType.DEPOSIT, Source.REWARD, star);
 
         this.star += reward;
         return starHistory;
     }
 
-    public StarHistory depositStarBySolvedDailyQuizReward(Star star, int reward) {
-        Integer curStarCount = star.getStar();
-        Integer changeStarCount = curStarCount + reward;
-
-        StarHistory starHistory = StarHistory.createStarHistory("데일리 퀴즈 보상", reward, changeStarCount, TransactionType.DEPOSIT, Source.REWARD, star);
-
-        this.star += reward;
-        return starHistory;
-    }
-
-    public StarHistory depositStarByInviteFriendReward(Star star) {
+    public StarHistory depositStarByInviteFriendReward(Star star, String description) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
         Integer changeAmount = StarConstant.INVITE_FRIEND_REWARD;
         Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
 
-        StarHistory starHistory = StarHistory.createStarHistory("친구 초대 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+        StarHistory starHistory = StarHistory.createStarHistory(description, changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
 
         this.star += StarConstant.INVITE_FRIEND_REWARD;
         return starHistory;
     }
 
-    public StarHistory depositStarBySpecialInviteReward(Star star) {
+    public StarHistory depositStarBySpecialInviteReward(Star star, String description) {
         StarHistory lastStarHistory = star.getStarHistories().getLast();
         Integer changeAmount = StarConstant.SPECIAL_INVITE_REWARD;
         Integer balanceAfter = lastStarHistory.getBalanceAfter() + changeAmount;
 
-        StarHistory starHistory = StarHistory.createStarHistory("이벤트 친구 초대 보상", changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
+        StarHistory starHistory = StarHistory.createStarHistory(description, changeAmount, balanceAfter, TransactionType.DEPOSIT, Source.REWARD, star);
 
         this.star += StarConstant.SPECIAL_INVITE_REWARD;
         return starHistory;

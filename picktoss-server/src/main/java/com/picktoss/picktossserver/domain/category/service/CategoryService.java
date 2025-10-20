@@ -17,8 +17,8 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    public GetAllCategoriesResponse findAllCategory() {
-        List<Category> categories = categoryRepository.findAll();
+    public GetAllCategoriesResponse findAllCategory(String language) {
+        List<Category> categories = categoryRepository.findAllByLanguage(language);
 
         List<GetAllCategoriesResponse.GetAllCategoriesDto> categoriesDtos = new ArrayList<>();
 
@@ -38,8 +38,8 @@ public class CategoryService {
     }
 
     @Transactional
-    public void createCategory(String name, String emoji, String color, Integer orders) {
-        Category category = Category.createCategory(name, emoji, color, orders);
+    public void createCategory(String name, String emoji, String color, Integer orders, String language) {
+        Category category = Category.createCategory(name, emoji, color, orders, language);
         categoryRepository.save(category);
     }
 }

@@ -1,10 +1,10 @@
 package com.picktoss.picktossserver.domain.document.service;
 
-import com.picktoss.picktossserver.core.eventlistener.event.s3.S3UploadEvent;
 import com.picktoss.picktossserver.core.eventlistener.event.sqs.SQSMessageEvent;
 import com.picktoss.picktossserver.core.eventlistener.publisher.s3.S3UploadPublisher;
 import com.picktoss.picktossserver.core.eventlistener.publisher.sqs.SQSEventMessagePublisher;
 import com.picktoss.picktossserver.core.exception.CustomException;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.domain.directory.entity.Directory;
 import com.picktoss.picktossserver.domain.directory.repository.DirectoryRepository;
 import com.picktoss.picktossserver.domain.document.entity.Document;
@@ -45,8 +45,10 @@ public class DocumentCreateService {
     private final OutboxRepository outboxRepository;
     private final MemberRepository memberRepository;
 
+    private final MessageService messageService;
+
     @Transactional
-    public Long createDocument(MultipartFile file, DocumentType documentType, Boolean isPublic, Integer starCount, Long memberId) {
+    public Long createDocument(MultipartFile file, DocumentType documentType, Boolean isPublic, Integer starCount, Long memberId, String language) {
         SubscriptionPlanType subscriptionPlanType = findMemberSubscriptionPlanType(memberId);
 
         List<Directory> directories = directoryRepository.findAllByMemberId(memberId);
@@ -56,23 +58,23 @@ public class DocumentCreateService {
         withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType);
 
         String s3Key = UUID.randomUUID().toString();
-        Document document = Document.createDocument(s3Key, isPublic, UNPROCESSED, documentType, directory);
+        Document document = Document.createDocument(s3Key, isPublic, UNPROCESSED, documentType, directory, language);
         documentRepository.save(document);
 
-        createOutboxByCreateDocument(starCount, document);
+//        createOutboxByCreateDocument(starCount, document);
 
-        s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));
-        sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(memberId, s3Key, document.getId(), starCount));
+//        s3UploadPublisher.s3UploadPublisher(new S3UploadEvent(file, s3Key));
+//        sqsEventMessagePublisher.sqsEventMessagePublisher(new SQSMessageEvent(memberId, s3Key, document.getId(), starCount));
 
         return document.getId();
     }
 
     // 퀴즈 추가로 생성하기
     @Transactional
-    public void createAdditionalQuizzes(Long documentId, Long memberId, Integer starCount) {
+    public void createAdditionalQuizzes(Long documentId, Long memberId, Integer starCount, String language) {
         SubscriptionPlanType subscriptionPlanType = findMemberSubscriptionPlanType(memberId);
 
-        Document document = updateDocumentStatusProcessingByGenerateQuizzes(documentId, memberId);
+        Document document = updateDocumentStatusProcessingByGenerateQuizzes(documentId, memberId, language);
 
         Star star = document.getDirectory().getMember().getStar();
         withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType);
@@ -92,7 +94,8 @@ public class DocumentCreateService {
 
     @Transactional
     private void withdrawalStarByCreateDocument(Star star, int starCount, SubscriptionPlanType subscriptionPlanType) {
-        StarHistory starHistory = star.withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType);
+        String description = messageService.getMessage("star.history.withdrawal_star");
+        StarHistory starHistory = star.withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType, description);
         starHistoryRepository.save(starHistory);
     }
 
@@ -103,8 +106,8 @@ public class DocumentCreateService {
     }
 
     @Transactional
-    private Document updateDocumentStatusProcessingByGenerateQuizzes(Long documentId, Long memberId) {
-        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
+    private Document updateDocumentStatusProcessingByGenerateQuizzes(Long documentId, Long memberId, String language) {
+        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         document.updateDocumentStatusProcessingByGenerateQuizzes();
