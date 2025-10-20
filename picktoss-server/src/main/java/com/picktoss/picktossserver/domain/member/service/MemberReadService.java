@@ -39,7 +39,7 @@ public class MemberReadService {
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
 
-    public GetMemberInfoResponse findMemberInfo(Long memberId) {
+    public GetMemberInfoResponse findMemberInfo(Long memberId, String language) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
@@ -48,8 +48,8 @@ public class MemberReadService {
             imageUrl = s3Provider.findImage(member.getS3Key());
         }
 
-        List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
+        List<Document> documents = documentRepository.findAllByMemberIdAndLanguage(memberId, language);
+        List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
 
         Star star = member.getStar();
         String email = Optional.ofNullable(member.getEmail()).orElse("");
