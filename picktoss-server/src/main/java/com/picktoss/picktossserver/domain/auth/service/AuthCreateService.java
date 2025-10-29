@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.domain.auth.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
@@ -47,6 +48,7 @@ public class AuthCreateService {
     private final SubscriptionRepository subscriptionRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthUtil authUtil;
+    private final MessageService messageService;
 
     @Transactional
     public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
@@ -104,7 +106,8 @@ public class AuthCreateService {
     @Transactional
     private Star createMemberStar(Member member) {
         Star star = Star.createStar(StarConstant.SIGN_UP_STAR, member);
-        StarHistory starHistory = StarHistory.createStarHistory("회원 가입", StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
+        String description = messageService.getMessage("star.history.create_member");
+        StarHistory starHistory = StarHistory.createStarHistory(description, StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
 
         starRepository.save(star);
         starHistoryRepository.save(starHistory);
