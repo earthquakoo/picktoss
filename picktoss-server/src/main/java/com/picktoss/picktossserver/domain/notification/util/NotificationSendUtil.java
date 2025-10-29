@@ -29,8 +29,6 @@ public class NotificationSendUtil {
     public void sendNotificationByStarReward(Long memberId) {
         String title = messageService.getMessage("notification.star_reward.title");
         String content = messageService.getMessage("notification.star_reward.content");
-//        String title = "🌟 친구 초대 보상 도착";
-//        String content = "받은 별을 확인해 보세요!";
 
         Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, memberId.toString(), String.class);
         if (optionalToken.isEmpty()) {

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,9 @@ public class DailyQuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllQuizzesResponse response = dailyQuizRecordService.findQuizzes(memberId, dailyQuizType, quizSource);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetAllQuizzesResponse response = dailyQuizRecordService.findQuizzes(memberId, dailyQuizType, quizSource, language);
         return ResponseEntity.ok().body(response);
     }
 
@@ -52,7 +55,6 @@ public class DailyQuizRecordController {
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
-        System.out.println("memberId = " + memberId);
 
         CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, request.getQuizId(), request.getChoseAnswer(), request.getIsAnswer());
         return ResponseEntity.ok().body(response);

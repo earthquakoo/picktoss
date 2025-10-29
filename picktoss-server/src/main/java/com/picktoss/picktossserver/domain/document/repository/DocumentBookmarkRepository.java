@@ -48,6 +48,19 @@ public interface DocumentBookmarkRepository extends JpaRepository<DocumentBookma
 
     @Query("SELECT db FROM DocumentBookmark db " +
             "JOIN FETCH db.document d " +
+            "LEFT JOIN FETCH d.quizzes q " +
+            "LEFT JOIN FETCH q.options " +
+            "WHERE db.member.id = :memberId " +
+            "AND q.quizType = :quizType " +
+            "AND d.language = :language")
+    List<DocumentBookmark> findAllByMemberIdAndQuizTypeAndLanguage(
+            @Param("memberId") Long memberId,
+            @Param("quizType") QuizType quizType,
+            @Param("language") String language
+    );
+
+    @Query("SELECT db FROM DocumentBookmark db " +
+            "JOIN FETCH db.document d " +
             "LEFT JOIN d.quizzes q " +
             "WHERE db.member.id = :memberId " +
             "AND d.isPublic = true " +

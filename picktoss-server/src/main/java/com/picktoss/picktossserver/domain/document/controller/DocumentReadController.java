@@ -50,7 +50,8 @@ public class DocumentReadController {
     @ApiErrorCodeExamples({AMAZON_SERVICE_EXCEPTION, DOCUMENT_SORT_OPTION_NOT_SELECT})
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<GetAllDocumentsResponse> getAllDocuments(
-            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") DocumentSortOption documentSortOption) {
+            @RequestParam(defaultValue = "CREATED_AT", value = "sort-option") DocumentSortOption documentSortOption
+    ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 

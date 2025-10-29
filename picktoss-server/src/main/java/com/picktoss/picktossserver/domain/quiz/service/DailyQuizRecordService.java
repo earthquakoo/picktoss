@@ -44,7 +44,7 @@ public class DailyQuizRecordService {
 
     private final MessageService messageService;
 
-    public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource) {
+    public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource, String language) {
         List<Quiz> quizzes = new ArrayList<>();
         List<DocumentBookmark> documentBookmarks = new ArrayList<>();
 
@@ -60,9 +60,9 @@ public class DailyQuizRecordService {
 
         if (includeMyQuiz) {
             if (quizType == null) {
-                quizzes = quizRepository.findAllByMemberId(memberId);
+                quizzes = quizRepository.findAllByMemberIdAndLanguage(memberId, language);
             } else {
-                quizzes = quizRepository.findAllByMemberIdAndQuizType(memberId, quizType);
+                quizzes = quizRepository.findAllByMemberIdAndQuizTypeAndLanguage(memberId, quizType, language);
             }
         }
 
@@ -100,9 +100,9 @@ public class DailyQuizRecordService {
 
         if (includeBookmarkQuiz) {
             if (quizType == null) {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
+                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
             } else {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizType(memberId, quizType);
+                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizTypeAndLanguage(memberId, quizType, language);
             }
         }
 
@@ -145,8 +145,6 @@ public class DailyQuizRecordService {
 
         return new GetAllQuizzesResponse(quizzesDtos);
     }
-
-    // 아래 코드 중간에 데이터가 계속 바뀌는 것이 있어서 변경 감지가 안될 것 같은데 테스트 해봐야할듯
 
     @Transactional
     public CreateDailyQuizRecordResponse createDailyQuizRecord(Long memberId, Long quizId, String choseAnswer, Boolean isAnswer) {

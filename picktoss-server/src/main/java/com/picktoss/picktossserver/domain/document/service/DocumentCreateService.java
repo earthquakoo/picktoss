@@ -95,7 +95,7 @@ public class DocumentCreateService {
 
     @Transactional
     private void withdrawalStarByCreateDocument(Star star, int starCount, SubscriptionPlanType subscriptionPlanType) {
-        String description = messageService.getMessage("star.history.withdrawal_star");
+        String description = messageService.getMessage("star.history.quiz_generation");
         StarHistory starHistory = star.withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType, description);
         starHistoryRepository.save(starHistory);
     }
