@@ -8,11 +8,13 @@ import com.picktoss.picktossserver.domain.quiz.service.QuizRecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.UNRESOLVED_QUIZ_SET;
 
@@ -32,7 +34,9 @@ public class QuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllQuizRecordsResponse response = quizRecordService.findAllQuizRecords(memberId);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        GetAllQuizRecordsResponse response = quizRecordService.findAllQuizRecords(memberId, memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -46,7 +50,9 @@ public class QuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetSingleQuizSetRecordResponse response = quizRecordService.findSingleQuizSetRecord(memberId, quizSetId);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        GetSingleQuizSetRecordResponse response = quizRecordService.findSingleQuizSetRecord(memberId, quizSetId, memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -72,7 +78,9 @@ public class QuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetConsecutiveSolvedDailyQuizDatesResponse response = quizRecordService.findConsecutiveSolvedQuizSetDates(memberId, solvedDate);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        GetConsecutiveSolvedDailyQuizDatesResponse response = quizRecordService.findConsecutiveSolvedQuizSetDates(memberId, solvedDate, memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -83,7 +91,9 @@ public class QuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        int response = quizRecordService.calculateConsecutiveDailyQuiz(memberId);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        int response = quizRecordService.calculateConsecutiveDailyQuiz(memberId, memberZoneId);
         return ResponseEntity.ok().body(new GetConsecutiveSolvedDailyQuizResponse(response));
     }
 }
