@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +34,10 @@ public class DailyQuizRecord {
     @OneToMany(mappedBy = "dailyQuizRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DailyQuizRecordDetail> dailyQuizRecordDetails = new ArrayList<>();
 
-    public static DailyQuizRecord createDailyQuizRecord(Member member) {
+    public static DailyQuizRecord createDailyQuizRecord(Member member, ZoneId zoneId) {
         return DailyQuizRecord.builder()
                 .isDailyQuizComplete(false)
-                .solvedDate(LocalDateTime.now())
+                .solvedDate(LocalDateTime.now(zoneId))
                 .member(member)
                 .dailyQuizRecordDetails(new ArrayList<>())
                 .build();

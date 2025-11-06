@@ -23,11 +23,14 @@ import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import com.picktoss.picktossserver.global.enums.quiz.DailyQuizType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSource;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
+import com.picktoss.picktossserver.global.utils.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -43,6 +46,7 @@ public class DailyQuizRecordService {
     private final StarHistoryRepository starHistoryRepository;
 
     private final MessageService messageService;
+    private final DateTimeUtil dateTimeUtil;
 
     public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource, String language) {
         List<Quiz> quizzes = new ArrayList<>();
@@ -147,11 +151,11 @@ public class DailyQuizRecordService {
     }
 
     @Transactional
-    public CreateDailyQuizRecordResponse createDailyQuizRecord(Long memberId, Long quizId, String choseAnswer, Boolean isAnswer) {
+    public CreateDailyQuizRecordResponse createDailyQuizRecord(Long memberId, Long quizId, String choseAnswer, Boolean isAnswer, ZoneId memberZoneId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
-        DailyQuizRecord dailyQuizRecord = checkPresentDailyQuizRecord(member);
+        DailyQuizRecord dailyQuizRecord = checkPresentDailyQuizRecord(member, memberZoneId);
 
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.QUIZ_NOT_FOUND_ERROR));
@@ -164,7 +168,7 @@ public class DailyQuizRecordService {
         dailyQuizRecordDetailRepository.save(dailyQuizRecordDetail);
 
         int reward = 0;
-        int consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId);
+        int consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId, memberZoneId);
         int todaySolvedDailyQuizCount = dailyQuizRecord.getDailyQuizRecordDetails().size();
 
         if (todaySolvedDailyQuizCount == 10) {
@@ -182,27 +186,30 @@ public class DailyQuizRecordService {
         return new CreateDailyQuizRecordResponse(reward, todaySolvedDailyQuizCount, consecutiveSolvedDailyQuizDays);
     }
 
-
-
     @Transactional
-    private DailyQuizRecord checkPresentDailyQuizRecord(Member member) {
-        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now());
+    private DailyQuizRecord checkPresentDailyQuizRecord(Member member, ZoneId memberZoneId) {
+        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now(memberZoneId));
         if (optionalDailyQuizRecord.isEmpty()) {
-            DailyQuizRecord dailyQuizRecord = DailyQuizRecord.createDailyQuizRecord(member);
+            DailyQuizRecord dailyQuizRecord = DailyQuizRecord.createDailyQuizRecord(member, memberZoneId);
             dailyQuizRecordRepository.save(dailyQuizRecord);
             return dailyQuizRecord;
         }
         return optionalDailyQuizRecord.get();
     }
 
-    private int calculateConsecutiveDailyQuiz(Long memberId) {
+    private int calculateConsecutiveDailyQuiz(Long memberId, ZoneId memberZoneId) {
         List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdAndIsDailyQuizCompleteTrueOrderBySolvedDateDesc(memberId);
         if (dailyQuizRecords.isEmpty()) {
             return 0;
         }
 
-        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate().toLocalDate();
-        if (!firstQuizSetDate.equals(LocalDate.now()) && !firstQuizSetDate.equals(LocalDate.now().minusDays(1))) {
+        LocalDate memberToday = LocalDate.now(memberZoneId);
+        LocalDate memberYesterday = memberToday.minusDays(1);
+
+        LocalDateTime firstRecordUtc = dailyQuizRecords.getFirst().getSolvedDate();
+        LocalDate firstQuizSetDate = dateTimeUtil.convertToMemberLocalDate(firstRecordUtc, memberZoneId);
+
+        if (!firstQuizSetDate.equals(memberToday) && !firstQuizSetDate.equals(memberYesterday)) {
             return 0;
         }
 
@@ -210,7 +217,8 @@ public class DailyQuizRecordService {
         int currentConsecutiveDays = 0;
 
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
-            LocalDate solvedDate = dailyQuizRecord.getSolvedDate().toLocalDate();
+            LocalDateTime solvedUtc = dailyQuizRecord.getSolvedDate();
+            LocalDate solvedDate = dateTimeUtil.convertToMemberLocalDate(solvedUtc, memberZoneId);
 
             if (previousDate == null || previousDate.minusDays(1).equals(solvedDate)) {
                 currentConsecutiveDays += 1;

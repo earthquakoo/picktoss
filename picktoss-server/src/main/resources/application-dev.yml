@@ -41,6 +41,7 @@ spring:
       order_updates: true
       jdbc:
         batch_size: 2500
+        time_zone: UTC
 
 logging.level:
   org.hibernate.SQL: debug

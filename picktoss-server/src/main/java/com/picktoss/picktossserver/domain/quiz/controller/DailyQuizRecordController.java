@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
+
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_FOUND_ERROR;
 
@@ -56,7 +58,9 @@ public class DailyQuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, request.getQuizId(), request.getChoseAnswer(), request.getIsAnswer());
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, request.getQuizId(), request.getChoseAnswer(), request.getIsAnswer(), memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 }
