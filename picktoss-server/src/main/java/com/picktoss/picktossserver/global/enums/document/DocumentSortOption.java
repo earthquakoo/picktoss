@@ -7,10 +7,10 @@ import com.picktoss.picktossserver.global.utils.DocumentFetchFunction;
 import java.util.List;
 
 public enum DocumentSortOption {
-    CREATED_AT(DocumentRepository::findAllByMemberIdAndLanguageOrderByCreatedAtDesc),
-    NAME(DocumentRepository::findAllByMemberIdAndLanguageOrderByNameAsc),
-    QUIZ_COUNT(DocumentRepository::findAllByMemberIdAndLanguageOrderByQuizCountDesc),
-    WRONG_ANSWER_COUNT(DocumentRepository::findAllByMemberIdAndLanguageWrongAnswerCount);
+    CREATED_AT(DocumentRepository::findAllByMemberIdOrderByCreatedAtDesc),
+    NAME(DocumentRepository::findAllByMemberIdOrderByNameAsc),
+    QUIZ_COUNT(DocumentRepository::findAllByMemberIdAndOrderByQuizCountDesc),
+    WRONG_ANSWER_COUNT(DocumentRepository::findAllByMemberIdWrongAnswerCount);
 
     private final DocumentFetchFunction fetchFunction;
 
@@ -18,7 +18,7 @@ public enum DocumentSortOption {
         this.fetchFunction = fetchFunction;
     }
 
-    public List<Document> fetchDocuments(DocumentRepository repository, Long memberId, String language) {
-        return this.fetchFunction.fetch(repository, memberId, language);
+    public List<Document> fetchDocuments(DocumentRepository repository, Long memberId) {
+        return this.fetchFunction.fetch(repository, memberId);
     }
 }

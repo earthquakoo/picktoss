@@ -57,9 +57,7 @@ public class DocumentCreateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getStar(), language);
+        documentCreateService.createAdditionalQuizzes(documentId, memberId, request.getStar());
         return ResponseEntity.ok().body(new CreateDocumentResponse(documentId));
     }
 }

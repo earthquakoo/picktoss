@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +34,7 @@ public class DocumentSearchController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        SearchDocumentsResponse response = documentSearchService.searchDocumentsByKeyword(request.getKeyword(), memberId, language);
+        SearchDocumentsResponse response = documentSearchService.searchDocumentsByKeyword(request.getKeyword(), memberId);
         return ResponseEntity.ok().body(response);
     }
 }

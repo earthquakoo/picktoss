@@ -7,5 +7,5 @@ import java.util.List;
 
 @FunctionalInterface
 public interface DocumentFetchFunction{
-    List<Document> fetch(DocumentRepository repository, Long memberId, String language);
+    List<Document> fetch(DocumentRepository repository, Long memberId);
 }

@@ -72,10 +72,10 @@ public class DocumentCreateService {
 
     // 퀴즈 추가로 생성하기
     @Transactional
-    public void createAdditionalQuizzes(Long documentId, Long memberId, Integer starCount, String language) {
+    public void createAdditionalQuizzes(Long documentId, Long memberId, Integer starCount) {
         SubscriptionPlanType subscriptionPlanType = findMemberSubscriptionPlanType(memberId);
 
-        Document document = updateDocumentStatusProcessingByGenerateQuizzes(documentId, memberId, language);
+        Document document = updateDocumentStatusProcessingByGenerateQuizzes(documentId, memberId);
 
         Star star = document.getDirectory().getMember().getStar();
         withdrawalStarByCreateDocument(star, starCount, subscriptionPlanType);
@@ -107,8 +107,8 @@ public class DocumentCreateService {
     }
 
     @Transactional
-    private Document updateDocumentStatusProcessingByGenerateQuizzes(Long documentId, Long memberId, String language) {
-        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+    private Document updateDocumentStatusProcessingByGenerateQuizzes(Long documentId, Long memberId) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         document.updateDocumentStatusProcessingByGenerateQuizzes();

@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @Tag(name = "Document - Public")
 @RestController
 @RequiredArgsConstructor
@@ -39,6 +41,9 @@ public class PublicDocumentSearchController {
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
         String language = LocaleContextHolder.getLocale().getLanguage();
+        if (!Objects.equals(language, "ko")) {
+            language = "en";
+        }
 
         GetPublicDocumentsResponse response = publicDocumentSearchService.findPublicDocuments(categoryId, memberId, page, pageSize, language);
         return ResponseEntity.ok().body(response);

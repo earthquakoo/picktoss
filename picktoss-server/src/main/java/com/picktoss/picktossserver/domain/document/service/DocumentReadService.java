@@ -189,12 +189,12 @@ public class DocumentReadService {
     }
 
     //모든 문서 가져오기
-    public GetAllDocumentsResponse findAllDocuments(Long memberId, DocumentSortOption documentSortOption, String language) {
+    public GetAllDocumentsResponse findAllDocuments(Long memberId, DocumentSortOption documentSortOption) {
         DocumentSortOption option = (documentSortOption == null)
                 ? DocumentSortOption.WRONG_ANSWER_COUNT
                 : documentSortOption;
 
-        List<Document> documents = option.fetchDocuments(documentRepository, memberId, language);
+        List<Document> documents = option.fetchDocuments(documentRepository, memberId);
 
         List<GetAllDocumentsResponse.GetAllDocumentsDocumentDto> documentDtos = new ArrayList<>();
         for (Document document : documents) {
@@ -242,12 +242,12 @@ public class DocumentReadService {
     }
 
     //북마크된 문서 가져오기
-    public GetBookmarkedDocumentsResponse findBookmarkedDocuments(Long memberId, BookmarkedDocumentSortOption documentSortOption, String language) {
+    public GetBookmarkedDocumentsResponse findBookmarkedDocuments(Long memberId, BookmarkedDocumentSortOption documentSortOption) {
         BookmarkedDocumentSortOption option = (documentSortOption == null)
                 ? BookmarkedDocumentSortOption.NAME
                 : documentSortOption;
 
-        List<DocumentBookmark> documentBookmarks = option.fetchDocuments(documentBookmarkRepository, memberId, language);
+        List<DocumentBookmark> documentBookmarks = option.fetchDocuments(documentBookmarkRepository, memberId);
 
         List<GetBookmarkedDocumentsResponse.GetBookmarkedDocumentsDto> documentsDtos = new ArrayList<>();
         for (DocumentBookmark documentBookmark : documentBookmarks) {
@@ -274,8 +274,8 @@ public class DocumentReadService {
         return new GetBookmarkedDocumentsResponse(documentsDtos);
     }
 
-    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId, String language) {
-        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberIdAndLanguage(memberId, language);
+    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId) {
+        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberId(memberId);
 
         List<GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments> documentDtos = new ArrayList<>();
         for (Document document : documents) {

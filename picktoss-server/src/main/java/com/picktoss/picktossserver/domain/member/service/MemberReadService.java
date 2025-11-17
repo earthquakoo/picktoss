@@ -48,7 +48,7 @@ public class MemberReadService {
             imageUrl = s3Provider.findImage(member.getS3Key());
         }
 
-        List<Document> documents = documentRepository.findAllByMemberIdAndLanguage(memberId, language);
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
         List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
 
         Star star = member.getStar();
