@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @Tag(name = "Category")
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +28,9 @@ public class CategoryController {
     public ResponseEntity<GetAllCategoriesResponse> getAllCategories() {
 
         String language = LocaleContextHolder.getLocale().getLanguage();
+        if (!Objects.equals(language, "ko")) {
+            language = "en";
+        }
 
         GetAllCategoriesResponse response = categoryService.findAllCategory(language);
         return ResponseEntity.ok().body(response);
