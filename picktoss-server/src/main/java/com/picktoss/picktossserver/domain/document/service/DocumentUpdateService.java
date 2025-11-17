@@ -31,10 +31,10 @@ public class DocumentUpdateService {
 
 
     @Transactional
-    public void updateDocumentContent(MultipartFile file, Long documentId, Long memberId, String name, String language) {
+    public void updateDocumentContent(MultipartFile file, Long documentId, Long memberId, String name) {
         String s3Key = UUID.randomUUID().toString();
 
-        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         document.updateDocumentS3KeyByUpdatedContent(s3Key);
@@ -45,16 +45,16 @@ public class DocumentUpdateService {
     }
 
     @Transactional
-    public void updateDocumentName(Long documentId, Long memberId, String documentName, String language) {
-        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+    public void updateDocumentName(Long documentId, Long memberId, String documentName) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         document.updateDocumentName(documentName);
     }
 
     @Transactional
-    public void updateDocumentCategory(Long documentId, Long memberId, Long categoryId, String language) {
-        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+    public void updateDocumentCategory(Long documentId, Long memberId, Long categoryId) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         Category category = categoryRepository.findById(categoryId)
@@ -64,16 +64,16 @@ public class DocumentUpdateService {
     }
 
     @Transactional
-    public void updateDocumentEmoji(Long documentId, Long memberId, String emoji, String language) {
-        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+    public void updateDocumentEmoji(Long documentId, Long memberId, String emoji) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         document.updateDocumentEmoji(emoji);
     }
 
     @Transactional
-    public void updateDocumentIsPublic(Long documentId, Long memberId, Boolean isPublic, String language) {
-        Document document = documentRepository.findByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+    public void updateDocumentIsPublic(Long documentId, Long memberId, Boolean isPublic) {
+        Document document = documentRepository.findByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(DOCUMENT_NOT_FOUND));
 
         if (document.getQuizGenerationStatus() == QuizGenerationStatus.QUIZ_GENERATION_ERROR) {

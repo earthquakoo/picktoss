@@ -22,11 +22,11 @@ public class DocumentSearchService {
     private final DocumentBookmarkRepository documentBookmarkRepository;
 
     //문서 검색
-    public SearchDocumentsResponse searchDocumentsByKeyword(String keyword, Long memberId, String language) {
+    public SearchDocumentsResponse searchDocumentsByKeyword(String keyword, Long memberId) {
         List<SearchDocumentsResponse.SearchDocumentsDto> documentDtos = new ArrayList<>();
 
-        List<Document> documents = documentRepository.findAllByMemberIdAndLanguage(memberId, language);
-        List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
+        List<Document> documents = documentRepository.findAllByMemberId(memberId);
+        List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
 
         Set<Long> bookmarkedDocumentIds = documentBookmarks.stream()
                 .map(bookmark -> bookmark.getDocument().getId())

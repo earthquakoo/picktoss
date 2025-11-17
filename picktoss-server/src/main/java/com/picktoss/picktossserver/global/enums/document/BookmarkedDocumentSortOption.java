@@ -7,9 +7,9 @@ import com.picktoss.picktossserver.global.utils.DocumentBookmarkFetchFunction;
 import java.util.List;
 
 public enum BookmarkedDocumentSortOption {
-    CREATED_AT(DocumentBookmarkRepository::findAllByMemberIdAndIsPublicTrueAndLanguageOrderByCreatedAtDesc),
-    QUIZ_COUNT(DocumentBookmarkRepository::findAllByMemberIdAndIsPublicTrueAndLanguageOrderByQuizCountDesc),
-    NAME(DocumentBookmarkRepository::findAllByMemberIdAndIsPublicTrueAndLanguageOrderByNameDesc); // 'else'에 해당하던 기본값
+    CREATED_AT(DocumentBookmarkRepository::findAllByMemberIdAndIsPublicTrueOrderByCreatedAtDesc),
+    QUIZ_COUNT(DocumentBookmarkRepository::findAllByMemberIdAndIsPublicTrueOrderByQuizCountDesc),
+    NAME(DocumentBookmarkRepository::findAllByMemberIdAndIsPublicTrueOrderByNameDesc); // 'else'에 해당하던 기본값
 
     private final DocumentBookmarkFetchFunction fetchFunction;
 
@@ -17,7 +17,7 @@ public enum BookmarkedDocumentSortOption {
         this.fetchFunction = fetchFunction;
     }
 
-    public List<DocumentBookmark> fetchDocuments(DocumentBookmarkRepository repository, Long memberId, String language) {
-        return this.fetchFunction.fetch(repository, memberId, language);
+    public List<DocumentBookmark> fetchDocuments(DocumentBookmarkRepository repository, Long memberId) {
+        return this.fetchFunction.fetch(repository, memberId);
     }
 }

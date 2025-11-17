@@ -155,7 +155,7 @@ public class DailyQuizRecordService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
-        DailyQuizRecord dailyQuizRecord = checkPresentDailyQuizRecord(member, memberZoneId);
+        DailyQuizRecord dailyQuizRecord = checkPresentDailyQuizRecord(member);
 
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.QUIZ_NOT_FOUND_ERROR));
@@ -187,10 +187,10 @@ public class DailyQuizRecordService {
     }
 
     @Transactional
-    private DailyQuizRecord checkPresentDailyQuizRecord(Member member, ZoneId memberZoneId) {
-        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now(memberZoneId));
+    private DailyQuizRecord checkPresentDailyQuizRecord(Member member) {
+        Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now());
         if (optionalDailyQuizRecord.isEmpty()) {
-            DailyQuizRecord dailyQuizRecord = DailyQuizRecord.createDailyQuizRecord(member, memberZoneId);
+            DailyQuizRecord dailyQuizRecord = DailyQuizRecord.createDailyQuizRecord(member);
             dailyQuizRecordRepository.save(dailyQuizRecord);
             return dailyQuizRecord;
         }

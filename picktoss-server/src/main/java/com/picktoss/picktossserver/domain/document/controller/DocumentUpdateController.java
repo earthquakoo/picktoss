@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +35,7 @@ public class DocumentUpdateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        documentUpdateService.updateDocumentContent(request.getFile(), documentId, memberId, request.getName(), language);
+        documentUpdateService.updateDocumentContent(request.getFile(), documentId, memberId, request.getName());
     }
 
     @Operation(summary = "문서 이름 변경")
@@ -51,9 +48,7 @@ public class DocumentUpdateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        documentUpdateService.updateDocumentName(documentId, memberId, request.getName(), language);
+        documentUpdateService.updateDocumentName(documentId, memberId, request.getName());
     }
 
     @Operation(summary = "문서 카테고리 변경")
@@ -67,9 +62,7 @@ public class DocumentUpdateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        documentUpdateService.updateDocumentCategory(documentId, memberId, request.getCategoryId(), language);
+        documentUpdateService.updateDocumentCategory(documentId, memberId, request.getCategoryId());
     }
 
     @Operation(summary = "문서 이모지 변경")
@@ -83,9 +76,7 @@ public class DocumentUpdateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        documentUpdateService.updateDocumentEmoji(documentId, memberId, request.getEmoji(), language);
+        documentUpdateService.updateDocumentEmoji(documentId, memberId, request.getEmoji());
     }
 
     @Operation(summary = "문서 공개여부 변경")
@@ -99,8 +90,6 @@ public class DocumentUpdateController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        documentUpdateService.updateDocumentIsPublic(documentId, memberId, request.getIsPublic(), language);
+        documentUpdateService.updateDocumentIsPublic(documentId, memberId, request.getIsPublic());
     }
 }

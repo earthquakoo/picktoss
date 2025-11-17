@@ -7,5 +7,5 @@ import java.util.List;
 
 @FunctionalInterface
 public interface DocumentBookmarkFetchFunction {
-    List<DocumentBookmark> fetch(DocumentBookmarkRepository repository, Long memberId, String language);
+    List<DocumentBookmark> fetch(DocumentBookmarkRepository repository, Long memberId);
 }

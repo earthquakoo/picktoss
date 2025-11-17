@@ -51,7 +51,7 @@ public class AuthCreateService {
     private final MessageService messageService;
 
     @Transactional
-    public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String language) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
         System.out.println("memberInfo = " + memberInfo);
 
@@ -60,7 +60,7 @@ public class AuthCreateService {
             Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                Member member = createKakaoMember(kakaoMemberDto);
+                Member member = createKakaoMember(kakaoMemberDto, language);
 
                 createMemberStar(member);
                 createDefaultDirectory(member);
@@ -78,7 +78,7 @@ public class AuthCreateService {
             Optional<Member> optionalMember = memberRepository.findByClientId(googleMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                Member member = createGoogleMember(googleMemberDto);
+                Member member = createGoogleMember(googleMemberDto, language);
 
                 createMemberStar(member);
                 createDefaultDirectory(member);
@@ -122,16 +122,16 @@ public class AuthCreateService {
     }
 
     @Transactional
-    private Member createKakaoMember(KakaoMemberDto kakaoMemberDto) {
-        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail());
+    private Member createKakaoMember(KakaoMemberDto kakaoMemberDto, String language) {
+        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail(), language);
         memberRepository.save(member);
 
         return member;
     }
 
     @Transactional
-    private Member createGoogleMember(GoogleMemberDto googleMemberDto) {
-        Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
+    private Member createGoogleMember(GoogleMemberDto googleMemberDto, String language) {
+        Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail(), language);
         memberRepository.save(member);
 
         return member;

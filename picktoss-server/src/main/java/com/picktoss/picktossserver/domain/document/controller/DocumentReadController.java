@@ -55,9 +55,7 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetAllDocumentsResponse response = documentReadService.findAllDocuments(memberId, documentSortOption, language);
+        GetAllDocumentsResponse response = documentReadService.findAllDocuments(memberId, documentSortOption);
         return ResponseEntity.ok().body(response);
     }
 
@@ -70,9 +68,7 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetBookmarkedDocumentsResponse response = documentReadService.findBookmarkedDocuments(memberId, documentSortOption, language);
+        GetBookmarkedDocumentsResponse response = documentReadService.findBookmarkedDocuments(memberId, documentSortOption);
         return ResponseEntity.ok().body(response);
     }
 
@@ -83,9 +79,7 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId, language);
+        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId);
         return ResponseEntity.ok().body(response);
     }
 }

@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -84,7 +85,9 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request
     ) {
-        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform());
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), language);
         return ResponseEntity.ok().body(response);
     }
 

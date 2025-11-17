@@ -15,12 +15,10 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT DISTINCT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE d.id = :documentId " +
-            "AND dir.member.id = :memberId " +
-            "AND d.language = :language")
-    Optional<Document> findByDocumentIdAndMemberIdAndLanguage(
+            "AND dir.member.id = :memberId")
+    Optional<Document> findByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
@@ -62,17 +60,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
-            "LEFT JOIN FETCH d.documentBookmarks " +
-            "WHERE dir.member.id = :memberId " +
-            "AND d.language = :language " +
-            "ORDER BY d.createdAt DESC")
-    List<Document> findAllByMemberIdAndLanguage(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
-    );
-
-    @Query("SELECT d FROM Document d " +
-            "JOIN FETCH d.directory dir " +
             "LEFT JOIN FETCH d.quizzes " +
             "WHERE d.id IN :documentIds " +
             "AND dir.member.id = :memberId")
@@ -86,11 +73,9 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "LEFT JOIN FETCH d.documentBookmarks " +
             "JOIN FETCH d.directory dir " +
             "WHERE dir.member.id = :memberId " +
-            "AND d.language = :language " +
             "ORDER BY d.createdAt DESC")
-    List<Document> findAllByMemberIdAndLanguageOrderByCreatedAtDesc(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+    List<Document> findAllByMemberIdOrderByCreatedAtDesc(
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
@@ -98,23 +83,19 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "LEFT JOIN FETCH d.documentBookmarks " +
             "JOIN FETCH d.directory dir " +
             "WHERE dir.member.id = :memberId " +
-            "AND d.language = :language " +
             "ORDER BY d.name ASC")
-    List<Document> findAllByMemberIdAndLanguageOrderByNameAsc(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+    List<Document> findAllByMemberIdOrderByNameAsc(
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN d.quizzes q " +
             "JOIN d.directory dir " +
             "WHERE dir.member.id = :memberId " +
-            "AND d.language = :language " +
             "GROUP BY d " +
             "ORDER BY COUNT(q) DESC")
-    List<Document> findAllByMemberIdAndLanguageOrderByQuizCountDesc(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+    List<Document> findAllByMemberIdAndOrderByQuizCountDesc(
+            @Param("memberId") Long memberId
     );
 
     @Query(value = """
@@ -128,9 +109,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     GROUP BY d.id
     ORDER BY SUM(CASE WHEN q.is_review_needed = true THEN 1 ELSE 0 END) DESC
     """, nativeQuery = true)
-    List<Document> findAllByMemberIdAndLanguageWrongAnswerCount(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+    List<Document> findAllByMemberIdWrongAnswerCount(
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
@@ -169,10 +149,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE d.isPublic = false " +
-            "AND dir.member.id = :memberId " +
-            "AND d.language = :language")
-    List<Document> findAllByIsNotPublicAndMemberIdAndLanguage(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+            "AND dir.member.id = :memberId")
+    List<Document> findAllByIsNotPublicAndMemberId(
+            @Param("memberId") Long memberId
     );
 }
