@@ -20,7 +20,7 @@ spring:
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
   datasource:
-    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -29,15 +29,19 @@ spring:
     prefix: classpath:templates/
     suffix: .html
     cache: false
+  messages:
+    basename: message/messages
+    encoding: UTF-8
 
   jpa:
     hibernate.default_batch_fetch_size: 1000
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
       order_inserts: true
       order_updates: true
       jdbc:
         batch_size: 2500
+        time_zone: UTC
 
 logging.level:
   org.hibernate.SQL: debug

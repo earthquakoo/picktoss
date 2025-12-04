@@ -10,14 +10,12 @@ import com.picktoss.picktossserver.domain.quiz.entity.QuizSetQuiz;
 import com.picktoss.picktossserver.domain.quiz.repository.DailyQuizRecordDetailRepository;
 import com.picktoss.picktossserver.domain.quiz.repository.QuizSetQuizRepository;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
+import com.picktoss.picktossserver.global.utils.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -29,12 +27,17 @@ public class QuizAnalysisService {
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
 
-    public GetQuizWeeklyAnalysisResponse findQuizWeeklyAnalysis(Long memberId, LocalDate startDate, LocalDate endDate) {
-        LocalDateTime startOfDay = startDate.atStartOfDay();
-        LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
+    private final DateTimeUtil dateTimeUtil;
 
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startOfDay, endOfDay);
-        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startOfDay, endOfDay);
+    public GetQuizWeeklyAnalysisResponse findQuizWeeklyAnalysis(Long memberId, LocalDate startDate, LocalDate endDate, ZoneId memberZoneId) {
+        ZonedDateTime startZoned = startDate.atStartOfDay(memberZoneId);
+        ZonedDateTime endZoned = endDate.atTime(LocalTime.MAX).atZone(memberZoneId);
+
+        LocalDateTime startDateTimeUtc = startZoned.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        LocalDateTime endDateTimeUtc = endZoned.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startDateTimeUtc, endDateTimeUtc);
+        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startDateTimeUtc, endDateTimeUtc);
 
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
@@ -51,7 +54,7 @@ public class QuizAnalysisService {
         }
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-            LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
+            LocalDate date = dateTimeUtil.convertToMemberLocalDate(quizSetQuiz.getUpdatedAt(), memberZoneId);
 
             totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
             if (!Objects.isNull(quizSetQuiz.getIsAnswer()) && quizSetQuiz.getIsAnswer()) {
@@ -71,7 +74,7 @@ public class QuizAnalysisService {
 
         for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
             DailyQuizRecord dailyQuizRecord = dailyQuizRecordDetail.getDailyQuizRecord();
-            LocalDate date = dailyQuizRecord.getSolvedDate().toLocalDate();
+            LocalDate date = dateTimeUtil.convertToMemberLocalDate(dailyQuizRecord.getSolvedDate(), memberZoneId);
 
             totalQuizCountByDate.put(date, totalQuizCountByDate.getOrDefault(date, 0) + 1);
             if (!Objects.isNull(dailyQuizRecordDetail.getIsAnswer()) && dailyQuizRecordDetail.getIsAnswer()) {
@@ -134,17 +137,23 @@ public class QuizAnalysisService {
         return new GetQuizWeeklyAnalysisResponse(quizzesDtos, categoryDtos, quizTypes, averageCorrectRate, averageDailyQuizCount, weeklyTotalQuizCount);
     }
 
-    public GetQuizMonthlyAnalysisResponse findQuizMonthlyAnalysis(Long memberId, LocalDate startMonthDate) {
+    public GetQuizMonthlyAnalysisResponse findQuizMonthlyAnalysis(Long memberId, LocalDate startMonthDate, ZoneId memberZoneId) {
         YearMonth yearMonth = YearMonth.of(startMonthDate.getYear(), startMonthDate.getMonth());
         LocalDate startOfDate = yearMonth.atDay(1);
         LocalDate endOfDate = yearMonth.atEndOfMonth();
 
-        LocalDate currentDate = LocalDate.now();
+        ZonedDateTime startZoned = startOfDate.atStartOfDay(memberZoneId);
+        ZonedDateTime endZonedExclusive = endOfDate.plusDays(1).atStartOfDay(memberZoneId);
+
+        LocalDateTime startDateTimeUtc = startZoned.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        LocalDateTime endDateTimeUtcExclusive = endZonedExclusive.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+
+        LocalDate currentDate = LocalDate.now(memberZoneId);
         LocalDate lastMonthStart = startMonthDate.minusMonths(1).withDayOfMonth(1);
         LocalDate lastMonthEnd = startMonthDate.minusMonths(1).withDayOfMonth(currentDate.getDayOfMonth());
 
-        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, lastMonthStart.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
-        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, lastMonthStart.atStartOfDay(), endOfDate.atTime(LocalTime.MAX));
+        List<QuizSetQuiz> quizSetQuizzes = quizSetQuizRepository.findAllByMemberIdAndSolvedTrueAndDateTime(memberId, startDateTimeUtc, endDateTimeUtcExclusive);
+        List<DailyQuizRecordDetail> dailyQuizRecordDetails = dailyQuizRecordDetailRepository.findAllByMemberIdAndDate(memberId, startDateTimeUtc, endDateTimeUtcExclusive);
 
         HashMap<LocalDate, Integer> correctAnswerCountByDate = new LinkedHashMap<>();
         HashMap<LocalDate, Integer> totalQuizCountByDate = new LinkedHashMap<>();
@@ -164,7 +173,7 @@ public class QuizAnalysisService {
         }
 
         for (QuizSetQuiz quizSetQuiz : quizSetQuizzes) {
-            LocalDate date = quizSetQuiz.getUpdatedAt().toLocalDate();
+            LocalDate date = dateTimeUtil.convertToMemberLocalDate(quizSetQuiz.getUpdatedAt(), memberZoneId);
 
             if (!date.isBefore(lastMonthStart) && !date.isAfter(lastMonthEnd)) {
                 lastMonthTotalQuizCountDateMap.put(date, lastMonthTotalQuizCountDateMap.getOrDefault(date, 0) + 1);
@@ -191,7 +200,7 @@ public class QuizAnalysisService {
 
         for (DailyQuizRecordDetail dailyQuizRecordDetail : dailyQuizRecordDetails) {
             DailyQuizRecord dailyQuizRecord = dailyQuizRecordDetail.getDailyQuizRecord();
-            LocalDate date = dailyQuizRecord.getSolvedDate().toLocalDate();
+            LocalDate date = dateTimeUtil.convertToMemberLocalDate(dailyQuizRecord.getSolvedDate(), memberZoneId);
 
             if (!date.isBefore(lastMonthStart) && !date.isAfter(lastMonthEnd)) {
                 lastMonthTotalQuizCountDateMap.put(date, lastMonthTotalQuizCountDateMap.getOrDefault(date, 0) + 1);
@@ -256,6 +265,4 @@ public class QuizAnalysisService {
 
         return new GetQuizMonthlyAnalysisResponse(quizzesDtos, categoryDtos, quizTypeDto, averageCorrectRate, maxSolvedQuizCount, averageDailyQuizCount, monthlyTotalQuizCount);
     }
-
-
 }

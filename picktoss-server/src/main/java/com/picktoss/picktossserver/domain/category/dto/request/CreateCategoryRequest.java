@@ -8,4 +8,5 @@ public class CreateCategoryRequest {
     private String emoji;
     private String color;
     private Integer orders;
+    private String language;
 }

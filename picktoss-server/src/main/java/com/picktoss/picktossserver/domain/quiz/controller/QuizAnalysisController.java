@@ -8,11 +8,13 @@ import com.picktoss.picktossserver.domain.quiz.service.QuizAnalysisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Tag(name = "Quiz")
 @RestController
@@ -33,7 +35,9 @@ public class QuizAnalysisController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizWeeklyAnalysisResponse response = quizAnalysisService.findQuizWeeklyAnalysis(memberId, startDate, endDate);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        GetQuizWeeklyAnalysisResponse response = quizAnalysisService.findQuizWeeklyAnalysis(memberId, startDate, endDate, memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -46,7 +50,9 @@ public class QuizAnalysisController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetQuizMonthlyAnalysisResponse response = quizAnalysisService.findQuizMonthlyAnalysis(memberId, month);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        GetQuizMonthlyAnalysisResponse response = quizAnalysisService.findQuizMonthlyAnalysis(memberId, month, memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 }

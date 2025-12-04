@@ -4,6 +4,7 @@ import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.core.jwt.JwtTokenProvider;
 import com.picktoss.picktossserver.core.jwt.dto.JwtTokenDto;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.domain.auth.dto.GoogleMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.KakaoMemberDto;
 import com.picktoss.picktossserver.domain.auth.dto.response.LoginResponse;
@@ -47,9 +48,10 @@ public class AuthCreateService {
     private final SubscriptionRepository subscriptionRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthUtil authUtil;
+    private final MessageService messageService;
 
     @Transactional
-    public LoginResponse login(String accessToken, SocialPlatform socialPlatform) {
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String language) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
         System.out.println("memberInfo = " + memberInfo);
 
@@ -58,7 +60,7 @@ public class AuthCreateService {
             Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                Member member = createKakaoMember(kakaoMemberDto);
+                Member member = createKakaoMember(kakaoMemberDto, language);
 
                 createMemberStar(member);
                 createDefaultDirectory(member);
@@ -76,7 +78,7 @@ public class AuthCreateService {
             Optional<Member> optionalMember = memberRepository.findByClientId(googleMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                Member member = createGoogleMember(googleMemberDto);
+                Member member = createGoogleMember(googleMemberDto, language);
 
                 createMemberStar(member);
                 createDefaultDirectory(member);
@@ -104,17 +106,12 @@ public class AuthCreateService {
     @Transactional
     private Star createMemberStar(Member member) {
         Star star = Star.createStar(StarConstant.SIGN_UP_STAR, member);
-        StarHistory starHistory = StarHistory.createStarHistory("회원 가입", StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
+        String description = messageService.getMessage("star.history.create_member");
+        StarHistory starHistory = StarHistory.createStarHistory(description, StarConstant.SIGN_UP_STAR, StarConstant.SIGN_UP_STAR, TransactionType.DEPOSIT, Source.SIGN_UP, star);
 
         starRepository.save(star);
         starHistoryRepository.save(starHistory);
         return star;
-    }
-
-    @Transactional
-    private void depositStarByInviteFriendReward(Star star) {
-        StarHistory starHistory = star.depositStarByInviteFriendReward(star);
-        starHistoryRepository.save(starHistory);
     }
 
     @Transactional
@@ -125,16 +122,16 @@ public class AuthCreateService {
     }
 
     @Transactional
-    private Member createKakaoMember(KakaoMemberDto kakaoMemberDto) {
-        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail());
+    private Member createKakaoMember(KakaoMemberDto kakaoMemberDto, String language) {
+        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail(), language);
         memberRepository.save(member);
 
         return member;
     }
 
     @Transactional
-    private Member createGoogleMember(GoogleMemberDto googleMemberDto) {
-        Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail());
+    private Member createGoogleMember(GoogleMemberDto googleMemberDto, String language) {
+        Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail(), language);
         memberRepository.save(member);
 
         return member;
