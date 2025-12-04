@@ -2,6 +2,7 @@ package com.picktoss.picktossserver.domain.quiz.service;
 
 import com.picktoss.picktossserver.core.exception.CustomException;
 import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.domain.document.entity.Document;
 import com.picktoss.picktossserver.domain.document.entity.DocumentBookmark;
 import com.picktoss.picktossserver.domain.document.repository.DocumentBookmarkRepository;
@@ -22,11 +23,14 @@ import com.picktoss.picktossserver.domain.star.repository.StarHistoryRepository;
 import com.picktoss.picktossserver.global.enums.quiz.DailyQuizType;
 import com.picktoss.picktossserver.global.enums.quiz.QuizSource;
 import com.picktoss.picktossserver.global.enums.quiz.QuizType;
+import com.picktoss.picktossserver.global.utils.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -41,7 +45,10 @@ public class DailyQuizRecordService {
     private final MemberRepository memberRepository;
     private final StarHistoryRepository starHistoryRepository;
 
-    public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource) {
+    private final MessageService messageService;
+    private final DateTimeUtil dateTimeUtil;
+
+    public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource, String language) {
         List<Quiz> quizzes = new ArrayList<>();
         List<DocumentBookmark> documentBookmarks = new ArrayList<>();
 
@@ -57,9 +64,9 @@ public class DailyQuizRecordService {
 
         if (includeMyQuiz) {
             if (quizType == null) {
-                quizzes = quizRepository.findAllByMemberId(memberId);
+                quizzes = quizRepository.findAllByMemberIdAndLanguage(memberId, language);
             } else {
-                quizzes = quizRepository.findAllByMemberIdAndQuizType(memberId, quizType);
+                quizzes = quizRepository.findAllByMemberIdAndQuizTypeAndLanguage(memberId, quizType, language);
             }
         }
 
@@ -97,9 +104,9 @@ public class DailyQuizRecordService {
 
         if (includeBookmarkQuiz) {
             if (quizType == null) {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
+                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
             } else {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizType(memberId, quizType);
+                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizTypeAndLanguage(memberId, quizType, language);
             }
         }
 
@@ -143,10 +150,8 @@ public class DailyQuizRecordService {
         return new GetAllQuizzesResponse(quizzesDtos);
     }
 
-    // 아래 코드 중간에 데이터가 계속 바뀌는 것이 있어서 변경 감지가 안될 것 같은데 테스트 해봐야할듯
-
     @Transactional
-    public CreateDailyQuizRecordResponse createDailyQuizRecord(Long memberId, Long quizId, String choseAnswer, Boolean isAnswer) {
+    public CreateDailyQuizRecordResponse createDailyQuizRecord(Long memberId, Long quizId, String choseAnswer, Boolean isAnswer, ZoneId memberZoneId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
@@ -163,7 +168,7 @@ public class DailyQuizRecordService {
         dailyQuizRecordDetailRepository.save(dailyQuizRecordDetail);
 
         int reward = 0;
-        int consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId);
+        int consecutiveSolvedDailyQuizDays = calculateConsecutiveDailyQuiz(memberId, memberZoneId);
         int todaySolvedDailyQuizCount = dailyQuizRecord.getDailyQuizRecordDetails().size();
 
         if (todaySolvedDailyQuizCount == 10) {
@@ -181,8 +186,6 @@ public class DailyQuizRecordService {
         return new CreateDailyQuizRecordResponse(reward, todaySolvedDailyQuizCount, consecutiveSolvedDailyQuizDays);
     }
 
-
-
     @Transactional
     private DailyQuizRecord checkPresentDailyQuizRecord(Member member) {
         Optional<DailyQuizRecord> optionalDailyQuizRecord = dailyQuizRecordRepository.findByMemberIdAndSolvedDate(member.getId(), LocalDate.now());
@@ -194,14 +197,19 @@ public class DailyQuizRecordService {
         return optionalDailyQuizRecord.get();
     }
 
-    private int calculateConsecutiveDailyQuiz(Long memberId) {
+    private int calculateConsecutiveDailyQuiz(Long memberId, ZoneId memberZoneId) {
         List<DailyQuizRecord> dailyQuizRecords = dailyQuizRecordRepository.findAllByMemberIdAndIsDailyQuizCompleteTrueOrderBySolvedDateDesc(memberId);
         if (dailyQuizRecords.isEmpty()) {
             return 0;
         }
 
-        LocalDate firstQuizSetDate = dailyQuizRecords.getFirst().getSolvedDate().toLocalDate();
-        if (!firstQuizSetDate.equals(LocalDate.now()) && !firstQuizSetDate.equals(LocalDate.now().minusDays(1))) {
+        LocalDate memberToday = LocalDate.now(memberZoneId);
+        LocalDate memberYesterday = memberToday.minusDays(1);
+
+        LocalDateTime firstRecordUtc = dailyQuizRecords.getFirst().getSolvedDate();
+        LocalDate firstQuizSetDate = dateTimeUtil.convertToMemberLocalDate(firstRecordUtc, memberZoneId);
+
+        if (!firstQuizSetDate.equals(memberToday) && !firstQuizSetDate.equals(memberYesterday)) {
             return 0;
         }
 
@@ -209,7 +217,8 @@ public class DailyQuizRecordService {
         int currentConsecutiveDays = 0;
 
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
-            LocalDate solvedDate = dailyQuizRecord.getSolvedDate().toLocalDate();
+            LocalDateTime solvedUtc = dailyQuizRecord.getSolvedDate();
+            LocalDate solvedDate = dateTimeUtil.convertToMemberLocalDate(solvedUtc, memberZoneId);
 
             if (previousDate == null || previousDate.minusDays(1).equals(solvedDate)) {
                 currentConsecutiveDays += 1;
@@ -225,8 +234,8 @@ public class DailyQuizRecordService {
     @Transactional
     private void depositStarByDailyQuizComplete(Member member, int reward) {
         Star star = member.getStar();
-
-        StarHistory starHistory = star.depositStarBySolvedDailyQuizReward(star, reward);
+        String description = messageService.getMessage("star.history.daily_quiz_reward");
+        StarHistory starHistory = star.depositStarBySolvedDailyQuizReward(star, reward, description);
         starHistoryRepository.save(starHistory);
     }
 }

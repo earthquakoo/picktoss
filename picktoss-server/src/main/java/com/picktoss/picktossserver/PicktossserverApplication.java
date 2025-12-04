@@ -14,7 +14,7 @@ import java.util.TimeZone;
 public class PicktossserverApplication {
 
 	public static void main(String[] args) {
-		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
+		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		SpringApplication.run(PicktossserverApplication.class, args);
 	}
 }

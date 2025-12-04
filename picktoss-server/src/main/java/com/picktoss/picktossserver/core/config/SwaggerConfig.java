@@ -1,9 +1,10 @@
 package com.picktoss.picktossserver.core.config;
 
-import com.picktoss.picktossserver.core.exception.*;
+import com.picktoss.picktossserver.core.exception.ErrorInfo;
+import com.picktoss.picktossserver.core.exception.ErrorResponse;
+import com.picktoss.picktossserver.core.exception.ErrorResponseDto;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExample;
 import com.picktoss.picktossserver.core.swagger.ApiErrorCodeExamples;
-import com.picktoss.picktossserver.core.exception.ErrorResponseDto;
 import com.picktoss.picktossserver.core.swagger.ExampleHolder;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.servers.Server;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -74,19 +77,25 @@ public class SwaggerConfig {
             ApiErrorCodeExamples apiErrorCodeExamples = handlerMethod.getMethodAnnotation(
                     ApiErrorCodeExamples.class);
 
-            // @ApiErrorCodeExamples 어노테이션이 붙어있다면
             if (apiErrorCodeExamples != null) {
                 generateErrorCodeResponseExample(operation, apiErrorCodeExamples.value());
             } else {
                 ApiErrorCodeExample apiErrorCodeExample = handlerMethod.getMethodAnnotation(
                         ApiErrorCodeExample.class);
 
-                // @ApiErrorCodeExamples 어노테이션이 붙어있지 않고
-                // @ApiErrorCodeExample 어노테이션이 붙어있다면
                 if (apiErrorCodeExample != null) {
                     generateErrorCodeResponseExample(operation, apiErrorCodeExample.value());
                 }
             }
+
+            Parameter timezoneHeader = new Parameter()
+                    .in("header")
+                    .name("X-Timezone")
+                    .description("사용자의 IANA 타임존 ID (e.g., Asia/Seoul)")
+                    .required(false)
+                    .schema(new StringSchema()._default("Asia/Seoul").example("Asia/Seoul"));
+
+            operation.addParametersItem(timezoneHeader);
 
             return operation;
         };
@@ -95,7 +104,6 @@ public class SwaggerConfig {
     private void generateErrorCodeResponseExample(Operation operation, ErrorInfo[] errorInfos) {
         ApiResponses responses = operation.getResponses();
 
-        // ExampleHolder(에러 응답값) 객체를 만들고 에러 코드별로 그룹화
         Map<Integer, List<ExampleHolder>> statusWithExampleHolders = Arrays.stream(errorInfos)
                 .map(
                         errorCode -> ExampleHolder.builder()
@@ -106,14 +114,12 @@ public class SwaggerConfig {
                 )
                 .collect(Collectors.groupingBy(ExampleHolder::getCode));
 
-        // ExampleHolders를 ApiResponses에 추가
         addExamplesToResponses(responses, statusWithExampleHolders);
     }
 
     private void generateErrorCodeResponseExample(Operation operation, ErrorInfo errorInfo) {
         ApiResponses responses = operation.getResponses();
 
-        // ExampleHolder 객체 생성 및 ApiResponses에 추가
         ExampleHolder exampleHolder = ExampleHolder.builder()
                 .holder(getSwaggerExample(errorInfo))
                 .name(errorInfo.name())
@@ -122,7 +128,6 @@ public class SwaggerConfig {
         addExamplesToResponses(responses, exampleHolder);
     }
 
-    // ErrorResponseDto 형태의 예시 객체 생성
     private Example getSwaggerExample(ErrorInfo errorInfo) {
         ErrorResponseDto errorResponseDto = ErrorResponse.from(errorInfo);
         Example example = new Example();
@@ -131,7 +136,6 @@ public class SwaggerConfig {
         return example;
     }
 
-    // exampleHolder를 ApiResponses에 추가
     private void addExamplesToResponses(ApiResponses responses,
                                         Map<Integer, List<ExampleHolder>> statusWithExampleHolders) {
         statusWithExampleHolders.forEach(

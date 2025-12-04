@@ -13,9 +13,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.ZoneId;
 
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.MEMBER_NOT_FOUND;
 import static com.picktoss.picktossserver.core.exception.ErrorInfo.QUIZ_NOT_FOUND_ERROR;
@@ -39,7 +42,9 @@ public class DailyQuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetAllQuizzesResponse response = dailyQuizRecordService.findQuizzes(memberId, dailyQuizType, quizSource);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetAllQuizzesResponse response = dailyQuizRecordService.findQuizzes(memberId, dailyQuizType, quizSource, language);
         return ResponseEntity.ok().body(response);
     }
 
@@ -52,9 +57,10 @@ public class DailyQuizRecordController {
     ) {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
-        System.out.println("memberId = " + memberId);
 
-        CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, request.getQuizId(), request.getChoseAnswer(), request.getIsAnswer());
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        CreateDailyQuizRecordResponse response = dailyQuizRecordService.createDailyQuizRecord(memberId, request.getQuizId(), request.getChoseAnswer(), request.getIsAnswer(), memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 }

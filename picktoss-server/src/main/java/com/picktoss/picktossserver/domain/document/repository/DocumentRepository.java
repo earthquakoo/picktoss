@@ -41,10 +41,12 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "LEFT JOIN FETCH d.quizzes q " +
             "LEFT JOIN FETCH q.options " +
             "WHERE d.id = :documentId " +
-            "AND (dir.member.id = :memberId OR d.isPublic = true)")
-    Optional<Document> findDocumentWithQuizzesByDocumentId(
+            "AND (dir.member.id = :memberId OR d.isPublic = true) " +
+            "AND d.language = :language")
+    Optional<Document> findDocumentByDocumentIdAndMemberIdAndLanguage(
             @Param("documentId") Long documentId,
-            @Param("memberId") Long memberId
+            @Param("memberId") Long memberId,
+            @Param("language") String language
     );
 
     @Query("SELECT d FROM Document d " +
@@ -92,7 +94,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "WHERE dir.member.id = :memberId " +
             "GROUP BY d " +
             "ORDER BY COUNT(q) DESC")
-    List<Document> findAllByMemberIdOrderByQuizCountDesc(
+    List<Document> findAllByMemberIdAndOrderByQuizCountDesc(
             @Param("memberId") Long memberId
     );
 
@@ -103,29 +105,34 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     LEFT JOIN document_bookmark db ON db.document_id = d.id
     JOIN directory dir ON d.directory_id = dir.id
     WHERE dir.member_id = :memberId
+    AND d.language = :language
     GROUP BY d.id
     ORDER BY SUM(CASE WHEN q.is_review_needed = true THEN 1 ELSE 0 END) DESC
     """, nativeQuery = true)
-    List<Document> findAllOrderByWrongAnswerCount(
+    List<Document> findAllByMemberIdWrongAnswerCount(
             @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN FETCH d.quizzes " +
             "WHERE d.isPublic = true " +
+            "AND d.language = :language " +
             "ORDER BY d.createdAt DESC")
-    Page<Document> findAllByIsPublic(
-            Pageable pageable
+    Page<Document> findAllByIsPublicAndLanguage(
+            Pageable pageable,
+            @Param("language") String language
     );
 
     @Query("SELECT d FROM Document d " +
             "LEFT JOIN FETCH d.quizzes " +
             "WHERE d.isPublic = true " +
             "AND d.category.id = :categoryId " +
+            "AND d.language = :language " +
             "ORDER BY d.createdAt DESC")
-    Page<Document> findAllByIsPublicAndCategoryId(
+    Page<Document> findAllByIsPublicAndCategoryIdAndLanguage(
+            Pageable pageable,
             @Param("categoryId") Long categoryId,
-            Pageable pageable
+            @Param("language") String language
     );
 
     @Query("SELECT d FROM Document d " +
@@ -133,8 +140,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "LEFT JOIN FETCH d.documentBookmarks " +
             "JOIN FETCH d.directory dir " +
             "WHERE d.isPublic = true " +
+            "AND d.language = :language " +
             "ORDER BY d.createdAt DESC")
-    List<Document> findAllByIsPublic();
+    List<Document> findAllByIsPublicAndLanguage(
+            @Param("language") String language
+    );
 
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +

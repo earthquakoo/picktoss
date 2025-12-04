@@ -8,9 +8,12 @@ import com.picktoss.picktossserver.global.enums.star.TransactionType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.ZoneId;
 
 @Tag(name = "Star")
 @RestController
@@ -30,7 +33,9 @@ public class StarController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetStarUsageHistories response = starService.findStarUsageHistories(memberId, transactionType);
+        ZoneId memberZoneId = LocaleContextHolder.getTimeZone().toZoneId();
+
+        GetStarUsageHistories response = starService.findStarUsageHistories(memberId, transactionType, memberZoneId);
         return ResponseEntity.ok().body(response);
     }
 }

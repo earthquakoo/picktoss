@@ -49,6 +49,9 @@ public class Document extends AuditBase {
     @Column(name = "document_type", nullable = false)
     private DocumentType documentType;
 
+    @Column(name = "language", nullable = false)
+    private String language;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "directory_id", nullable = false)
     private Directory directory;
@@ -71,7 +74,8 @@ public class Document extends AuditBase {
             Boolean isPublic,
             QuizGenerationStatus quizGenerationStatus,
             DocumentType documentType,
-            Directory directory
+            Directory directory,
+            String language
     ) {
         return Document.builder()
                 .s3Key(s3Key)
@@ -80,6 +84,7 @@ public class Document extends AuditBase {
                 .quizGenerationStatus(quizGenerationStatus)
                 .documentType(documentType)
                 .directory(directory)
+                .language(language)
                 .build();
     }
 

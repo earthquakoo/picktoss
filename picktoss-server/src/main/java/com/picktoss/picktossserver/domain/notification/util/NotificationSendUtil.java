@@ -3,6 +3,7 @@ package com.picktoss.picktossserver.domain.notification.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.*;
+import com.picktoss.picktossserver.core.messagesource.MessageService;
 import com.picktoss.picktossserver.core.redis.RedisConstant;
 import com.picktoss.picktossserver.core.redis.RedisUtil;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
@@ -23,10 +24,11 @@ import java.util.Optional;
 public class NotificationSendUtil {
 
     private final RedisUtil redisUtil;
+    private final MessageService messageService;
 
     public void sendNotificationByStarReward(Long memberId) {
-        String title = "🌟 친구 초대 보상 도착";
-        String content = "받은 별을 확인해 보세요!";
+        String title = messageService.getMessage("notification.star_reward.title");
+        String content = messageService.getMessage("notification.star_reward.content");
 
         Optional<String> optionalToken = redisUtil.getData(RedisConstant.REDIS_FCM_PREFIX, memberId.toString(), String.class);
         if (optionalToken.isEmpty()) {
