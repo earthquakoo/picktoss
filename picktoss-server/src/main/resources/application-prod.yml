@@ -20,7 +20,7 @@ spring:
     port: ${PICKTOSS_REDIS_PORT}
     password: ${PICKTOSS_REDIS_PASSWORD}
   datasource:
-    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://${PICKTOSS_DB_HOST}:3306/${PICKTOSS_DB_NAME}?rewriteBatchedStatements=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
     username: ${PICKTOSS_DB_USER}
     password: ${PICKTOSS_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -41,6 +41,7 @@ spring:
       order_updates: true
       jdbc:
         batch_size: 2500
+        time_zone: UTC
 
 logging.level:
   org.hibernate.SQL: debug
@@ -59,7 +60,6 @@ springdoc:
     - com.picktoss.picktossserver.domain.auth.controller
     - com.picktoss.picktossserver.domain.fcm.controller
     - com.picktoss.picktossserver.domain.category.controller
-    #    - com.picktoss.picktossserver.domain.directory.controller
     - com.picktoss.picktossserver.domain.document.controller
     - com.picktoss.picktossserver.domain.member.controller
     - com.picktoss.picktossserver.domain.quiz.controller

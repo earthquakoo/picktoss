@@ -79,7 +79,9 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId);
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId, language);
         return ResponseEntity.ok().body(response);
     }
 }
