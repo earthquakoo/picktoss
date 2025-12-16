@@ -54,34 +54,10 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "JOIN FETCH q.document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE dir.member.id = :memberId " +
-            "AND d.language = :language")
-    List<Quiz> findAllByMemberIdAndLanguage(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
-    );
-
-    @Query("SELECT q FROM Quiz q " +
-            "LEFT JOIN FETCH q.options " +
-            "JOIN FETCH q.document d " +
-            "JOIN FETCH d.directory dir " +
-            "WHERE dir.member.id = :memberId " +
             "AND q.quizType = :quizType")
     List<Quiz> findAllByMemberIdAndQuizType(
             @Param("memberId") Long memberId,
             @Param("quizType") QuizType quizType
-    );
-
-    @Query("SELECT q FROM Quiz q " +
-            "LEFT JOIN FETCH q.options " +
-            "JOIN FETCH q.document d " +
-            "JOIN FETCH d.directory dir " +
-            "WHERE dir.member.id = :memberId " +
-            "AND q.quizType = :quizType " +
-            "AND d.language = :language")
-    List<Quiz> findAllByMemberIdAndQuizTypeAndLanguage(
-            @Param("memberId") Long memberId,
-            @Param("quizType") QuizType quizType,
-            @Param("language") String language
     );
 
     @Query("SELECT q FROM Quiz q " +
