@@ -48,7 +48,7 @@ public class DailyQuizRecordService {
     private final MessageService messageService;
     private final DateTimeUtil dateTimeUtil;
 
-    public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource, String language) {
+    public GetAllQuizzesResponse findQuizzes(Long memberId, DailyQuizType dailyQuizType, QuizSource quizSource) {
         List<Quiz> quizzes = new ArrayList<>();
         List<DocumentBookmark> documentBookmarks = new ArrayList<>();
 
@@ -64,9 +64,9 @@ public class DailyQuizRecordService {
 
         if (includeMyQuiz) {
             if (quizType == null) {
-                quizzes = quizRepository.findAllByMemberIdAndLanguage(memberId, language);
+                quizzes = quizRepository.findAllByMemberId(memberId);
             } else {
-                quizzes = quizRepository.findAllByMemberIdAndQuizTypeAndLanguage(memberId, quizType, language);
+                quizzes = quizRepository.findAllByMemberIdAndQuizType(memberId, quizType);
             }
         }
 
@@ -104,9 +104,9 @@ public class DailyQuizRecordService {
 
         if (includeBookmarkQuiz) {
             if (quizType == null) {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
+                documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
             } else {
-                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizTypeAndLanguage(memberId, quizType, language);
+                documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndQuizType(memberId, quizType);
             }
         }
 

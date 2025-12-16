@@ -42,9 +42,7 @@ public class DailyQuizRecordController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetAllQuizzesResponse response = dailyQuizRecordService.findQuizzes(memberId, dailyQuizType, quizSource, language);
+        GetAllQuizzesResponse response = dailyQuizRecordService.findQuizzes(memberId, dailyQuizType, quizSource);
         return ResponseEntity.ok().body(response);
     }
 
