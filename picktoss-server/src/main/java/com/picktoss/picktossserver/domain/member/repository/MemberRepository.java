@@ -19,4 +19,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m FROM Member m " +
             "where m.isQuizNotificationEnabled = true")
     List<Member> findAllByIsQuizNotificationEnabledTrue();
+
+    @Query("SELECT DISTINCT m.zoneId FROM Member m " +
+            "WHERE m.zoneId IS NOT NULL")
+    List<String> findAllDistinctZoneIds();
+
+    List<Member> findAllByZoneIdAndIsQuizNotificationEnabledTrue(String zoneId);
 }

@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -29,7 +29,7 @@ public class GetNotificationsForAdminResponse {
         private NotificationType notificationType;
         private List<String> repeatDays;
         private Boolean isActive;
-        private LocalDateTime notificationTime;
+        private LocalTime notificationTime;
         private NotificationTarget notificationTarget;
     }
 }

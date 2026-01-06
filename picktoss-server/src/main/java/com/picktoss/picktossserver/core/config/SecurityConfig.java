@@ -53,6 +53,9 @@ public class SecurityConfig {
     @Value("${picktoss.server_url}")
     private String picktossServerUrl;
 
+    private static final String corsAllowedOriginAppUrl = "https://app.picktoss.com/";
+    private static final String corsAllowedOriginVercel = "https://picktoss-explore-detail.vercel.app/";
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -110,7 +113,16 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
 //        config.addAllowedOrigin(corsAllowedOrigin);
-        config.setAllowedOrigins(Arrays.asList(corsAllowedOrigin, corsAllowedOriginDev, picktossServerUrl, corsAllowedOriginProd, corsAllowedOriginBackoffice, corsAllowedOriginLocalization));
+        config.setAllowedOrigins(Arrays.asList(
+                corsAllowedOrigin,
+                corsAllowedOriginDev,
+                picktossServerUrl,
+                corsAllowedOriginProd,
+                corsAllowedOriginBackoffice,
+                corsAllowedOriginLocalization,
+                corsAllowedOriginAppUrl,
+                corsAllowedOriginVercel
+        ));
         config.addAllowedOriginPattern("*");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");

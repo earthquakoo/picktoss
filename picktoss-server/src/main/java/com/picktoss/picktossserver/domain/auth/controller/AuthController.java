@@ -85,9 +85,9 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request
     ) {
-        String language = LocaleContextHolder.getLocale().getLanguage();
+        String zoneId = LocaleContextHolder.getTimeZone().toZoneId().getId();
 
-        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), language);
+        LoginResponse response = authCreateService.login(request.getAccessToken(), request.getSocialPlatform(), zoneId);
         return ResponseEntity.ok().body(response);
     }
 

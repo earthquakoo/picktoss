@@ -1,10 +1,8 @@
 package com.picktoss.picktossserver.domain.admin.service;
 
-import com.picktoss.picktossserver.core.exception.CustomException;
-import com.picktoss.picktossserver.core.exception.ErrorInfo;
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
-import com.picktoss.picktossserver.domain.notification.util.NotificationSchedulerUtil;
+import com.picktoss.picktossserver.domain.notification.util.NotificationScheduler;
 import com.picktoss.picktossserver.domain.notification.util.NotificationUtil;
 import com.picktoss.picktossserver.global.enums.notification.NotificationTarget;
 import com.picktoss.picktossserver.global.enums.notification.NotificationType;
@@ -14,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
@@ -25,26 +23,32 @@ public class AdminNotificationCreateService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationUtil notificationUtil;
-    private final NotificationSchedulerUtil notificationSchedulerUtil;
+    private final NotificationScheduler notificationScheduler;
 
     @Transactional
-    public void createNotification(String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<DayOfWeek> dayOfWeeks, Long memberId) {
+    public void createNotification(
+            String title,
+            String content,
+            String memo,
+            NotificationType notificationType,
+            NotificationTarget notificationTarget,
+            Boolean isActive,
+            LocalTime notificationTime,
+            String language,
+            List<DayOfWeek> dayOfWeeks
+    ) {
+
         List<String> repeatDays = notificationUtil.dayOfWeeksToString(dayOfWeeks);
 
-        String notificationKey = notificationUtil.createNotificationKey();
+        Notification notification = Notification.createNotification(
+                title, content, memo, notificationType, notificationTarget,
+                isActive, notificationTime, language, repeatDays
+        );
 
-        if (notificationTime.isBefore(LocalDateTime.now()) && isActive) {
-            if (repeatDays == null || repeatDays.isEmpty()) {
-                throw new CustomException(ErrorInfo.INVALID_NOTIFICATION_TIME);
-            } else {
-                DayOfWeek nextDay = notificationUtil.findNextDay(dayOfWeeks, notificationTime.getDayOfWeek());
-                notificationTime = notificationUtil.calculateNextNotificationTime(notificationTime, nextDay);
-            }
-        }
-
-        Notification notification = Notification.createNotification(title, content, memo, notificationKey, notificationType, notificationTarget, isActive, notificationTime, repeatDays);
         notificationRepository.save(notification);
 
-        notificationSchedulerUtil.scheduleTask(notification, notificationTime);
+        if (Boolean.TRUE.equals(isActive)) {
+            notificationScheduler.registerNewNotification(notification);
+        }
     }
 }

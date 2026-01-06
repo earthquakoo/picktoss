@@ -7,7 +7,7 @@ import com.picktoss.picktossserver.global.utils.StringListConvert;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Entity
@@ -31,9 +31,6 @@ public class Notification {
     @Column(name = "memo")
     private String memo;
 
-    @Column(name = "notification_key", nullable = false)
-    private String notificationKey;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
     private NotificationType notificationType;
@@ -49,19 +46,23 @@ public class Notification {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "language", nullable = false)
+    private String language;
+
     @Column(name = "notification_time", nullable = false)
-    private LocalDateTime notificationTime;
+    private LocalTime notificationTime;
 
     @Convert(converter = StringListConvert.class)
     @Column(name = "repeat_days")
     private List<String> repeatDays;
 
-    public static Notification createNotification(String title, String content, String memo, String notificationKey, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<String> repeatDays) {
+    public static Notification createNotification(
+            String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalTime notificationTime, String language, List<String> repeatDays) {
         return Notification.builder()
                 .title(title)
                 .content(content)
                 .memo(memo)
-                .notificationKey(notificationKey)
+                .language(language)
                 .notificationType(notificationType)
                 .notificationStatus(NotificationStatus.PENDING)
                 .notificationTarget(notificationTarget)
@@ -71,27 +72,16 @@ public class Notification {
                 .build();
     }
 
-    public void updateNotificationStatusComplete() {
-        this.notificationStatus = NotificationStatus.COMPLETE;
-    }
-
     public void updateNotificationStatusPending() {
         this.notificationStatus = NotificationStatus.PENDING;
     }
 
-    public void updateNotificationKey(String notificationKey) {
-        this.notificationKey = notificationKey;
-    }
-
-    public void updateNotificationSendTime(LocalDateTime notificationTime) {
-        this.notificationTime = notificationTime;
-    }
-
-    public void updateNotificationIsActiveFalse() {
-        this.isActive = false;
-    }
-
-    public void updateNotificationInfo(String title, String content, String memo, NotificationType notificationType, NotificationTarget notificationTarget, Boolean isActive, LocalDateTime notificationTime, List<String> repeatDays) {
+    public void updateNotificationInfo(
+            String title, String content, String memo,
+            NotificationType notificationType, NotificationTarget notificationTarget,
+            Boolean isActive, LocalTime notificationTime, String language,
+            List<String> repeatDays
+    ) {
         if (title != null) {
             this.title = title;
         }
