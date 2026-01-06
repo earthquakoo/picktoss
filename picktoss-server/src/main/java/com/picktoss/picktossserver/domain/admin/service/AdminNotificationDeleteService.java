@@ -2,7 +2,7 @@ package com.picktoss.picktossserver.domain.admin.service;
 
 import com.picktoss.picktossserver.domain.notification.entity.Notification;
 import com.picktoss.picktossserver.domain.notification.repository.NotificationRepository;
-import com.picktoss.picktossserver.domain.notification.util.NotificationSchedulerUtil;
+import com.picktoss.picktossserver.domain.notification.util.NotificationScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,14 +17,16 @@ import java.util.List;
 public class AdminNotificationDeleteService {
 
     private final NotificationRepository notificationRepository;
-    private final NotificationSchedulerUtil notificationSchedulerUtil;
+    private final NotificationScheduler notificationScheduler;
 
     @Transactional
     public void deleteNotifications(List<Long> notificationIds) {
         List<Notification> notifications = notificationRepository.findAllByNotificationIds(notificationIds);
+
         for (Notification notification : notifications) {
-            notificationSchedulerUtil.cancelScheduleTask(notification.getId());
+            notificationScheduler.cancelNotificationSchedule(notification.getId());
         }
+
         notificationRepository.deleteAll(notifications);
     }
 }

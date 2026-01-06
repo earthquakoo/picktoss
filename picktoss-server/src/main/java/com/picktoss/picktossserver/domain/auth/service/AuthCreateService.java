@@ -51,7 +51,7 @@ public class AuthCreateService {
     private final MessageService messageService;
 
     @Transactional
-    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String language) {
+    public LoginResponse login(String accessToken, SocialPlatform socialPlatform, String zoneId) {
         String memberInfo = getOauthAccessMemberInfo(accessToken, socialPlatform);
         System.out.println("memberInfo = " + memberInfo);
 
@@ -60,7 +60,7 @@ public class AuthCreateService {
             Optional<Member> optionalMember = memberRepository.findByClientId(kakaoMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                Member member = createKakaoMember(kakaoMemberDto, language);
+                Member member = createKakaoMember(kakaoMemberDto, zoneId);
 
                 createMemberStar(member);
                 createDefaultDirectory(member);
@@ -78,7 +78,7 @@ public class AuthCreateService {
             Optional<Member> optionalMember = memberRepository.findByClientId(googleMemberDto.getId());
 
             if (optionalMember.isEmpty()) {
-                Member member = createGoogleMember(googleMemberDto, language);
+                Member member = createGoogleMember(googleMemberDto, zoneId);
 
                 createMemberStar(member);
                 createDefaultDirectory(member);
@@ -122,16 +122,16 @@ public class AuthCreateService {
     }
 
     @Transactional
-    private Member createKakaoMember(KakaoMemberDto kakaoMemberDto, String language) {
-        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail(), language);
+    private Member createKakaoMember(KakaoMemberDto kakaoMemberDto, String zoneId) {
+        Member member = Member.createKakaoMember(kakaoMemberDto.getKakaoAccount().getProfile().getNickName(), kakaoMemberDto.getId(), kakaoMemberDto.getKakaoAccount().getEmail(), zoneId);
         memberRepository.save(member);
 
         return member;
     }
 
     @Transactional
-    private Member createGoogleMember(GoogleMemberDto googleMemberDto, String language) {
-        Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail(), language);
+    private Member createGoogleMember(GoogleMemberDto googleMemberDto, String zoneId) {
+        Member member = Member.createGoogleMember(googleMemberDto.getName(), googleMemberDto.getId(), googleMemberDto.getEmail(), zoneId);
         memberRepository.save(member);
 
         return member;

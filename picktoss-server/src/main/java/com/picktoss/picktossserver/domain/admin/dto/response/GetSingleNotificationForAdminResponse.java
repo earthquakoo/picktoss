@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -19,6 +20,6 @@ public class GetSingleNotificationForAdminResponse {
     private NotificationType notificationType;
     private List<String> repeatDays;
     private Boolean isActive;
-    private LocalDateTime notificationTime;
+    private LocalTime notificationTime;
     private NotificationTarget notificationTarget;
 }

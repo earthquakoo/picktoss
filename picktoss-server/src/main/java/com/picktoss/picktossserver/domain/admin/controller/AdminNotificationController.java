@@ -31,7 +31,6 @@ public class AdminNotificationController {
     private final AdminNotificationSearchService adminNotificationSearchService;
     private final AdminNotificationDeleteService adminNotificationDeleteService;
     private final AdminNotificationUpdateService adminNotificationUpdateService;
-    private final AdminNotificationTestService adminNotificationTestService;
 
     /**
      * GET
@@ -100,7 +99,7 @@ public class AdminNotificationController {
         JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
         Long adminId = adminInfo.getMemberId();
 
-        adminNotificationCreateService.createNotification(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getRepeatDays(), adminId);
+        adminNotificationCreateService.createNotification(request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getLanguage(), request.getRepeatDays());
     }
 
     /**
@@ -121,7 +120,7 @@ public class AdminNotificationController {
         JwtUserInfo adminInfo = jwtTokenProvider.getCurrentUserInfo();
         Long adminId = adminInfo.getMemberId();
 
-        adminNotificationUpdateService.updateNotification(notificationId, request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getRepeatDays());
+        adminNotificationUpdateService.updateNotification(notificationId, request.getTitle(), request.getContent(), request.getMemo(), request.getNotificationType(), request.getNotificationTarget(), request.getIsActive(), request.getNotificationTime(), request.getLanguage(), request.getRepeatDays());
     }
 
     /**
