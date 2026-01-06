@@ -53,8 +53,8 @@ public class Member extends AuditBase {
     @Column(name = "is_quiz_notification_enabled", nullable = false)
     private boolean isQuizNotificationEnabled;
 
-    @Column(name = "language")
-    private String language;
+    @Column(name = "zone_id")
+    private String zoneId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -90,26 +90,26 @@ public class Member extends AuditBase {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DailyQuizRecord> dailyQuizRecords = new ArrayList<>();
 
-    public static Member createGoogleMember(String name, String clientId, String email, String language) {
+    public static Member createGoogleMember(String name, String clientId, String email, String zoneId) {
         return Member.builder()
                 .name(name)
                 .clientId(clientId)
                 .socialPlatform(SocialPlatform.GOOGLE)
                 .email(email)
                 .isQuizNotificationEnabled(true)
-                .language(language)
+                .zoneId(zoneId)
                 .role(MemberRole.ROLE_USER)
                 .build();
     }
 
-    public static Member createKakaoMember(String name, String clientId, String email, String language) {
+    public static Member createKakaoMember(String name, String clientId, String email, String zoneId) {
         return Member.builder()
                 .name(name)
                 .clientId(clientId)
                 .socialPlatform(SocialPlatform.KAKAO)
                 .email(email)
                 .isQuizNotificationEnabled(false)
-                .language(language)
+                .zoneId(zoneId)
                 .role(MemberRole.ROLE_USER)
                 .build();
     }
