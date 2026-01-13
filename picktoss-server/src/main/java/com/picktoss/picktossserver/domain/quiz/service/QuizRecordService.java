@@ -40,6 +40,12 @@ public class QuizRecordService {
 
         Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto>> quizSetGroupedByDate = new HashMap<>();
         for (QuizSet quizSet : quizSets) {
+            if (quizSet.getCreatedAt() == null ||
+                    quizSet.getQuizSetQuizzes() == null ||
+                    quizSet.getQuizSetQuizzes().isEmpty()) {
+                continue;
+            }
+
             LocalDateTime quizSetLocalDateTime = dateTimeUtil.convertToMemberLocalDateTime(quizSet.getCreatedAt(), memberZoneId);
 
             Document document = quizSet.getQuizSetQuizzes().getFirst().getQuiz().getDocument();
@@ -59,6 +65,10 @@ public class QuizRecordService {
 
         Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto>> dailyQuizGroupedByDate = new HashMap<>();
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
+            if (dailyQuizRecord.getDailyQuizRecordDetails() == null) {
+                continue;
+            }
+
             LocalDateTime solvedLocalDateTime = dateTimeUtil.convertToMemberLocalDateTime(dailyQuizRecord.getSolvedDate(), memberZoneId);
 
             GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto.builder()
