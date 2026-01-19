@@ -40,10 +40,16 @@ public class QuizRecordService {
 
         Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto>> quizSetGroupedByDate = new HashMap<>();
         for (QuizSet quizSet : quizSets) {
+            if (quizSet.getCreatedAt() == null ||
+                    quizSet.getQuizSetQuizzes() == null ||
+                    quizSet.getQuizSetQuizzes().isEmpty()) {
+                continue;
+            }
+
             LocalDateTime quizSetLocalDateTime = dateTimeUtil.convertToMemberLocalDateTime(quizSet.getCreatedAt(), memberZoneId);
 
             Document document = quizSet.getQuizSetQuizzes().getFirst().getQuiz().getDocument();
-            int correctCount = (int) quizSet.getQuizSetQuizzes().stream().filter(QuizSetQuiz::getIsAnswer).count();
+            int correctCount = (int) quizSet.getQuizSetQuizzes().stream().filter(q -> Boolean.TRUE.equals(q.getIsAnswer())).count();
 
             GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto.builder()
                     .quizSetId(quizSet.getId())
@@ -59,6 +65,10 @@ public class QuizRecordService {
 
         Map<LocalDate, List<GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto>> dailyQuizGroupedByDate = new HashMap<>();
         for (DailyQuizRecord dailyQuizRecord : dailyQuizRecords) {
+            if (dailyQuizRecord.getDailyQuizRecordDetails() == null) {
+                continue;
+            }
+
             LocalDateTime solvedLocalDateTime = dateTimeUtil.convertToMemberLocalDateTime(dailyQuizRecord.getSolvedDate(), memberZoneId);
 
             GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordDailyQuizDto.builder()

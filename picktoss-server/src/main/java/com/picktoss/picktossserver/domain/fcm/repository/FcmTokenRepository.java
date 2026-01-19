@@ -30,4 +30,6 @@ public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
     Optional<FcmToken> findByMemberId(
             @Param("memberId") Long memberId
     );
+
+    boolean existsByMemberId(Long memberId);
 }
