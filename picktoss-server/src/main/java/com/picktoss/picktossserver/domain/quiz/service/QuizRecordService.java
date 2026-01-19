@@ -49,7 +49,7 @@ public class QuizRecordService {
             LocalDateTime quizSetLocalDateTime = dateTimeUtil.convertToMemberLocalDateTime(quizSet.getCreatedAt(), memberZoneId);
 
             Document document = quizSet.getQuizSetQuizzes().getFirst().getQuiz().getDocument();
-            int correctCount = (int) quizSet.getQuizSetQuizzes().stream().filter(QuizSetQuiz::getIsAnswer).count();
+            int correctCount = (int) quizSet.getQuizSetQuizzes().stream().filter(q -> Boolean.TRUE.equals(q.getIsAnswer())).count();
 
             GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto dto = GetAllQuizRecordsResponse.GetAllQuizRecordQuizSetDto.builder()
                     .quizSetId(quizSet.getId())
