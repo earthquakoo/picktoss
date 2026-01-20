@@ -41,8 +41,8 @@ public class DocumentReadService {
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
 
 
-    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId, String language) {
-        Document document = documentRepository.findDocumentByDocumentIdAndMemberIdAndLanguage(documentId, memberId, language)
+    public GetSingleDocumentResponse findSingleDocument(Long memberId, Long documentId) {
+        Document document = documentRepository.findDocumentByDocumentIdAndMemberId(documentId, memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.DOCUMENT_NOT_FOUND));
 
         String content = s3Provider.findFile(document.getS3Key());
@@ -274,8 +274,8 @@ public class DocumentReadService {
         return new GetBookmarkedDocumentsResponse(documentsDtos);
     }
 
-    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId, String language) {
-        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberIdAndLanguage(memberId, language);
+    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId) {
+        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberId(memberId);
 
         List<GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments> documentDtos = new ArrayList<>();
         for (Document document : documents) {

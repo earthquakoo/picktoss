@@ -39,7 +39,7 @@ public class MemberReadService {
     private final QuizSetQuizRepository quizSetQuizRepository;
     private final DailyQuizRecordDetailRepository dailyQuizRecordDetailRepository;
 
-    public GetMemberInfoResponse findMemberInfo(Long memberId, String language) {
+    public GetMemberInfoResponse findMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorInfo.MEMBER_NOT_FOUND));
 
@@ -49,7 +49,7 @@ public class MemberReadService {
         }
 
         List<Document> documents = documentRepository.findAllByMemberId(memberId);
-        List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberIdAndLanguage(memberId, language);
+        List<DocumentBookmark> documentBookmarks = documentBookmarkRepository.findAllByMemberId(memberId);
 
         Star star = member.getStar();
         String email = Optional.ofNullable(member.getEmail()).orElse("");

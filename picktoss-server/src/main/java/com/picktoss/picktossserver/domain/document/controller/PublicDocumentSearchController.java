@@ -41,11 +41,9 @@ public class PublicDocumentSearchController {
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
         String language = LocaleContextHolder.getLocale().getLanguage();
-        System.out.println("language = " + language);
         if (!Objects.equals(language, "ko")) {
             language = "en";
         }
-        System.out.println("language = " + language);
 
         GetPublicDocumentsResponse response = publicDocumentSearchService.findPublicDocuments(categoryId, memberId, page, pageSize, language);
         return ResponseEntity.ok().body(response);
