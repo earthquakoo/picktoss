@@ -13,7 +13,6 @@ import com.picktoss.picktossserver.global.enums.document.DocumentSortOption;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,9 +38,7 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo != null ? jwtUserInfo.getMemberId() : null;
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId, language);
+        GetSingleDocumentResponse documents = documentReadService.findSingleDocument(memberId, documentId);
         return ResponseEntity.ok().body(documents);
     }
 
@@ -79,9 +76,7 @@ public class DocumentReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId, language);
+        GetIsNotPublicDocumentsResponse response = documentReadService.findIsNotPublicDocuments(memberId);
         return ResponseEntity.ok().body(response);
     }
 }

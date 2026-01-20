@@ -41,12 +41,10 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
             "LEFT JOIN FETCH d.quizzes q " +
             "LEFT JOIN FETCH q.options " +
             "WHERE d.id = :documentId " +
-            "AND (dir.member.id = :memberId OR d.isPublic = true) " +
-            "AND d.language = :language")
-    Optional<Document> findDocumentByDocumentIdAndMemberIdAndLanguage(
+            "AND (dir.member.id = :memberId OR d.isPublic = true)")
+    Optional<Document> findDocumentByDocumentIdAndMemberId(
             @Param("documentId") Long documentId,
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+            @Param("memberId") Long memberId
     );
 
     @Query("SELECT d FROM Document d " +
@@ -149,10 +147,8 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE d.isPublic = false " +
-            "AND dir.member.id = :memberId " +
-            "AND d.language = :language")
-    List<Document> findAllByIsNotPublicAndMemberIdAndLanguage(
-            @Param("memberId") Long memberId,
-            @Param("language") String language
+            "AND dir.member.id = :memberId")
+    List<Document> findAllByIsNotPublicAndMemberId(
+            @Param("memberId") Long memberId
     );
 }
