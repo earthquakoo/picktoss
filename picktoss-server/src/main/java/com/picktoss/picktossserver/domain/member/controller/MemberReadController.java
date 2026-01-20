@@ -9,7 +9,6 @@ import com.picktoss.picktossserver.domain.member.service.MemberReadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,9 +39,7 @@ public class MemberReadController {
         JwtUserInfo jwtUserInfo = jwtTokenProvider.getCurrentUserInfo();
         Long memberId = jwtUserInfo.getMemberId();
 
-        String language = LocaleContextHolder.getLocale().getLanguage();
-
-        GetMemberInfoResponse memberInfo = memberReadService.findMemberInfo(memberId, language);
+        GetMemberInfoResponse memberInfo = memberReadService.findMemberInfo(memberId);
         return ResponseEntity.ok().body(memberInfo);
     }
 }
