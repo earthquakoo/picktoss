@@ -274,8 +274,8 @@ public class DocumentReadService {
         return new GetBookmarkedDocumentsResponse(documentsDtos);
     }
 
-    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId) {
-        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberId(memberId);
+    public GetIsNotPublicDocumentsResponse findIsNotPublicDocuments(Long memberId, String language) {
+        List<Document> documents = documentRepository.findAllByIsNotPublicAndMemberId(memberId, language);
 
         List<GetIsNotPublicDocumentsResponse.GetIsNotPublicDocuments> documentDtos = new ArrayList<>();
         for (Document document : documents) {

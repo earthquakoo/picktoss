@@ -147,8 +147,11 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.directory dir " +
             "WHERE d.isPublic = false " +
-            "AND dir.member.id = :memberId")
+            "AND dir.member.id = :memberId " +
+            "AND d.language = :language"
+    )
     List<Document> findAllByIsNotPublicAndMemberId(
-            @Param("memberId") Long memberId
+            @Param("memberId") Long memberId,
+            @Param("language") String language
     );
 }
